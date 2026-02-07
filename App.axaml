@@ -26,5 +26,8 @@
         <DataTemplate DataType="{x:Type vm:MainViewModel}">
             <v:MainView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BlockingViewModel}">
+            <v:BlockingView/>
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>

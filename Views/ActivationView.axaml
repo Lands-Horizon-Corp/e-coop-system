@@ -2,6 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ECoopSystem.ViewModels"
+             x:DataType="vm:ActivationViewModel"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              Width="1280" Height="720"
              MinWidth="1280" MinHeight="720"
@@ -51,7 +53,10 @@
                         Foreground="{DynamicResource PrimaryColor}"/>
                 </StackPanel>
 
-                <TextBox FontSize="12"/>
+                <TextBox FontSize="12"
+                         Width="340"
+                         Text="{Binding LicenseKey, Mode=TwoWay}"
+                         Foreground="{DynamicResource PrimaryColor}"/>
 
                 <TextBlock Text="Enter your license key"
                            FontSize="11"
@@ -62,7 +67,20 @@
                         Foreground="White"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
-                        Click="OnNextClicked"/>
+                        IsEnabled="{Binding CanActivate}"
+                        Click="OnActivateClicked"/>
+
+                <TextBlock Text="{Binding Error}"
+                           Foreground="Red"
+                           FontSize="11"
+                           IsVisible="{Binding Error}"
+                           TextWrapping="Wrap"/>
+
+                <TextBlock Text="{Binding LockoutMessage}"
+                           Foreground="#B45309"
+                           FontSize="11"
+                           IsVisible="{Binding LockoutMessage}"
+                           TextWrapping="Wrap"/>
 
                 <StackPanel Orientation="Horizontal"
                             Spacing="10">

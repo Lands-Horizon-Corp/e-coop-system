@@ -1,34 +1,171 @@
-﻿using ECoopSystem.Stores;
+﻿using ECoopSystem.Services;
+using ECoopSystem.Stores;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ECoopSystem.ViewModels;
 
-public class ActivationViewModel
+public class ActivationViewModel : ViewModelBase
 {
     private readonly ShellViewModel _shell;
     private readonly AppStateStore _store;
     private readonly AppState _state;
+    private readonly SecretKeyStore _secretStore;
+    private readonly LicenseService _licenseService;
 
-    public ActivationViewModel(ShellViewModel shell, AppStateStore store, AppState state)
+    private string _licenseKey = "";
+    private string? _error;
+    private bool _isBusy;
+
+    public ActivationViewModel(
+        ShellViewModel shell, 
+        AppStateStore store, 
+        AppState state,
+        SecretKeyStore secretStore,
+        LicenseService licenseService)
     {
         _shell = shell;
         _store = store;
         _state = state;
+        _secretStore = secretStore;
+        _licenseService = licenseService;
     }
-    public void GoNext()
+
+    public string LicenseKey
     {
+        get => _licenseKey;
+        set { _licenseKey = value; OnPropertyChanged(); }
+    }
+
+    public string? Error
+    {
+        get => _error;
+        private set { _error = value; OnPropertyChanged(); }
+    }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        private set 
+        { 
+            _isBusy = value; 
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CanActivate));
+        }
+    }
+
+    public bool CanActivate => !IsBusy && !IsLockedOut();
+
+    public string? LockoutMessage => IsLockedOut()
+        ? $"Too many failed attempts. Try again in {GetRemainingLockoutSeconds()}s."
+        : null;
+
+    public async Task ActivateAsync()
+    {
+        Error = null;
+
+        if (IsLockedOut())
+        {
+            OnPropertyChanged(nameof(LockoutMessage));
+            return;
+        }
+
+        var key = (LicenseKey ?? "").Trim();
+        if (key.Length != 127)
+        {
+            Error = "Invalid License Key";
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var fingerprint = FingerprintService.ComputeFingerprint(_state);
+
+            var result = await _licenseService.ActivateAsync(key, fingerprint, CancellationToken.None);
+
+            if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.SecretKey))
+            {
+                _secretStore.Save(result.SecretKey);
+
+                if (_state.WelcomeShown)
+                    _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
+                else
+                    _shell.Navigate(new WelcomeViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Locked);
+
+                return;
+            }
+
+            if (result.IsInvalidKey)
+            {
+                RegisterFailedAttempt();
+                Error = "Invalid license key";
+                return;
+            }
+
+            Error = "Activation server is unavailable. Please try again later.";
+        }
+        catch (TaskCanceledException)
+        {
+            Error = "Request timed out. Check your ineternet and try again.";
+        }
+        catch (Exception ex)
+        {
+            Error = "Activation failed: " + ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+            OnPropertyChanged(nameof(CanActivate));
+            OnPropertyChanged(nameof(LockoutMessage));
+        }
+    }
+
+    private void RegisterFailedAttempt()
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        _state.FailedActivationsUtc = _state.FailedActivationsUtc
+            .Where(t => (now - t) <= TimeSpan.FromMinutes(1))
+            .ToList();
+
+        _state.FailedActivationsUtc.Add(now);
+
+        if (_state.FailedActivationsUtc.Count >= 3)
+        {
+            _state.LockedUntilUtc = now.AddMinutes(5);
+            _state.FailedActivationsUtc.Clear();
+        }
+
+        _store.Save(_state);
+
+        OnPropertyChanged(nameof(CanActivate));
+        OnPropertyChanged(nameof(LockoutMessage));
+    }
+
+    private bool IsLockedOut() => _state.LockedUntilUtc is not null && DateTimeOffset.UtcNow < _state.LockedUntilUtc.Value;
+
+    private int GetRemainingLockoutSeconds()
+    {
+        if (_state.LockedUntilUtc is null)
+            return 0;
+
+        var remaining = _state.LockedUntilUtc.Value - DateTimeOffset.UtcNow;
+        return remaining.TotalSeconds <= 0 ? 0 : (int)Math.Ceiling(remaining.TotalSeconds);
+    }
+
+    public void ActivationSucceeded(string secretKeyFromServer)
+    {
+        Debug.WriteLine("ActivationSucceeded() called");
+        _secretStore.Save(secretKeyFromServer);
+        Debug.WriteLine("Saved secret, now navigating...");
+
         if (_state.WelcomeShown)
-        {
-            _shell.Navigate(
-                new MainViewModel(_shell, _store, _state),
-                WindowMode.Normal
-            );
-        }
+            _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
         else
-        {
-            _shell.Navigate(
-                new WelcomeViewModel(_shell, _store, _state),
-                WindowMode.Locked
-            );
-        }
+            _shell.Navigate(new WelcomeViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Locked);
     }
 }

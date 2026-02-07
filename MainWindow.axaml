@@ -3,11 +3,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:ECoopSystem.ViewModels"
-        x:Class="ECoopSystem.MainWindow"
         x:DataType="vm:ShellViewModel"
+        x:Class="ECoopSystem.MainWindow"
         Width="1280" Height="720"
         CanResize="False"
-        SystemDecorations="None">
+        SystemDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="0">
 
-    <ContentPresenter Content="{Binding Current}"/>
+    <ContentControl Content="{Binding Current}"/>
 </Window>

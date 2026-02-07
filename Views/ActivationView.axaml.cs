@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using ECoopSystem.ViewModels;
 
 namespace ECoopSystem.Views;
 
@@ -10,8 +11,10 @@ public partial class ActivationView : UserControl
         InitializeComponent();
     }
 
-    private void OnNextClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void OnActivateClicked(object? sender, RoutedEventArgs e)
     {
+        if (DataContext is ActivationViewModel vm)
+            await vm.ActivateAsync();
     }
 
     private void OnCloseClicked(object? sender, RoutedEventArgs e)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 
@@ -16,6 +17,8 @@ public class AppStateStore
 
         Directory.CreateDirectory(dir);
         _filePath = Path.Combine(dir, "appstate.json");
+
+        Debug.WriteLine("AppState path: " + _filePath);
     }
 
     public AppState Load()

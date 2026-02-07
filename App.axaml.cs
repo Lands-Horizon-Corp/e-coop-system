@@ -1,6 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using ECoopSystem.Services;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
 
 namespace ECoopSystem
 {
