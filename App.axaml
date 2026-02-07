@@ -1,0 +1,30 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ECoopSystem.ViewModels"
+             xmlns:v="using:ECoopSystem.Views"
+             x:Class="ECoopSystem.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="Styles/AppDefaultStyles.axaml"></StyleInclude>
+    </Application.Styles>
+
+    <Application.Resources>
+        <SolidColorBrush x:Key="PrimaryColor" Color="#363636"/>
+        <SolidColorBrush x:Key="PrimaryHover" Color="#696666"/>
+    </Application.Resources>
+
+    <Application.DataTemplates>
+		<DataTemplate DataType="{x:Type vm:ActivationViewModel}">
+            <v:ActivationView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WelcomeViewModel}">
+            <v:WelcomeView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MainViewModel}">
+            <v:MainView/>
+        </DataTemplate>
+    </Application.DataTemplates>
+</Application>

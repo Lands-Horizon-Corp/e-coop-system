@@ -1,0 +1,149 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+             Width="1280" Height="720"
+             MinWidth="1280" MinHeight="720"
+             x:Class="ECoopSystem.Views.ActivationView">
+
+  <Grid ColumnDefinitions="1.15*, 1*"
+          ColumnSpacing="12"
+          Background="White">
+
+	    <StackPanel Grid.Column="0"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MaxWidth="420"
+                    Spacing="64">
+
+            <StackPanel Orientation="Vertical"
+                        Spacing="5">
+                <Border CornerRadius="8"
+                        ClipToBounds="True"
+                        HorizontalAlignment="Left"
+                        Height="52"
+                        Width="54">
+				    <Image Source="/Assets/Images/logo.png"/>
+                </Border>
+
+                <TextBlock Text="Activate License"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource PrimaryColor}"/>
+
+                <TextBlock Text="Welcome to E-cooperative - Let's activate your license key"
+                            FontSize="12"
+                            Foreground="{DynamicResource PrimaryColor}"/>
+            </StackPanel>
+
+            <!-- FORM -->
+            <StackPanel Orientation="Vertical"
+                        Spacing="10">
+
+                <StackPanel Orientation="Horizontal">
+                    <Image Source=""
+                        MaxHeight="12"
+                        MaxWidth="12"/>
+                <TextBlock Text="License Key"
+                        FontSize="12"
+                        Foreground="{DynamicResource PrimaryColor}"/>
+                </StackPanel>
+
+                <TextBox FontSize="12"/>
+
+                <TextBlock Text="Enter your license key"
+                           FontSize="11"
+                           Foreground="{DynamicResource PrimaryColor}"/>
+
+                <Button Content="Activate License"
+                        Background="{DynamicResource PrimaryColor}"
+                        Foreground="White"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Click="OnNextClicked"/>
+
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                    <Border Width="150"
+                            Height="1"
+                            Background="{DynamicResource PrimaryColor}"
+                            Opacity="0.5"/>
+
+                    <TextBlock Text="or"
+                                FontSize="12"
+                                Foreground="#363636"/>
+
+                    <Border Width="150"
+                            Height="1"
+                            Background="{DynamicResource PrimaryColor}"
+                            Opacity="0.5"/>
+                </StackPanel>
+
+                
+                <TextBlock HorizontalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource PrimaryColor}">
+                    <Run Text="Need Help? "/>
+                    <Run Text="Contact Support"
+                            FontWeight="Bold"/>
+                </TextBlock>
+
+            </StackPanel>
+
+            <StackPanel Spacing="10">
+
+                <TextBlock Text="Connect with us"
+                           FontSize="12"
+                           Foreground="{DynamicResource PrimaryColor}"
+                           HorizontalAlignment="Center"/>
+
+                <Border Width="200"
+                        Height="1"
+                        Background="{DynamicResource PrimaryColor}"
+                        Opacity="0.5"
+                        HorizontalAlignment="Center"/>
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Spacing="10">
+
+                    <Image Source="/Assets/Icons/facebook.png" Width="32" Height="32"/>
+                    <Image Source="/Assets/Icons/twitter.png" Width="32" Height="32"/>
+                    <Image Source="/Assets/Icons/linkedin.png" Width="32" Height="32"/>
+                    <Image Source="/Assets/Icons/instagram.png" Width="32" Height="32"/>
+                    <Image Source="/Assets/Icons/youtube.png" Width="32" Height="32"/>
+                    <Image Source="/Assets/Icons/github.png" Width="32" Height="32"/>
+                    <Image Source="/Assets/Icons/email.png" Width="32" Height="32"/>
+
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <Border Grid.Column="1"
+                Margin="3"
+                CornerRadius="12"
+                ClipToBounds="True">
+
+            <Grid>
+				<Image Source="/Assets/Images/activation_image.png"
+                   Stretch="UniformToFill"/>
+
+                <Button Width="36"
+                        Height="36"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="12"
+                        Background="#66000000"
+                        Foreground="White"
+                        CornerRadius="18"
+                        Content="✕"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        FontSize="18"
+                        Click="OnCloseClicked"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

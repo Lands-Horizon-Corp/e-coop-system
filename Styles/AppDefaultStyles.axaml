@@ -1,0 +1,55 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <TextBox></TextBox>
+        </Border>
+    </Design.PreviewWith>
+
+    <!-- Add Styles Here -->
+    <Style Selector="Button">
+        <Setter Property="Foreground" Value="White"></Setter>
+        <Setter Property="Background" Value="{DynamicResource PrimaryColor}"></Setter>
+    </Style>
+
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="White"></Setter>
+        <Setter Property="Background" Value="{DynamicResource PrimaryHover}"></Setter>
+    </Style>
+
+    <Style Selector="TextBox">
+        <Setter Property="CaretBrush" Value="Black"/>
+    </Style>
+
+    <Style Selector="TextBox /template/ Border#border">
+		<Setter Property="Background" Value="#F0F0F0"></Setter>
+        <Setter Property="BorderBrush" Value="Black"></Setter>
+    </Style>
+
+    <Style Selector="TextBox:pointerover /template/ Border#border">
+		<Setter Property="Background" Value="#F0F0F0"></Setter>
+        <Setter Property="BorderBrush" Value="Black"></Setter>
+    </Style>
+
+    <Style Selector="TextBox:focus /template/ Border#border">
+		<Setter Property="Background" Value="#fcfcfc"></Setter>
+        <Setter Property="BorderBrush" Value="Black"></Setter>
+    </Style>
+
+    <Styles.Resources>
+        <!-- normal -->
+        <SolidColorBrush x:Key="TextControlBackground" Color="#F0F0F0"/>
+        <SolidColorBrush x:Key="TextControlBorderBrush" Color="#000000"/>
+
+        <!-- hover -->
+        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#F0F0F0"/>
+        <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#696666"/>
+
+        <!-- focus -->
+        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FCFCFC"/>
+        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#000000"/>
+
+        <!-- optional: remove the blue glow/focus ring -->
+        <Thickness x:Key="TextControlBorderThemeThicknessFocused">1</Thickness>
+      </Styles.Resources>
+</Styles>
