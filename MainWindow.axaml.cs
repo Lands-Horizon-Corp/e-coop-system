@@ -4,10 +4,11 @@ using System.ComponentModel;
 using ECoopSystem.Stores;
 using ECoopSystem.Services;
 using System.Net.Http;
-using Avalonia.Threading;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using Avalonia.Threading;
+using Avalonia.Platform;
 
 namespace ECoopSystem;
 
@@ -19,6 +20,10 @@ public partial class MainWindow : Window
     private readonly SecretKeyStore _secretStore;
     private readonly LicenseService _licenseService;
 
+    private bool _booted;
+
+    private sealed record RouteResult(ViewModelBase ViewModel, WindowMode Mode);
+
     public MainWindow()
     {
         InitializeComponent();
@@ -27,18 +32,41 @@ public partial class MainWindow : Window
         _state = _stateStore.Load();
         _stateStore.Save(_state);
 
-        _secretStore = new SecretKeyStore(_state);
+        _secretStore = new SecretKeyStore();
         var http = new HttpClient();
         _licenseService = new LicenseService(http);
 
         _shell = new ShellViewModel();
         DataContext = _shell;
 
+        _shell.Navigate(new LoadingViewModel(), WindowMode.Locked);
+        ApplyWindowMode();
+
         _shell.PropertyChanged += ShellOnPropertyChanged;
         Opened += async (_, _) =>
         {
-            await StartupRouteAsync();
+            if (_booted) return;
+            _booted = true;
+
+            _shell.Navigate(new LoadingViewModel(), WindowMode.Locked);
             ApplyWindowMode();
+            
+            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // Ensure UI updates before verification
+
+            var minLoading = Task.Delay(TimeSpan.FromSeconds(4));
+            var routeTask = DecideRouteAsync();
+
+            await Task.WhenAll(minLoading, routeTask);
+
+            var route = await routeTask;
+            _shell.Navigate(route.ViewModel, route.Mode);
+            ApplyWindowMode();
+
+            if (route.ViewModel is BlockingViewModel)
+            {
+                await Task.Delay(1500);
+                Close();
+            }
         };
     }
 
@@ -73,26 +101,33 @@ public partial class MainWindow : Window
             Width = w;
             Height = h;
 
-            MinWidth = 900;
-            MinHeight = 600;
+            MinWidth = w;
+            MinHeight = h;
 
             MaxWidth = double.PositiveInfinity;
             MaxHeight = double.PositiveInfinity;
 
             CanResize = true;
             SystemDecorations = SystemDecorations.Full;
+            ExtendClientAreaToDecorationsHint = false;
+            ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
+            ExtendClientAreaTitleBarHeightHint = -1;
+
+            if (_shell.Current is MainViewModel mv)
+            {
+                WindowState = WindowState.Maximized;
+            }
         }
     }
 
-    private async Task StartupRouteAsync()
+    private async Task<RouteResult> DecideRouteAsync()
     {
         var secret = _secretStore.Load();
 
         if (string.IsNullOrEmpty(secret))
-        {
-            _shell.Navigate(new ActivationViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), WindowMode.Locked);
-            return;
-        }
+            return new RouteResult(
+                new ActivationViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
+                WindowMode.Locked);
 
         var fingerprint = FingerprintService.ComputeFingerprint(_state);
 
@@ -106,37 +141,34 @@ public partial class MainWindow : Window
                 _stateStore.Save(_state);
 
                 if (_state.WelcomeShown)
-                    _shell.Navigate(new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), WindowMode.Normal);
-                else
-                    _shell.Navigate(new WelcomeViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), WindowMode.Locked);
+                    return new RouteResult(new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), 
+                                           WindowMode.Normal);
 
-                return;
+                return new RouteResult(new WelcomeViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), 
+                                       WindowMode.Locked);
             }
 
             if (verify.IsInvalid)
             {
                 // License revoked/invalid for this machine
                 _secretStore.Delete();
-                _shell.Navigate(new ActivationViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), WindowMode.Locked);
-                return;
+                return new RouteResult(new ActivationViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
+                                       WindowMode.Normal);
             }
 
             // Server returns 500
-            _secretStore.Delete();
-            _shell.Navigate(new BlockingViewModel("Verification Error", 
-                "License verification failed due to a server error, Please try again later."), WindowMode.Locked);
-
-            // Close after short delay
-            await Task.Delay(1500);
-            Close();
+            return new RouteResult(
+                new BlockingViewModel("Verification Error",
+                                      "License verification failed due to a server error, Please try again later."), 
+                                       WindowMode.Locked);
         }
         catch (TaskCanceledException)
         {
-            RouteWithGrace();
+            return DecideRouteWithGrace();
         }
-        catch (Exception)
+        catch
         {
-            RouteWithGrace();
+            return DecideRouteWithGrace();
         }
     }
 
@@ -150,22 +182,23 @@ public partial class MainWindow : Window
         return (DateTimeOffset.UtcNow - _state.LastVerifiedUtc.Value) <= grace;
     }
 
-    private void RouteWithGrace()
+    private RouteResult DecideRouteWithGrace()
     {
         if (IsWithinGrace())
         {
-            if (IsWithinGrace())
-            {
-                if (_state.WelcomeShown)
-                    _shell.Navigate(new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), WindowMode.Normal);
-                else
-                    _shell.Navigate(new WelcomeViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), WindowMode.Locked);
-            }
-            else
-            {
-                _shell.Navigate(new BlockingViewModel("Verification Error",
-                    "We couldn't verify your license. Please connect to the internet and restart."), WindowMode.Locked);
-            }
+            if (_state.WelcomeShown)
+                return new RouteResult(
+                     new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
+                     WindowMode.Normal);
+
+            return new RouteResult(
+                 new WelcomeViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
+                 WindowMode.Locked);
         }
+
+        return new RouteResult(
+            new BlockingViewModel("Verification Error",
+                                  "We couldn't verify your license. Please connect to the internet and restart."),
+                                  WindowMode.Locked);
     }
 }

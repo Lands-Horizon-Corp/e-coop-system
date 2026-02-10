@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AnimatedImage.Avalonia" Version="2.1.4" />
     <PackageReference Include="Avalonia" Version="11.3.11" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
@@ -20,10 +21,15 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="10.0.2" />
+    <PackageReference Include="WebViewControl-Avalonia" Version="3.120.11" />
   </ItemGroup>
 
   <ItemGroup>
 
 	<AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\Videos\" />
   </ItemGroup>
 </Project>

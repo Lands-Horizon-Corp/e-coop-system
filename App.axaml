@@ -14,9 +14,14 @@
     <Application.Resources>
         <SolidColorBrush x:Key="PrimaryColor" Color="#363636"/>
         <SolidColorBrush x:Key="PrimaryHover" Color="#696666"/>
+
+        <x:Double x:Key="IconSize">32</x:Double>
     </Application.Resources>
 
     <Application.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:LoadingViewModel}">
+			<v:LoadingView/>
+        </DataTemplate>
 		<DataTemplate DataType="{x:Type vm:ActivationViewModel}">
             <v:ActivationView/>
         </DataTemplate>

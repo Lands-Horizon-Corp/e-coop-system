@@ -5,12 +5,16 @@
         xmlns:vm="using:ECoopSystem.ViewModels"
         x:DataType="vm:ShellViewModel"
         x:Class="ECoopSystem.MainWindow"
+        WindowStartupLocation="CenterOwner"
         Width="1280" Height="720"
         CanResize="False"
         SystemDecorations="None"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="0">
+        ExtendClientAreaTitleBarHeightHint="0"
+        Title="E-Coop Suite">
 
-    <ContentControl Content="{Binding Current}"/>
+    <ContentControl Content="{Binding Current}"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"/>
 </Window>

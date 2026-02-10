@@ -7,7 +7,8 @@
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              Width="1280" Height="720"
              MinWidth="1280" MinHeight="720"
-             x:Class="ECoopSystem.Views.ActivationView">
+             x:Class="ECoopSystem.Views.ActivationView"
+             Background="White">
 
   <Grid ColumnDefinitions="1.15*, 1*"
           ColumnSpacing="12"
@@ -53,7 +54,8 @@
                         Foreground="{DynamicResource PrimaryColor}"/>
                 </StackPanel>
 
-                <TextBox FontSize="12"
+                <TextBox PasswordChar="*"
+                         FontSize="12"
                          Width="340"
                          Text="{Binding LicenseKey, Mode=TwoWay}"
                          Foreground="{DynamicResource PrimaryColor}"/>
@@ -69,8 +71,7 @@
                         HorizontalContentAlignment="Center"
                         IsEnabled="{Binding CanActivate}"
                         Click="OnActivateClicked"/>
-
-                <TextBlock Text="{Binding Error}"
+                                <TextBlock Text="{Binding Error}"
                            Foreground="Red"
                            FontSize="11"
                            IsVisible="{Binding Error}"
@@ -127,13 +128,13 @@
                             HorizontalAlignment="Center"
                             Spacing="10">
 
-                    <Image Source="/Assets/Icons/facebook.png" Width="32" Height="32"/>
-                    <Image Source="/Assets/Icons/twitter.png" Width="32" Height="32"/>
-                    <Image Source="/Assets/Icons/linkedin.png" Width="32" Height="32"/>
-                    <Image Source="/Assets/Icons/instagram.png" Width="32" Height="32"/>
-                    <Image Source="/Assets/Icons/youtube.png" Width="32" Height="32"/>
-                    <Image Source="/Assets/Icons/github.png" Width="32" Height="32"/>
-                    <Image Source="/Assets/Icons/email.png" Width="32" Height="32"/>
+                    <Image Source="/Assets/Icons/facebook.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    <Image Source="/Assets/Icons/twitter.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    <Image Source="/Assets/Icons/linkedin.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    <Image Source="/Assets/Icons/instagram.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    <Image Source="/Assets/Icons/youtube.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    <Image Source="/Assets/Icons/github.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    <Image Source="/Assets/Icons/email.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
 
                 </StackPanel>
             </StackPanel>

@@ -11,6 +11,8 @@ public class MainViewModel : ViewModelBase
     public readonly SecretKeyStore _secretStore;
     public readonly LicenseService _licenseService;
 
+    public string URL { get; } = "https://e-coop-client-development.up.railway.app/";
+
     public MainViewModel(ShellViewModel shell, AppStateStore store, AppState state, SecretKeyStore secretStore, LicenseService licenseService)
     {
         _shell = shell;

@@ -17,8 +17,6 @@ public class AppStateStore
 
         Directory.CreateDirectory(dir);
         _filePath = Path.Combine(dir, "appstate.json");
-
-        Debug.WriteLine("AppState path: " + _filePath);
     }
 
     public AppState Load()

@@ -19,7 +19,8 @@
                   Margin="0,20,0,0"
                   Padding="20,10"
                   Content="START NOW"
-                  FontWeight="Bold"/>
+                  FontWeight="Bold"
+                  Click="OnStartClicked"/>
       </StackPanel>
   </Grid>
 </UserControl>

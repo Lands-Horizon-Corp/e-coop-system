@@ -2,17 +2,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:wv="clr-namespace:WebViewControl;assembly=WebViewControl.Avalonia"
+             xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
              xmlns:vm="using:ECoopSystem.ViewModels"
-             x:DataType="vm:MainViewModel"
+             x:DataType="vm:LoadingViewModel"
              Background="White"
+             Width="1280" Height="720"
              MinWidth="1280" MinHeight="720"
-             x:Class="ECoopSystem.Views.MainView">
+             x:Class="ECoopSystem.Views.LoadingView">
 
-    <Grid RowDefinitions="*"
-          ColumnDefinitions="*">
-        <wv:WebView x:Name="webView"
-                    Focusable="True"
-                    Address="{Binding URL}"/>
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+		<Image anim:ImageBehavior.RepeatBehavior="1x"
+               anim:ImageBehavior.AnimatedSource="avares://ECoopSystem/Assets/Images/loading.gif"/>
     </Grid>
 </UserControl>
