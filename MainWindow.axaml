@@ -12,7 +12,8 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="0"
-        Title="E-Coop Suite">
+        Title="E-Coop Suite"
+        Icon="/Assets/Icons/ecoopsuite.ico">
 
     <ContentControl Content="{Binding Current}"
                     HorizontalContentAlignment="Stretch"

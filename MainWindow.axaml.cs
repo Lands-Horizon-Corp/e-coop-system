@@ -9,6 +9,7 @@ using System.Threading;
 using System;
 using Avalonia.Threading;
 using Avalonia.Platform;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ECoopSystem;
 
@@ -32,7 +33,7 @@ public partial class MainWindow : Window
         _state = _stateStore.Load();
         _stateStore.Save(_state);
 
-        _secretStore = new SecretKeyStore();
+        _secretStore = App.Services.GetRequiredService<SecretKeyStore>();
         var http = new HttpClient();
         _licenseService = new LicenseService(http);
 
@@ -48,17 +49,19 @@ public partial class MainWindow : Window
             if (_booted) return;
             _booted = true;
 
-            _shell.Navigate(new LoadingViewModel(), WindowMode.Locked);
+            var loadingVm = new LoadingViewModel("Initializing...");
+            _shell.Navigate(loadingVm, WindowMode.Locked);
             ApplyWindowMode();
             
-            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // Ensure UI updates before verification
+            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
 
-            var minLoading = Task.Delay(TimeSpan.FromSeconds(4));
+            var minDelay = Task.Delay(TimeSpan.FromSeconds(5));
             var routeTask = DecideRouteAsync();
 
-            await Task.WhenAll(minLoading, routeTask);
+            await Task.WhenAll(minDelay, routeTask);
 
             var route = await routeTask;
+
             _shell.Navigate(route.ViewModel, route.Mode);
             ApplyWindowMode();
 

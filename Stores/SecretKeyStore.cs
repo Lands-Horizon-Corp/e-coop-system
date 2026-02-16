@@ -1,5 +1,4 @@
-﻿using ECoopSystem.Services;
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
 using System;
 using System.IO;
 
@@ -10,7 +9,7 @@ public sealed class SecretKeyStore
     private readonly string _filePath;
     private readonly IDataProtector _protector;
 
-    public SecretKeyStore()
+    public SecretKeyStore(IDataProtectionProvider provider)
     {
         var dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
@@ -19,7 +18,7 @@ public sealed class SecretKeyStore
         Directory.CreateDirectory(dir);
         _filePath = Path.Combine(dir, "secret.dat");
 
-        _protector = DataProtectionProviderFactory.CreateProtector();
+        _protector = provider.CreateProtector("ECoopSystem.SecretKey.v1");
     }
 
     public bool HasSecret() => File.Exists(_filePath);
@@ -42,6 +41,7 @@ public sealed class SecretKeyStore
         }
         catch
         {
+            Delete();
             return null;
         }
     }

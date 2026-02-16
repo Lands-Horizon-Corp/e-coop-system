@@ -4,15 +4,20 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:wv="clr-namespace:WebViewControl;assembly=WebViewControl.Avalonia"
              xmlns:vm="using:ECoopSystem.ViewModels"
+             xmlns:views="using:ECoopSystem.Views"
              x:DataType="vm:MainViewModel"
-             Background="White"
              MinWidth="1280" MinHeight="720"
              x:Class="ECoopSystem.Views.MainView">
 
+    <UserControl.Background>
+        <ImageBrush Source="avares://ECoopSystem/Assets/Images/loading-bg.jpg"
+                    Stretch="UniformToFill"/>
+    </UserControl.Background>
+
     <Grid RowDefinitions="*"
           ColumnDefinitions="*">
-        <wv:WebView x:Name="webView"
-                    Focusable="True"
-                    Address="{Binding URL}"/>
+
+        <views:LoadingView ZIndex="1000"/>
+
     </Grid>
 </UserControl>

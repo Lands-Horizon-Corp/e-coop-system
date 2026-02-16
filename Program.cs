@@ -1,5 +1,9 @@
 ﻿using System;
+using System.IO;
 using Avalonia;
+using ECoopSystem.Stores;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ECoopSystem
 {
@@ -14,9 +18,33 @@ namespace ECoopSystem
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace();
+        {
+            var services = new ServiceCollection();
+            var keysDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "ECoopSystem",
+                "dp-keys"
+            );
+
+            Directory.CreateDirectory(keysDir);
+
+            services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo(keysDir))
+                    .SetApplicationName("ECoopSystem");
+
+            services.AddSingleton<SecretKeyStore>();
+
+            var provider = services.BuildServiceProvider();
+
+
+            return AppBuilder.Configure<App>()
+                    .UsePlatformDetect()
+                    .WithInterFont()
+                    .LogToTrace()
+                    .AfterSetup(_ =>
+                    {
+                        App.Services = provider;
+                    });
+        }
     }
 }

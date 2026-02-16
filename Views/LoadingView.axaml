@@ -5,13 +5,38 @@
              xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
              xmlns:vm="using:ECoopSystem.ViewModels"
              x:DataType="vm:LoadingViewModel"
-             Background="White"
              Width="1280" Height="720"
              MinWidth="1280" MinHeight="720"
-             x:Class="ECoopSystem.Views.LoadingView">
+             x:Class="ECoopSystem.Views.LoadingView"
+             Opacity="0">
 
-    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-		<Image anim:ImageBehavior.RepeatBehavior="1x"
-               anim:ImageBehavior.AnimatedSource="avares://ECoopSystem/Assets/Images/loading.gif"/>
+    <UserControl.Background>
+        <ImageBrush Source="avares://ECoopSystem/Assets/Images/loading-bg.jpg"
+                    Stretch="UniformToFill"/>
+    </UserControl.Background>
+
+    <UserControl.Transitions>
+        <Transitions>
+            <DoubleTransition Property="Opacity" 
+                              Duration="0:0:0.2"
+                              Easing="QuadraticEaseOut"/>
+        </Transitions>
+    </UserControl.Transitions>
+
+    <Grid HorizontalAlignment="Center" 
+          VerticalAlignment="Center"
+          RowDefinitions="Auto, Auto"
+          RowSpacing="16">
+
+        <ProgressBar IsIndeterminate="True"
+                     Width="300"
+                     Height="6"/>
+
+        <TextBlock Grid.Row="1"
+                   Text="{Binding Message}"
+                   FontSize="14"
+                   HorizontalAlignment="Center"
+                   Foreground="{DynamicResource PrimaryColor}"/>
     </Grid>
+
 </UserControl>
