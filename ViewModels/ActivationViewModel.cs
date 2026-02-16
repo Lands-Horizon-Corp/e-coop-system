@@ -91,10 +91,9 @@ public class ActivationViewModel : ViewModelBase
             {
                 _secretStore.Save(result.SecretKey);
 
-                if (_state.WelcomeShown)
-                    _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
-                else
-                    _shell.Navigate(new WelcomeViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Locked);
+                _shell.Navigate(new LoadingViewModel("Loading..."), WindowMode.Locked);
+                await Task.Delay(2000);
+                _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
 
                 return;
             }
@@ -157,15 +156,14 @@ public class ActivationViewModel : ViewModelBase
         return remaining.TotalSeconds <= 0 ? 0 : (int)Math.Ceiling(remaining.TotalSeconds);
     }
 
-    public void ActivationSucceeded(string secretKeyFromServer)
+    public async void ActivationSucceeded(string secretKeyFromServer)
     {
         Debug.WriteLine("ActivationSucceeded() called");
         _secretStore.Save(secretKeyFromServer);
         Debug.WriteLine("Saved secret, now navigating...");
 
-        if (_state.WelcomeShown)
-            _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
-        else
-            _shell.Navigate(new WelcomeViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Locked);
+        _shell.Navigate(new LoadingViewModel("Loading..."), WindowMode.Locked);
+        await Task.Delay(2000);
+        _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
     }
 }

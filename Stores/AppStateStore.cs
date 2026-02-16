@@ -43,7 +43,6 @@ public class AppStateStore
         {
             InstallationId = Guid.NewGuid().ToString("N"),
             InsallationUnixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            WelcomeShown = false,
         };
     }
 

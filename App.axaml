@@ -25,9 +25,6 @@
 		<DataTemplate DataType="{x:Type vm:ActivationViewModel}">
             <v:ActivationView/>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:WelcomeViewModel}">
-            <v:WelcomeView/>
-        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:MainViewModel}">
             <v:MainView/>
         </DataTemplate>

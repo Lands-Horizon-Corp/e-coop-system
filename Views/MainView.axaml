@@ -19,5 +19,8 @@
 
         <views:LoadingView ZIndex="1000"/>
 
+        <wv:WebView x:Name="webView"
+                    Focusable="True"
+                    Address="{Binding URL}"/>
     </Grid>
 </UserControl>

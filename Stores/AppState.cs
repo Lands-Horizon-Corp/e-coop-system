@@ -7,7 +7,6 @@ public sealed class AppState
 {
     public string InstallationId { get; set; } = "";
     public long InsallationUnixTime { get; set; }
-    public bool WelcomeShown { get; set; }
     public DateTimeOffset? LastVerifiedUtc { get; set; }
 
     public List<DateTimeOffset> FailedActivationsUtc { get; set; } = new();

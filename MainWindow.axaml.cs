@@ -143,12 +143,8 @@ public partial class MainWindow : Window
                 _state.LastVerifiedUtc = DateTimeOffset.UtcNow; 
                 _stateStore.Save(_state);
 
-                if (_state.WelcomeShown)
-                    return new RouteResult(new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), 
-                                           WindowMode.Normal);
-
-                return new RouteResult(new WelcomeViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), 
-                                       WindowMode.Locked);
+                return new RouteResult(new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService), 
+                                       WindowMode.Normal);
             }
 
             if (verify.IsInvalid)
@@ -189,14 +185,9 @@ public partial class MainWindow : Window
     {
         if (IsWithinGrace())
         {
-            if (_state.WelcomeShown)
-                return new RouteResult(
-                     new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
-                     WindowMode.Normal);
-
             return new RouteResult(
-                 new WelcomeViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
-                 WindowMode.Locked);
+                 new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
+                 WindowMode.Normal);
         }
 
         return new RouteResult(
