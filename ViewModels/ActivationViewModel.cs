@@ -74,7 +74,7 @@ public class ActivationViewModel : ViewModelBase
         }
 
         var key = (LicenseKey ?? "").Trim();
-        if (key.Length != 127)
+        if (key.Length != Constants.LicenseKeyLength)
         {
             Error = "Invalid License Key";
             return;
@@ -128,14 +128,14 @@ public class ActivationViewModel : ViewModelBase
         var now = DateTimeOffset.UtcNow;
 
         _state.FailedActivationsUtc = _state.FailedActivationsUtc
-            .Where(t => (now - t) <= TimeSpan.FromMinutes(1))
+            .Where(t => (now - t) <= TimeSpan.FromMinutes(Constants.ActivationLookbackMinutes))
             .ToList();
 
         _state.FailedActivationsUtc.Add(now);
 
-        if (_state.FailedActivationsUtc.Count >= 3)
+        if (_state.FailedActivationsUtc.Count >= Constants.MaxActivationAttempts)
         {
-            _state.LockedUntilUtc = now.AddMinutes(5);
+            _state.LockedUntilUtc = now.AddMinutes(Constants.LockoutMinutes);
             _state.FailedActivationsUtc.Clear();
         }
 
@@ -154,16 +154,5 @@ public class ActivationViewModel : ViewModelBase
 
         var remaining = _state.LockedUntilUtc.Value - DateTimeOffset.UtcNow;
         return remaining.TotalSeconds <= 0 ? 0 : (int)Math.Ceiling(remaining.TotalSeconds);
-    }
-
-    public async void ActivationSucceeded(string secretKeyFromServer)
-    {
-        Debug.WriteLine("ActivationSucceeded() called");
-        _secretStore.Save(secretKeyFromServer);
-        Debug.WriteLine("Saved secret, now navigating...");
-
-        _shell.Navigate(new LoadingViewModel("Loading..."), WindowMode.Locked);
-        await Task.Delay(2000);
-        _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
     }
 }

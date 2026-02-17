@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
 using Avalonia;
+using ECoopSystem.Services;
 using ECoopSystem.Stores;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 
 namespace ECoopSystem
 {
@@ -32,7 +34,9 @@ namespace ECoopSystem
                     .PersistKeysToFileSystem(new DirectoryInfo(keysDir))
                     .SetApplicationName("ECoopSystem");
 
+            services.AddSingleton<AppStateStore>();
             services.AddSingleton<SecretKeyStore>();
+            services.AddHttpClient<LicenseService>();
 
             var provider = services.BuildServiceProvider();
 

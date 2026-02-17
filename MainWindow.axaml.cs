@@ -29,13 +29,12 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        _stateStore = new AppStateStore();
+        _stateStore = App.Services.GetRequiredService<AppStateStore>();
         _state = _stateStore.Load();
         _stateStore.Save(_state);
 
         _secretStore = App.Services.GetRequiredService<SecretKeyStore>();
-        var http = new HttpClient();
-        _licenseService = new LicenseService(http);
+        _licenseService = App.Services.GetRequiredService<LicenseService>();
 
         _shell = new ShellViewModel();
         DataContext = _shell;
@@ -55,7 +54,7 @@ public partial class MainWindow : Window
             
             await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
 
-            var minDelay = Task.Delay(TimeSpan.FromSeconds(5));
+            var minDelay = Task.Delay(TimeSpan.FromMilliseconds(800));
             var routeTask = DecideRouteAsync();
 
             await Task.WhenAll(minDelay, routeTask);
@@ -83,29 +82,22 @@ public partial class MainWindow : Window
     {
         if (_shell.Mode == WindowMode.Locked)
         {
-            const int w = 1280;
-            const int h = 720;
+            Width = Constants.WindowWidth;
+            Height = Constants.WindowHeight;
 
-            Width = w;
-            Height = h;
-
-            MinWidth = MaxWidth = w;
-            MinHeight = MaxHeight = h;
+            MinWidth = MaxWidth = Constants.WindowWidth;
+            MinHeight = MaxHeight = Constants.WindowHeight;
 
             CanResize = false;
             SystemDecorations = SystemDecorations.None;
         }
         else
         {
-            // Reset size constraints
-            const int w = 1280;
-            const int h = 720;
+            Width = Constants.WindowWidth;
+            Height = Constants.WindowHeight;
 
-            Width = w;
-            Height = h;
-
-            MinWidth = w;
-            MinHeight = h;
+            MinWidth = Constants.WindowWidth;
+            MinHeight = Constants.WindowHeight;
 
             MaxWidth = double.PositiveInfinity;
             MaxHeight = double.PositiveInfinity;
@@ -165,15 +157,16 @@ public partial class MainWindow : Window
         {
             return DecideRouteWithGrace();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"License verification error: {ex.GetType().Name} - {ex.Message}");
             return DecideRouteWithGrace();
         }
     }
 
     private bool IsWithinGrace()
     {
-        var grace = TimeSpan.FromDays(7);
+        var grace = TimeSpan.FromDays(Constants.GracePeriodDays);
 
         if (_state.LastVerifiedUtc is null)
             return true;

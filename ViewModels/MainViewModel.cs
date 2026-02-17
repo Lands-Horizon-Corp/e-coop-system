@@ -5,11 +5,11 @@ namespace ECoopSystem.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    public readonly ShellViewModel _shell;
-    public readonly AppStateStore _store;
-    public readonly AppState _state;
-    public readonly SecretKeyStore _secretStore;
-    public readonly LicenseService _licenseService;
+    private readonly ShellViewModel _shell;
+    private readonly AppStateStore _store;
+    private readonly AppState _state;
+    private readonly SecretKeyStore _secretStore;
+    private readonly LicenseService _licenseService;
 
     public string URL { get; } = "https://e-coop-client-development.up.railway.app/";
 
