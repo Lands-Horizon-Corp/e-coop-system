@@ -10,11 +10,38 @@
     <Style Selector="Button">
         <Setter Property="Foreground" Value="White"></Setter>
         <Setter Property="Background" Value="{DynamicResource PrimaryColor}"></Setter>
+        <Setter Property="IsVisible" Value="True"></Setter>
     </Style>
 
     <Style Selector="Button:pointerover /template/ ContentPresenter">
         <Setter Property="Foreground" Value="White"></Setter>
         <Setter Property="Background" Value="{DynamicResource PrimaryHover}"></Setter>
+    </Style>
+
+    <Style Selector="Button:disabled">
+        <Setter Property="IsVisible" Value="True"></Setter>
+    </Style>
+
+    <Style Selector="Button:disabled /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="White"></Setter>
+        <Setter Property="Background" Value="#9E9E9E"></Setter>
+        <Setter Property="Opacity" Value="0.6"></Setter>
+    </Style>
+
+    <!-- Transparent buttons for social media icons -->
+    <Style Selector="Button.transparent">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="BorderThickness" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.transparent:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Opacity" Value="0.7"></Setter>
+    </Style>
+
+    <Style Selector="Button.transparent:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Opacity" Value="0.5"></Setter>
     </Style>
 
     <Style Selector="TextBox">

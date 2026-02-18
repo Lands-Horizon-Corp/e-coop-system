@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace ECoopSystem.ViewModels;
 
@@ -14,6 +15,7 @@ public class ActivationViewModel : ViewModelBase
     private readonly AppState _state;
     private readonly SecretKeyStore _secretStore;
     private readonly LicenseService _licenseService;
+    private readonly DispatcherTimer _lockoutTimer;
 
     private string _licenseKey = "";
     private string? _error;
@@ -31,6 +33,19 @@ public class ActivationViewModel : ViewModelBase
         _state = state;
         _secretStore = secretStore;
         _licenseService = licenseService;
+
+        // Setup timer to update lockout countdown every second
+        _lockoutTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        _lockoutTimer.Tick += OnLockoutTimerTick;
+        
+        // Start timer if currently locked out
+        if (IsLockedOut())
+        {
+            _lockoutTimer.Start();
+        }
     }
 
     public string LicenseKey
@@ -133,6 +148,9 @@ public class ActivationViewModel : ViewModelBase
         {
             _state.LockedUntilUtc = now.AddMinutes(Constants.LockoutMinutes);
             _state.FailedActivationsUtc.Clear();
+            
+            // Start timer when lockout begins
+            _lockoutTimer.Start();
         }
 
         _store.Save(_state);
@@ -150,5 +168,25 @@ public class ActivationViewModel : ViewModelBase
 
         var remaining = _state.LockedUntilUtc.Value - DateTimeOffset.UtcNow;
         return remaining.TotalSeconds <= 0 ? 0 : (int)Math.Ceiling(remaining.TotalSeconds);
+    }
+
+    private void OnLockoutTimerTick(object? sender, EventArgs e)
+    {
+        if (!IsLockedOut())
+        {
+            // Lockout expired - clear it and stop timer
+            _state.LockedUntilUtc = null;
+            _store.Save(_state);
+            _lockoutTimer.Stop();
+        }
+
+        // Update UI properties
+        OnPropertyChanged(nameof(CanActivate));
+        OnPropertyChanged(nameof(LockoutMessage));
+    }
+
+    public void StopTimer()
+    {
+        _lockoutTimer?.Stop();
     }
 }

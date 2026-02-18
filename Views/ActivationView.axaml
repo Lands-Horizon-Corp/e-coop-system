@@ -101,13 +101,29 @@
                 </StackPanel>
 
                 
-                <TextBlock HorizontalAlignment="Center"
+                <StackPanel HorizontalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="3">
+                    <TextBlock Text="Need Help? "
+                               FontSize="11"
+                               Foreground="{DynamicResource PrimaryColor}"/>
+                    <Button Content="Contact Support"
                             FontSize="11"
-                            Foreground="{DynamicResource PrimaryColor}">
-                    <Run Text="Need Help? "/>
-                    <Run Text="Contact Support"
-                            FontWeight="Bold"/>
-                </TextBlock>
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource PrimaryColor}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="0"
+                            Cursor="Hand"
+                            Click="OnContactSupportClicked"
+                            Tag="https://e-coop-suite.com/contact">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="TextBlock.TextDecorations" Value="Underline"/>
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+                </StackPanel>
 
             </StackPanel>
 
@@ -128,13 +144,68 @@
                             HorizontalAlignment="Center"
                             Spacing="10">
 
-                    <Image Source="/Assets/Icons/facebook.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
-                    <Image Source="/Assets/Icons/twitter.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
-                    <Image Source="/Assets/Icons/linkedin.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
-                    <Image Source="/Assets/Icons/instagram.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
-                    <Image Source="/Assets/Icons/youtube.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
-                    <Image Source="/Assets/Icons/github.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
-                    <Image Source="/Assets/Icons/email.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    <Button Classes="transparent"
+                            Padding="0" 
+                            Cursor="Hand"
+                            Click="OnSocialMediaClicked"
+                            Tag="https://www.facebook.com/profile.php?id=61578596159950"
+                            ToolTip.Tip="Facebook">
+                        <Image Source="/Assets/Icons/facebook.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    </Button>
+                    
+                    <Button Classes="transparent"
+                            Padding="0" 
+                            Cursor="Hand"
+                            Click="OnSocialMediaClicked"
+                            Tag="https://x.com/Lands_Horizon"
+                            ToolTip.Tip="X (Twitter)">
+                        <Image Source="/Assets/Icons/twitter.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    </Button>
+                    
+                    <Button Classes="transparent"
+                            Padding="0" 
+                            Cursor="Hand"
+                            Click="OnSocialMediaClicked"
+                            Tag="https://www.linkedin.com/company/landshorizo"
+                            ToolTip.Tip="LinkedIn">
+                        <Image Source="/Assets/Icons/linkedin.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    </Button>
+                    
+                    <Button Classes="transparent"
+                            Padding="0" 
+                            Cursor="Hand"
+                            Click="OnSocialMediaClicked"
+                            Tag="tel:+639916171081"
+                            ToolTip.Tip="Phone: +63 991 617 1081">
+                        <Image Source="/Assets/Icons/instagram.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    </Button>
+                    
+                    <Button Classes="transparent"
+                            Padding="0" 
+                            Cursor="Hand"
+                            Click="OnSocialMediaClicked"
+                            Tag="https://www.youtube.com/@landshorizon"
+                            ToolTip.Tip="YouTube">
+                        <Image Source="/Assets/Icons/youtube.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    </Button>
+                    
+                    <Button Classes="transparent"
+                            Padding="0" 
+                            Cursor="Hand"
+                            Click="OnSocialMediaClicked"
+                            Tag="https://github.com/Lands-Horizon-Corp"
+                            ToolTip.Tip="GitHub">
+                        <Image Source="/Assets/Icons/github.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    </Button>
+                    
+                    <Button Classes="transparent"
+                            Padding="0" 
+                            Cursor="Hand"
+                            Click="OnSocialMediaClicked"
+                            Tag="mailto:lands.horizon.corp@gmail.com"
+                            ToolTip.Tip="Email: lands.horizon.corp@gmail.com">
+                        <Image Source="/Assets/Icons/email.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
+                    </Button>
 
                 </StackPanel>
             </StackPanel>
