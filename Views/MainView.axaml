@@ -17,10 +17,30 @@
     <Grid RowDefinitions="*"
           ColumnDefinitions="*">
 
-        <views:LoadingView ZIndex="1000"/>
-
+        <!-- WebView (hidden during loading) -->
         <wv:WebView x:Name="webView"
                     Focusable="True"
-                    Address="{Binding URL}"/>
+                    Address="{Binding URL}"
+                    IsVisible="{Binding !IsLoading}"/>
+
+        <!-- Loading Overlay -->
+        <Border IsVisible="{Binding IsLoading}">
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="20">
+                
+                <!-- Loading Spinner using ProgressBar -->
+                <ProgressBar IsIndeterminate="True"
+                             Width="200"
+                             Height="4"
+                             Foreground="White"/>
+
+                <!-- Loading Text -->
+                <TextBlock Text="Verifying License..."
+                           FontSize="18"
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

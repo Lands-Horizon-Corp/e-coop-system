@@ -1,7 +1,6 @@
 ﻿using ECoopSystem.Services;
 using ECoopSystem.Stores;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,9 +89,6 @@ public class ActivationViewModel : ViewModelBase
             if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.SecretKey))
             {
                 _secretStore.Save(result.SecretKey);
-
-                _shell.Navigate(new LoadingViewModel("Loading..."), WindowMode.Locked);
-                await Task.Delay(2000);
                 _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
 
                 return;

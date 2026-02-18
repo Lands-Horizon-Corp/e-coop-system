@@ -19,9 +19,6 @@
     </Application.Resources>
 
     <Application.DataTemplates>
-        <DataTemplate DataType="{x:Type vm:LoadingViewModel}">
-			<v:LoadingView/>
-        </DataTemplate>
 		<DataTemplate DataType="{x:Type vm:ActivationViewModel}">
             <v:ActivationView/>
         </DataTemplate>

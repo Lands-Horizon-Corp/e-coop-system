@@ -9,4 +9,5 @@ public static class Constants
     public const int MaxActivationAttempts = 3;
     public const int LockoutMinutes = 5;
     public const int ActivationLookbackMinutes = 1;
+    public const int MinimumLoadingTimeSeconds = 5;
 }
