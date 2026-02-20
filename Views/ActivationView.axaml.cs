@@ -57,6 +57,38 @@ public partial class ActivationView : UserControl
 
     private static void OpenUrl(string url)
     {
+        // Validate URL before opening
+        if (string.IsNullOrWhiteSpace(url))
+            return;
+
+        // Try to parse as a valid URI
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return;
+
+        // Allow only safe URL schemes (prevent javascript:, file:, etc.)
+        var allowedSchemes = new[] { "https", "http", "mailto", "tel" };
+        if (!allowedSchemes.Contains(uri.Scheme.ToLowerInvariant()))
+        {
+            Debug.WriteLine($"Blocked unsafe URL scheme: {uri.Scheme}");
+            return;
+        }
+
+        // Additional validation: Ensure domain is reasonable (optional but recommended)
+        if (uri.Scheme is "https" or "http")
+        {
+            // Prevent localhost/internal network access in production
+#if !DEBUG
+            if (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                uri.Host.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
+                uri.Host.StartsWith("192.168.", StringComparison.OrdinalIgnoreCase) ||
+                uri.Host.StartsWith("10.", StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.WriteLine($"Blocked internal network URL: {uri.Host}");
+                return;
+            }
+#endif
+        }
+
         try
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -72,9 +104,10 @@ public partial class ActivationView : UserControl
                 Process.Start("open", url);
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently ignore if unable to open URL
+            // Log error for debugging
+            Debug.WriteLine($"Failed to open URL: {ex.Message}");
         }
     }
 }
