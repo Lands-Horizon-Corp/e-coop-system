@@ -20,6 +20,7 @@ public class ActivationViewModel : ViewModelBase
     private string _licenseKey = "";
     private string? _error;
     private bool _isBusy;
+    private bool _isActivationSuccess;
 
     public ActivationViewModel(
         ShellViewModel shell, 
@@ -71,6 +72,21 @@ public class ActivationViewModel : ViewModelBase
         }
     }
 
+    public bool IsActivationSuccess
+    {
+        get => _isActivationSuccess;
+        private set
+        {
+            _isActivationSuccess = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ShowActivationForm));
+            OnPropertyChanged(nameof(ShowSuccessScreen));
+        }
+    }
+
+    public bool ShowActivationForm => !IsActivationSuccess;
+    public bool ShowSuccessScreen => IsActivationSuccess;
+
     public bool CanActivate => !IsBusy && !IsLockedOut();
 
     public string? LockoutMessage => IsLockedOut()
@@ -106,8 +122,9 @@ public class ActivationViewModel : ViewModelBase
                 _secretStore.Save(result.SecretKey);
                 _state.Counter = 1;
                 _store.Save(_state);
-                _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
-
+                
+                // Show success screen instead of navigating immediately
+                IsActivationSuccess = true;
                 return;
             }
 
@@ -190,5 +207,10 @@ public class ActivationViewModel : ViewModelBase
     public void StopTimer()
     {
         _lockoutTimer?.Stop();
+    }
+
+    public void GoToDashboard()
+    {
+        _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
     }
 }

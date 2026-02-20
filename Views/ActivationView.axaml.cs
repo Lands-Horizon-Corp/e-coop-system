@@ -22,6 +22,12 @@ public partial class ActivationView : UserControl
             await vm.ActivateAsync();
     }
 
+    private void OnGoToDashboardClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is ActivationViewModel vm)
+            vm.GoToDashboard();
+    }
+
     private void OnCloseClicked(object? sender, RoutedEventArgs e)
     {
         (TopLevel.GetTopLevel(this) as Window)?.Close();

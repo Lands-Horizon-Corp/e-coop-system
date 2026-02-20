@@ -21,112 +21,162 @@
                     MaxWidth="420"
                     Spacing="64">
 
+            <!-- Activation Form - Visible when NOT activated -->
             <StackPanel Orientation="Vertical"
-                        Spacing="5">
-                <Border CornerRadius="8"
-                        ClipToBounds="True"
-                        HorizontalAlignment="Left"
-                        Height="52"
-                        Width="54">
-				    <Image Source="/Assets/Images/logo.png"/>
-                </Border>
+                        Spacing="64"
+                        IsVisible="{Binding ShowActivationForm}">
+                <StackPanel Orientation="Vertical"
+                            Spacing="5">
+                    <Border CornerRadius="8"
+                            ClipToBounds="True"
+                            HorizontalAlignment="Left"
+                            Height="52"
+                            Width="54">
+				        <Image Source="/Assets/Images/logo.png"/>
+                    </Border>
 
-                <TextBlock Text="Activate License"
-                            FontSize="18"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource PrimaryColor}"/>
+                    <TextBlock Text="Activate License"
+                                FontSize="18"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource PrimaryColor}"/>
 
-                <TextBlock Text="Welcome to E-cooperative - Let's activate your license key"
-                            FontSize="12"
-                            Foreground="{DynamicResource PrimaryColor}"/>
-            </StackPanel>
-
-            <!-- FORM -->
-            <StackPanel Orientation="Vertical"
-                        Spacing="10">
-
-                <StackPanel Orientation="Horizontal">
-                    <Image Source=""
-                        MaxHeight="12"
-                        MaxWidth="12"/>
-                <TextBlock Text="License Key"
-                        FontSize="12"
-                        Foreground="{DynamicResource PrimaryColor}"/>
+                    <TextBlock Text="Welcome to E-cooperative - Let's activate your license key"
+                                FontSize="12"
+                                Foreground="{DynamicResource PrimaryColor}"/>
                 </StackPanel>
 
-                <TextBox PasswordChar="*"
-                         FontSize="12"
-                         Width="340"
-                         Text="{Binding LicenseKey, Mode=TwoWay}"
-                         Foreground="{DynamicResource PrimaryColor}"/>
+                <!-- FORM -->
+                <StackPanel Orientation="Vertical"
+                            Spacing="10">
 
-                <TextBlock Text="Enter your license key"
-                           FontSize="11"
-                           Foreground="{DynamicResource PrimaryColor}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source=""
+                            MaxHeight="12"
+                            MaxWidth="12"/>
+                    <TextBlock Text="License Key"
+                            FontSize="12"
+                            Foreground="{DynamicResource PrimaryColor}"/>
+                    </StackPanel>
 
-                <Button Content="Activate License"
+                    <TextBox PasswordChar="*"
+                             FontSize="12"
+                             Width="340"
+                             Text="{Binding LicenseKey, Mode=TwoWay}"
+                             Foreground="{DynamicResource PrimaryColor}"/>
+
+                    <TextBlock Text="Enter your license key"
+                               FontSize="11"
+                               Foreground="{DynamicResource PrimaryColor}"/>
+
+                    <Button Content="Activate License"
+                            Background="{DynamicResource PrimaryColor}"
+                            Foreground="White"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            IsEnabled="{Binding CanActivate}"
+                            Click="OnActivateClicked"/>
+                                    <TextBlock Text="{Binding Error}"
+                               Foreground="Red"
+                               FontSize="11"
+                               IsVisible="{Binding Error}"
+                               TextWrapping="Wrap"/>
+
+                    <TextBlock Text="{Binding LockoutMessage}"
+                               Foreground="#B45309"
+                               FontSize="11"
+                               IsVisible="{Binding LockoutMessage}"
+                               TextWrapping="Wrap"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <Border Width="150"
+                                Height="1"
+                                Background="{DynamicResource PrimaryColor}"
+                                Opacity="0.5"/>
+
+                        <TextBlock Text="or"
+                                    FontSize="12"
+                                    Foreground="#363636"/>
+
+                        <Border Width="150"
+                                Height="1"
+                                Background="{DynamicResource PrimaryColor}"
+                                Opacity="0.5"/>
+                    </StackPanel>
+
+                    
+                    <StackPanel HorizontalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="3">
+                        <TextBlock Text="Need Help? "
+                                   FontSize="11"
+                                   Foreground="{DynamicResource PrimaryColor}"/>
+                        <Button Content="Contact Support"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource PrimaryColor}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="0"
+                                Cursor="Hand"
+                                Click="OnContactSupportClicked"
+                                Tag="https://e-coop-suite.com/contact">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="TextBlock.TextDecorations" Value="Underline"/>
+                                </Style>
+                            </Button.Styles>
+                        </Button>
+                    </StackPanel>
+
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Success Screen - Visible when activated -->
+            <StackPanel Orientation="Vertical"
+                        Spacing="24"
+                        IsVisible="{Binding ShowSuccessScreen}">
+                <StackPanel Orientation="Vertical"
+                            Spacing="20"
+                            HorizontalAlignment="Center">
+                    <!-- Success Icon -->
+                    <Grid Width="80" Height="80" HorizontalAlignment="Center">
+                        <Ellipse Width="80" 
+                                 Height="80" 
+                                 Fill="#4CAF50"/>
+                        <Canvas Width="80" Height="80">
+                            <Path Data="M 20 40 L 35 55 L 60 25" 
+                                  Stroke="White" 
+                                  StrokeThickness="6"
+                                  StrokeLineCap="Round"/>
+                        </Canvas>
+                    </Grid>
+
+                    <TextBlock Text="License Activated!"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryColor}"
+                               HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Welcome to E-cooperative Suite! Your license is now active."
+                               FontSize="12"
+                               Foreground="{DynamicResource PrimaryColor}"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxWidth="340"/>
+                </StackPanel>
+
+                <Button Content="Go to Dashboard"
                         Background="{DynamicResource PrimaryColor}"
                         Foreground="White"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
-                        IsEnabled="{Binding CanActivate}"
-                        Click="OnActivateClicked"/>
-                                <TextBlock Text="{Binding Error}"
-                           Foreground="Red"
-                           FontSize="11"
-                           IsVisible="{Binding Error}"
-                           TextWrapping="Wrap"/>
-
-                <TextBlock Text="{Binding LockoutMessage}"
-                           Foreground="#B45309"
-                           FontSize="11"
-                           IsVisible="{Binding LockoutMessage}"
-                           TextWrapping="Wrap"/>
-
-                <StackPanel Orientation="Horizontal"
-                            Spacing="10">
-                    <Border Width="150"
-                            Height="1"
-                            Background="{DynamicResource PrimaryColor}"
-                            Opacity="0.5"/>
-
-                    <TextBlock Text="or"
-                                FontSize="12"
-                                Foreground="#363636"/>
-
-                    <Border Width="150"
-                            Height="1"
-                            Background="{DynamicResource PrimaryColor}"
-                            Opacity="0.5"/>
-                </StackPanel>
-
-                
-                <StackPanel HorizontalAlignment="Center"
-                            Orientation="Horizontal"
-                            Spacing="3">
-                    <TextBlock Text="Need Help? "
-                               FontSize="11"
-                               Foreground="{DynamicResource PrimaryColor}"/>
-                    <Button Content="Contact Support"
-                            FontSize="11"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource PrimaryColor}"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Padding="0"
-                            Cursor="Hand"
-                            Click="OnContactSupportClicked"
-                            Tag="https://e-coop-suite.com/contact">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="TextBlock.TextDecorations" Value="Underline"/>
-                            </Style>
-                        </Button.Styles>
-                    </Button>
-                </StackPanel>
-
+                        Padding="40,12"
+                        Click="OnGoToDashboardClicked"/>
             </StackPanel>
 
+            <!-- Social Media Section - Always visible at bottom -->
             <StackPanel Spacing="10">
 
                 <TextBlock Text="Connect with us"
