@@ -61,11 +61,12 @@ public class MainViewModel : ViewModelBase
             }
 
             var fingerprint = FingerprintService.ComputeFingerprint(_state);
-            var verify = await _licenseService.VerifyAsync(secret, fingerprint, CancellationToken.None);
+            var verify = await _licenseService.VerifyAsync(secret, fingerprint, _state.Counter, CancellationToken.None);
 
             if (verify.IsOk)
             {
                 _state.LastVerifiedUtc = DateTimeOffset.UtcNow;
+                _state.Counter++;
                 _store.Save(_state);
                 IsVerified = true;
             }

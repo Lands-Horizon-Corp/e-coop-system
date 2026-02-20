@@ -104,6 +104,8 @@ public class ActivationViewModel : ViewModelBase
             if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.SecretKey))
             {
                 _secretStore.Save(result.SecretKey);
+                _state.Counter = 1;
+                _store.Save(_state);
                 _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
 
                 return;

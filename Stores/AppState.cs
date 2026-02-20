@@ -11,4 +11,6 @@ public sealed class AppState
 
     public List<DateTimeOffset> FailedActivationsUtc { get; set; } = new();
     public DateTimeOffset? LockedUntilUtc { get; set; }
+    
+    public int Counter { get; set; } = 1;
 }

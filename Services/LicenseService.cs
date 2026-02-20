@@ -71,14 +71,15 @@ public class LicenseService
         return ActivateResult.ServerError(status, msg);
     }
 
-    public async Task<VerifyResult> VerifyAsync(string secretKey, string fingerprint, CancellationToken ct)
+    public async Task<VerifyResult> VerifyAsync(string secretKey, string fingerprint, int counter, CancellationToken ct)
     {
         var url = $"{ApiService.BaseUrl.TrimEnd('/')}/web/api/v1/license/verify";
 
         var payload = new
         {
             secret_key = secretKey,
-            fingerprint = fingerprint
+            fingerprint = fingerprint,
+            counter = counter
         };
 
         var json = JsonSerializer.Serialize(payload);
@@ -148,6 +149,7 @@ public class LicenseService
     {
         public string secret_key { get; set; } = "";
         public string fingerprint { get; set; } = "";
+        public int counter { get; set; }
     }
 
     private sealed class ApiError
