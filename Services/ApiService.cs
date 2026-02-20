@@ -2,7 +2,15 @@
 
 public class ApiService
 {
-    // TODO: replace with the real base URL
-
-    public const string BaseUrl = "https://e-coop-server-development.up.railway.app/";
+    public static string BaseUrl
+    {
+        get
+        {
+#if DEBUG
+            return "https://e-coop-server-development.up.railway.app/";
+#else
+            return "https://e-coop-server-production.up.railway.app/"; // TODO: Replace with actual production URL
+#endif
+        }
+    }
 }

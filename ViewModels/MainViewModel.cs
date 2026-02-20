@@ -21,7 +21,12 @@ public class MainViewModel : ViewModelBase
 
     public event EventHandler? WebViewReady;
 
-    public string URL { get; } = "https://e-coop-client-development.up.railway.app/";
+    public string URL { get; } = 
+#if DEBUG
+        "https://e-coop-client-development.up.railway.app/";
+#else
+        "https://e-coop-client-production.up.railway.app/"; // TODO: Replace with actual production URL
+#endif
 
     public bool IsLoading
     {
