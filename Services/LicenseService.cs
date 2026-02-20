@@ -17,7 +17,9 @@ public class LicenseService
     public LicenseService(HttpClient http)
     {
         _http = http;
-        _http.Timeout = TimeSpan.FromSeconds(12);
+        // Timeout is now configured in Program.cs via AddHttpClient
+        // Max response size limit
+        _http.MaxResponseContentBufferSize = 1024 * 1024; // 1 MB limit
     }
 
     public async Task<ActivateResult> ActivateAsync(string licenseKey, string fingerprint, CancellationToken ct)
@@ -48,14 +50,14 @@ public class LicenseService
 
         using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
 
-        Debug.WriteLine("Resp: " + resp);
+        // Removed debug logging to prevent sensitive data exposure
         if (resp.StatusCode == HttpStatusCode.OK)
         {
             var secret = await resp.Content.ReadFromJsonAsync<string>(cancellationToken: ct);
             secret = secret?.Trim();
 
             if (string.IsNullOrWhiteSpace(secret))
-                return ActivateResult.ServerError(200, "Activation suceeded but secret key is empty.");
+                return ActivateResult.ServerError(200, "Activation succeeded but secret key is empty.");
 
             return ActivateResult.Success(secret);
         }
@@ -63,7 +65,7 @@ public class LicenseService
         if (resp.StatusCode == HttpStatusCode.BadRequest)
         {
             var err = await TryReadErrorAsync(resp, ct);
-            return ActivateResult.InvalidKey(err ?? "Activation faield");
+            return ActivateResult.InvalidKey(err ?? "Activation failed");
         }
 
         var status = (int)resp.StatusCode;
@@ -105,6 +107,7 @@ public class LicenseService
             return VerifyResult.Ok();
         }
             
+
 
         if (resp.StatusCode == HttpStatusCode.NotFound)
         {

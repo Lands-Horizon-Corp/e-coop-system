@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using Avalonia;
 using ECoopSystem.Services;
 using ECoopSystem.Stores;
@@ -36,7 +38,48 @@ namespace ECoopSystem
 
             services.AddSingleton<AppStateStore>();
             services.AddSingleton<SecretKeyStore>();
-            services.AddHttpClient<LicenseService>();
+            
+            // Configure HttpClient for LicenseService with SSL/TLS validation
+            services.AddHttpClient<LicenseService>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(12);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                var handler = new HttpClientHandler();
+                
+#if !DEBUG
+                // Production: Enable strict SSL certificate validation
+                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
+                {
+                    // Only accept valid certificates in production
+                    if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.None)
+                        return true;
+                    
+                    // Log certificate validation errors
+                    Debug.WriteLine($"SSL Certificate Error: {sslPolicyErrors}");
+                    if (cert != null)
+                    {
+                        Debug.WriteLine($"Certificate Subject: {cert.Subject}");
+                        Debug.WriteLine($"Certificate Issuer: {cert.Issuer}");
+                    }
+                    
+                    return false;
+                };
+#else
+                // Development: Allow self-signed certificates but log warnings
+                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
+                {
+                    if (sslPolicyErrors != System.Net.Security.SslPolicyErrors.None)
+                    {
+                        Debug.WriteLine($"[DEV] SSL Warning: {sslPolicyErrors}");
+                    }
+                    return true; // Accept in development
+                };
+#endif
+                
+                return handler;
+            });
 
             var provider = services.BuildServiceProvider();
 
