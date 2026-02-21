@@ -7,24 +7,50 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace ECoopSystem.Services;
 
 public class LicenseService 
 {
     private readonly HttpClient _http;
+    private readonly IConfiguration _config;
+    private readonly ILogger<LicenseService> _logger;
+    private readonly string _baseUrl;
 
-    public LicenseService(HttpClient http)
+    public LicenseService(HttpClient http, IConfiguration config, ILogger<LicenseService> logger)
     {
         _http = http;
-        // Timeout is now configured in Program.cs via AddHttpClient
-        // Max response size limit
-        _http.MaxResponseContentBufferSize = 1024 * 1024; // 1 MB limit
+        _config = config;
+        _logger = logger;
+        _http.MaxResponseContentBufferSize = 1024 * 1024;
+        
+#if DEBUG
+        _baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
+                   ?? "https://e-coop-server-development.up.railway.app/";
+#else
+        var buildUrl = BuildConfiguration.ApiUrl;
+        if (!string.IsNullOrEmpty(buildUrl) && 
+            !buildUrl.Contains("$(") &&
+            buildUrl != "https://e-coop-server-development.up.railway.app/")
+        {
+            _baseUrl = buildUrl;
+        }
+        else
+        {
+            _baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
+                       ?? "https://e-coop-server-production.up.railway.app/";
+        }
+#endif
     }
 
     public async Task<ActivateResult> ActivateAsync(string licenseKey, string fingerprint, CancellationToken ct)
     {
-        var url = $"{ApiService.BaseUrl.TrimEnd('/')}/web/api/v1/license/activate";
+        // Use IConfiguration instead of static ConfigurationLoader
+        var baseUrl = _config.GetValue<string>("ApiSettings:BaseUrl") 
+                      ?? "https://e-coop-server-production.up.railway.app/";
+        var url = $"{baseUrl.TrimEnd('/')}/web/api/v1/license/activate";
   
         var payload = new
         {
@@ -50,26 +76,33 @@ public class LicenseService
 
         using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
 
-        // Removed debug logging to prevent sensitive data exposure
+        _logger.LogDebug("Activation request completed with status: {StatusCode}", resp.StatusCode);
+        
         if (resp.StatusCode == HttpStatusCode.OK)
         {
             var secret = await resp.Content.ReadFromJsonAsync<string>(cancellationToken: ct);
             secret = secret?.Trim();
 
             if (string.IsNullOrWhiteSpace(secret))
+            {
+                _logger.LogWarning("Activation succeeded but secret key is empty");
                 return ActivateResult.ServerError(200, "Activation succeeded but secret key is empty.");
+            }
 
+            _logger.LogInformation("License activation successful");
             return ActivateResult.Success(secret);
         }
 
         if (resp.StatusCode == HttpStatusCode.BadRequest)
         {
             var err = await TryReadErrorAsync(resp, ct);
+            _logger.LogWarning("Invalid license key provided: {Error}", err);
             return ActivateResult.InvalidKey(err ?? "Activation failed");
         }
 
         var status = (int)resp.StatusCode;
         var msg = await TryReadErrorAsync(resp, ct);
+        _logger.LogError("Activation server error: Status {Status}, Message: {Message}", status, msg);
         return ActivateResult.ServerError(status, msg);
     }
 
@@ -102,8 +135,11 @@ public class LicenseService
 
         using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
 
+        _logger.LogDebug("Verification request completed with status: {StatusCode}", resp.StatusCode);
+        
         if (resp.StatusCode == HttpStatusCode.OK || resp.StatusCode == HttpStatusCode.NoContent)
         {
+            _logger.LogInformation("License verification successful");
             return VerifyResult.Ok();
         }
             
@@ -112,11 +148,13 @@ public class LicenseService
         if (resp.StatusCode == HttpStatusCode.NotFound)
         {
             var err = await TryReadErrorAsync(resp, ct);
+            _logger.LogWarning("License not found or invalid: {Error}", err);
             return VerifyResult.Invalid(err ?? "License not found or invalid");
         }
 
         var status = (int)resp.StatusCode;
         var msg = await TryReadErrorAsync(resp, ct);
+        _logger.LogError("Verification server error: Status {Status}, Message: {Message}", status, msg);
 
         return VerifyResult.ServerError(status, msg);
     }

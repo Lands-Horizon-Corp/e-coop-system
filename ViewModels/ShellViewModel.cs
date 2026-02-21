@@ -25,8 +25,14 @@ public class ShellViewModel : ViewModelBase
 
     public void Navigate(ViewModelBase viewModel, WindowMode mode)
     {
+        // Dispose the previous ViewModel before navigating
+        var previous = Current;
+        
         Current = viewModel;
         Mode = mode;
         OnPropertyChanged(nameof(IsLocked));
+        
+        // Dispose after navigation to avoid issues
+        previous?.Dispose();
     }
 }

@@ -6,8 +6,10 @@ using Avalonia;
 using ECoopSystem.Services;
 using ECoopSystem.Stores;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
 
 namespace ECoopSystem
 {
@@ -25,7 +27,32 @@ namespace ECoopSystem
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
         {
+            // Build configuration from appsettings.json files
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+#if DEBUG
+                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
+#endif
+                .Build();
+
             var services = new ServiceCollection();
+            
+            // Register configuration
+            services.AddSingleton<IConfiguration>(configuration);
+            
+            // Configure logging
+            services.AddLogging(builder =>
+            {
+#if DEBUG
+                builder.AddDebug();
+                builder.AddConsole();
+                builder.SetMinimumLevel(LogLevel.Debug);
+#else
+                builder.SetMinimumLevel(LogLevel.Information);
+#endif
+            });
+            
             var keysDir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "ECoopSystem",
@@ -41,10 +68,12 @@ namespace ECoopSystem
             services.AddSingleton<AppStateStore>();
             services.AddSingleton<SecretKeyStore>();
             
-            // Configure HttpClient for LicenseService with SSL/TLS validation
+            // Get timeout from configuration
+            var timeoutSeconds = configuration.GetValue<int>("ApiSettings:Timeout", 12);
+            
             services.AddHttpClient<LicenseService>(client =>
             {
-                client.Timeout = TimeSpan.FromSeconds(12);
+                client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
             })
             .ConfigurePrimaryHttpMessageHandler(() =>
             {

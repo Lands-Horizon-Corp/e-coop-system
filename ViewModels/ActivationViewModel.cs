@@ -1,5 +1,6 @@
 ﻿using ECoopSystem.Services;
 using ECoopSystem.Stores;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -15,6 +16,8 @@ public class ActivationViewModel : ViewModelBase
     private readonly AppState _state;
     private readonly SecretKeyStore _secretStore;
     private readonly LicenseService _licenseService;
+    private readonly ILogger<ActivationViewModel> _logger;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly DispatcherTimer _lockoutTimer;
 
     private string _licenseKey = "";
@@ -27,13 +30,17 @@ public class ActivationViewModel : ViewModelBase
         AppStateStore store, 
         AppState state,
         SecretKeyStore secretStore,
-        LicenseService licenseService)
+        LicenseService licenseService,
+        ILogger<ActivationViewModel> logger,
+        ILoggerFactory loggerFactory)
     {
         _shell = shell;
         _store = store;
         _state = state;
         _secretStore = secretStore;
         _licenseService = licenseService;
+        _logger = logger;
+        _loggerFactory = loggerFactory;
 
         // Setup timer to update lockout countdown every second
         _lockoutTimer = new DispatcherTimer
@@ -144,7 +151,7 @@ public class ActivationViewModel : ViewModelBase
         catch (Exception ex)
         {
             // Log detailed error for debugging
-            System.Diagnostics.Debug.WriteLine($"Activation error: {ex}");
+            _logger.LogError(ex, "Activation failed for license key");
             
             // Show generic error to user (don't expose internal details)
             Error = "An unexpected error occurred. Please try again or contact support.";
@@ -215,6 +222,28 @@ public class ActivationViewModel : ViewModelBase
 
     public void GoToDashboard()
     {
-        _shell.Navigate(new MainViewModel(_shell, _store, _state, _secretStore, _licenseService), WindowMode.Normal);
+        var mainViewModel = new MainViewModel(
+            _shell, 
+            _store, 
+            _state, 
+            _secretStore, 
+            _licenseService, 
+            _loggerFactory.CreateLogger<MainViewModel>(),
+            _loggerFactory);
+        _shell.Navigate(mainViewModel, WindowMode.Normal);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _lockoutTimer?.Stop();
+            if (_lockoutTimer != null)
+            {
+                _lockoutTimer.Tick -= OnLockoutTimerTick;
+            }
+            _logger.LogDebug("ActivationViewModel disposed");
+        }
+        base.Dispose(disposing);
     }
 }

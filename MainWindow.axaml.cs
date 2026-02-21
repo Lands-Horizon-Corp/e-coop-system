@@ -4,6 +4,7 @@ using System.ComponentModel;
 using ECoopSystem.Stores;
 using ECoopSystem.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace ECoopSystem;
 
@@ -14,6 +15,7 @@ public partial class MainWindow : Window
     private readonly AppState _state;
     private readonly SecretKeyStore _secretStore;
     private readonly LicenseService _licenseService;
+    private readonly ILoggerFactory _loggerFactory;
 
     private sealed record RouteResult(ViewModelBase ViewModel, WindowMode Mode);
 
@@ -27,11 +29,13 @@ public partial class MainWindow : Window
 
         _secretStore = App.Services.GetRequiredService<SecretKeyStore>();
         _licenseService = App.Services.GetRequiredService<LicenseService>();
+        _loggerFactory = App.Services.GetRequiredService<ILoggerFactory>();
 
         _shell = new ShellViewModel();
         DataContext = _shell;
 
         _shell.PropertyChanged += ShellOnPropertyChanged;
+        Closing += OnClosing;
         Opened += (_, _) =>
         {
             var route = DecideInitialRoute();
@@ -91,6 +95,23 @@ public partial class MainWindow : Window
         WindowState = WindowState.Maximized;
     }
 
+    private void OnClosing(object? sender, WindowClosingEventArgs e)
+    {
+        // Unsubscribe from events
+        _shell.PropertyChanged -= ShellOnPropertyChanged;
+        
+        // Dispose current ViewModel
+        if (_shell.Current is MainViewModel mainVm)
+        {
+            mainVm.WebViewReady -= OnWebViewReady;
+            mainVm.Dispose();
+        }
+        else if (_shell.Current is ActivationViewModel activationVm)
+        {
+            activationVm.Dispose();
+        }
+    }
+
     private RouteResult DecideInitialRoute()
     {
         var secret = _secretStore.Load();
@@ -98,13 +119,27 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(secret))
         {
             return new RouteResult(
-                new ActivationViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
+                new ActivationViewModel(
+                    _shell, 
+                    _stateStore, 
+                    _state, 
+                    _secretStore, 
+                    _licenseService,
+                    _loggerFactory.CreateLogger<ActivationViewModel>(),
+                    _loggerFactory),
                 WindowMode.Locked);
         }
 
         // Has secret - go to MainView with loading overlay
         return new RouteResult(
-            new MainViewModel(_shell, _stateStore, _state, _secretStore, _licenseService),
+            new MainViewModel(
+                _shell, 
+                _stateStore, 
+                _state, 
+                _secretStore, 
+                _licenseService,
+                _loggerFactory.CreateLogger<MainViewModel>(),
+                _loggerFactory),
             WindowMode.Normal);
     }
 }

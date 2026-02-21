@@ -2,6 +2,7 @@
 using ECoopSystem.Configuration;
 using ECoopSystem.Services;
 using ECoopSystem.Stores;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -16,6 +17,8 @@ public class MainViewModel : ViewModelBase
     private readonly AppState _state;
     private readonly SecretKeyStore _secretStore;
     private readonly LicenseService _licenseService;
+    private readonly ILogger<MainViewModel> _logger;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly Stopwatch _loadingStopwatch = new();
 
     private bool _isLoading = true;
@@ -54,13 +57,15 @@ public class MainViewModel : ViewModelBase
         private set { _isVerified = value; OnPropertyChanged(); }
     }
 
-    public MainViewModel(ShellViewModel shell, AppStateStore store, AppState state, SecretKeyStore secretStore, LicenseService licenseService)
+    public MainViewModel(ShellViewModel shell, AppStateStore store, AppState state, SecretKeyStore secretStore, LicenseService licenseService, ILogger<MainViewModel> logger, ILoggerFactory loggerFactory)
     {
         _shell = shell;
         _store = store;
         _state = state;
         _secretStore = secretStore;
         _licenseService = licenseService;
+        _logger = logger;
+        _loggerFactory = loggerFactory;
     }
 
     public async Task VerifyLicenseAsync()
@@ -88,9 +93,11 @@ public class MainViewModel : ViewModelBase
                 _state.Counter++;
                 _store.Save(_state);
                 IsVerified = true;
+                _logger.LogInformation("License verification successful");
             }
             else if (verify.IsInvalid)
             {
+                _logger.LogWarning("License verification failed: Invalid license");
                 _secretStore.Delete();
                 NavigateToActivation();
                 return;
@@ -98,39 +105,48 @@ public class MainViewModel : ViewModelBase
             else
             {
                 // Server error - check grace period
+                _logger.LogWarning("License verification server error, checking grace period");
                 if (IsWithinGrace())
                 {
                     IsVerified = true;
+                    _logger.LogInformation("Within grace period, allowing access");
                 }
                 else
                 {
+                    _logger.LogWarning("Grace period expired, navigating to activation");
                     NavigateToActivation();
                     return;
                 }
             }
         }
-        catch (TaskCanceledException)
+        catch (TaskCanceledException ex)
         {
             // Timeout - check grace period
+            _logger.LogWarning(ex, "License verification timed out");
             if (IsWithinGrace())
             {
                 IsVerified = true;
+                _logger.LogInformation("Timeout within grace period, allowing access");
             }
             else
             {
+                _logger.LogWarning("Timeout and grace period expired");
                 NavigateToActivation();
                 return;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Network error - check grace period
+            _logger.LogError(ex, "License verification failed with unexpected error");
             if (IsWithinGrace())
             {
                 IsVerified = true;
+                _logger.LogInformation("Error within grace period, allowing access");
             }
             else
             {
+                _logger.LogWarning("Error and grace period expired");
                 NavigateToActivation();
                 return;
             }
@@ -169,19 +185,35 @@ public class MainViewModel : ViewModelBase
 
     private void NavigateToActivation()
     {
-        _shell.Navigate(
-            new ActivationViewModel(_shell, _store, _state, _secretStore, _licenseService),
-            WindowMode.Locked
-        );
+        var activationViewModel = new ActivationViewModel(
+            _shell, 
+            _store, 
+            _state, 
+            _secretStore, 
+            _licenseService, 
+            _loggerFactory.CreateLogger<ActivationViewModel>(),
+            _loggerFactory);
+        _shell.Navigate(activationViewModel, WindowMode.Locked);
     }
 
     public void Logout()
     {
+        _logger.LogInformation("User logged out");
         NavigateToActivation();
     }
 
     public void OnWebViewReady()
     {
+        _logger.LogDebug("WebView ready event triggered");
         WebViewReady?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _logger.LogDebug("MainViewModel disposed");
+        }
+        base.Dispose(disposing);
     }
 }

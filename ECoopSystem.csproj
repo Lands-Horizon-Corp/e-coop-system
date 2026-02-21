@@ -11,6 +11,13 @@
     
     <!-- Runtime identifiers for publishing -->
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+
+	<Version>1.0.0</Version>
+	<AssemblyVersion>1.0.0.0</AssemblyVersion>
+	<FileVersion>1.0.0.0</FileVersion>
+	<Company>Lands Horizon</Company>
+	<Product>ECoopSystem</Product>
+	<Copyright>Copyright ©2026</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +33,13 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
     <PackageReference Include="WebViewControl-Avalonia" Version="3.120.11" />
   </ItemGroup>
 

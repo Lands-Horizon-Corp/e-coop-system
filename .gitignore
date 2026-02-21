@@ -361,3 +361,116 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ==========================================
+# ECoopSystem Specific
+# ==========================================
+
+# Build-time generated configuration (contains build-specific URLs)
+Build/BuildConfiguration.cs
+
+# Environment-specific settings that may contain secrets
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+!appsettings.json
+
+# Local development environment files
+.env
+.env.local
+.env.development
+.env.production
+*.local.json
+
+# Data Protection keys (contains encryption keys)
+**/dp-keys/
+**/DataProtection-Keys/
+
+# User data directories
+**/AppData/
+**/UserData/
+
+# License and activation data (sensitive)
+*.license
+*.key
+*.secret
+app-state.json
+machine-id.txt
+activation-data.json
+
+# Sensitive logs that might contain keys or tokens
+*-sensitive.log
+*-secrets.log
+
+# IDE specific (Rider, VS Code, etc.)
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Windows thumbnail cache
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Recycle Bin
+$RECYCLE.BIN/
+
+# Publish output directories
+publish/
+Published/
+Releases/
+artifacts/
+
+# Package files
+*.nupkg
+*.snupkg
+
+# Certificate files (do NOT commit these!)
+*.pfx
+*.p12
+*.cer
+*.crt
+*.pem
+*.key
+
+# Temporary build scripts
+build-temp.ps1
+build-temp.bat
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Performance and memory dumps
+*.dmp
+*.stackdump
+
+# Chromium Embedded Framework cache (WebView)
+**/CefSharp/
+**/cef/
+**/CEF/
+BrowserSubprocess/
+locales/
+swiftshader/
+
+# Application runtime data
+*.log.txt
+crash-*.dmp
+
+# Backup files
+*.bak
+*.backup
+*-backup.*
