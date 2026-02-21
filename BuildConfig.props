@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <!-- Default values - can be overridden via command line -->
+    <IFrameUrl Condition="'$(IFrameUrl)' == ''">https://e-coop-client-development.up.railway.app/</IFrameUrl>
+    <ApiUrl Condition="'$(ApiUrl)' == ''">https://e-coop-server-development.up.railway.app/</ApiUrl>
+    <AppName Condition="'$(AppName)' == ''">ECoopSystem</AppName>
+    <AppLogo Condition="'$(AppLogo)' == ''">Assets/Images/logo.png</AppLogo>
+  </PropertyGroup>
+</Project>

@@ -28,7 +28,33 @@
 	<AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <!-- Include appsettings.json files and copy to output -->
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DependentUpon>appsettings.json</DependentUpon>
+    </None>
+    <None Update="appsettings.Production.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DependentUpon>appsettings.json</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <!-- Exclude template files from compilation -->
+  <ItemGroup>
+    <Compile Remove="Build\BuildConfiguration.template.cs" />
+    <None Include=".github\workflows\build-release.yml" />
+    <None Include="Build\BuildConfiguration.template.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Folder Include="Assets\Videos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 </Project>

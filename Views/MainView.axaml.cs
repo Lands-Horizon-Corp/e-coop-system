@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using ECoopSystem.Configuration;
 using ECoopSystem.ViewModels;
 using System;
 using System.ComponentModel;
@@ -60,21 +61,23 @@ public partial class MainView : UserControl
             return;
         }
 
-        // Only allow HTTPS (no HTTP in production)
+        var config = ConfigurationLoader.Current;
+
+        // Only allow HTTPS (no HTTP in production) unless configured otherwise
 #if !DEBUG
-        if (uri.Scheme != "https")
+        if (uri.Scheme != "https" && !config.WebViewSettings.AllowHttp)
         {
             Debug.WriteLine($"WebView Security Warning: Non-HTTPS URL in production: {uri.Scheme}://{uri.Host}");
         }
+#else
+        if (uri.Scheme != "https" && !config.WebViewSettings.AllowHttp)
+        {
+            Debug.WriteLine($"WebView Warning: Non-HTTPS URL: {uri.Scheme}://{uri.Host}");
+        }
 #endif
 
-        // Only allow navigation to trusted domains
-        var trustedDomains = new[]
-        {
-            "e-coop-client-development.up.railway.app",
-            "e-coop-client-production.up.railway.app",
-            "e-coop-suite.com"
-        };
+        // Only allow navigation to trusted domains from configuration
+        var trustedDomains = config.WebViewSettings.TrustedDomains;
 
         var isTrusted = false;
         foreach (var domain in trustedDomains)

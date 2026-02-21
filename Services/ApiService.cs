@@ -1,4 +1,7 @@
-﻿namespace ECoopSystem.Services;
+﻿using ECoopSystem.Build;
+using ECoopSystem.Configuration;
+
+namespace ECoopSystem.Services;
 
 public class ApiService
 {
@@ -7,9 +10,18 @@ public class ApiService
         get
         {
 #if DEBUG
-            return "https://e-coop-server-development.up.railway.app/";
+            // Development: Use configuration (appsettings.Development.json)
+            return ConfigurationLoader.Current.ApiSettings.BaseUrl;
 #else
-            return "https://e-coop-server-production.up.railway.app/"; // TODO: Replace with actual production URL
+            // Production: Use build-time configured URL if available, otherwise use configuration
+            var buildUrl = BuildConfiguration.ApiUrl;
+            if (!string.IsNullOrEmpty(buildUrl) && 
+                !buildUrl.Contains("$(") && // Not a placeholder
+                buildUrl != "https://e-coop-server-development.up.railway.app/")
+            {
+                return buildUrl;
+            }
+            return ConfigurationLoader.Current.ApiSettings.BaseUrl;
 #endif
         }
     }

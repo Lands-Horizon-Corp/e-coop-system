@@ -1,0 +1,139 @@
+name: Build Multi-Platform Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      iframe_url:
+        description: 'IFrame URL'
+        required: true
+        default: 'https://ecoopsuite.com'
+      api_url:
+        description: 'API URL'
+        required: true
+        default: 'https://api.ecoopsuite.com'
+
+jobs:
+  build-windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build Windows x64
+        shell: pwsh
+        run: |
+          $iframeUrl = "${{ github.event.inputs.iframe_url || 'https://ecoopsuite.com' }}"
+          $apiUrl = "${{ github.event.inputs.api_url || 'https://api.ecoopsuite.com' }}"
+          ./build.ps1 -IFrameUrl $iframeUrl -ApiUrl $apiUrl -Platform windows
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ECoopSystem-Windows-x64
+          path: bin/Release/net9.0/win-x64/publish/
+
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build Linux x64
+        run: |
+          chmod +x build.sh
+          ./build.sh "${{ github.event.inputs.iframe_url || 'https://ecoopsuite.com' }}" \
+                     "${{ github.event.inputs.api_url || 'https://api.ecoopsuite.com' }}" \
+                     linux
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ECoopSystem-Linux-x64
+          path: bin/Release/net9.0/linux-x64/publish/
+
+  build-macos-intel:
+    name: Build for macOS Intel
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build macOS Intel
+        run: |
+          chmod +x build.sh
+          ./build.sh "${{ github.event.inputs.iframe_url || 'https://ecoopsuite.com' }}" \
+                     "${{ github.event.inputs.api_url || 'https://api.ecoopsuite.com' }}" \
+                     mac-intel
+
+      - name: Upload macOS Intel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ECoopSystem-macOS-Intel
+          path: bin/Release/net9.0/osx-x64/publish/
+
+  build-macos-arm:
+    name: Build for macOS ARM
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build macOS ARM
+        run: |
+          chmod +x build.sh
+          ./build.sh "${{ github.event.inputs.iframe_url || 'https://ecoopsuite.com' }}" \
+                     "${{ github.event.inputs.api_url || 'https://api.ecoopsuite.com' }}" \
+                     mac-arm
+
+      - name: Upload macOS ARM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ECoopSystem-macOS-ARM
+          path: bin/Release/net9.0/osx-arm64/publish/
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-windows, build-linux, build-macos-intel, build-macos-arm]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ECoopSystem-Windows-x64/**/*
+            ECoopSystem-Linux-x64/**/*
+            ECoopSystem-macOS-Intel/**/*
+            ECoopSystem-macOS-ARM/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,6 @@
-﻿using ECoopSystem.Services;
+﻿using ECoopSystem.Build;
+using ECoopSystem.Configuration;
+using ECoopSystem.Services;
 using ECoopSystem.Stores;
 using System;
 using System.Diagnostics;
@@ -23,10 +25,22 @@ public class MainViewModel : ViewModelBase
 
     public string URL { get; } = 
 #if DEBUG
-        "https://e-coop-client-development.up.railway.app/";
+        ConfigurationLoader.Current.WebViewSettings.BaseUrl;
 #else
-        "https://e-coop-client-production.up.railway.app/"; // TODO: Replace with actual production URL
+        GetProductionUrl();
 #endif
+
+    private static string GetProductionUrl()
+    {
+        var buildUrl = BuildConfiguration.IFrameUrl;
+        if (!string.IsNullOrEmpty(buildUrl) && 
+            !buildUrl.Contains("$(") && // Not a placeholder
+            buildUrl != "https://e-coop-client-development.up.railway.app/")
+        {
+            return buildUrl;
+        }
+        return ConfigurationLoader.Current.WebViewSettings.BaseUrl;
+    }
 
     public bool IsLoading
     {
