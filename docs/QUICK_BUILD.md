@@ -4,41 +4,41 @@
 
 ### PowerShell
 ```powershell
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform windows
+./build.ps1 -IFrameUrl "https://example.com" -Platform windows
 ```
 
 ### Command Prompt
 ```cmd
-build.bat https://ecoopsuite.com windows
+build.bat https://example.com windows
 ```
 
 ## Linux/macOS
 
 ### Using Make
 ```bash
-make build IFRAME_URL=https://ecoopsuite.com PLATFORM=linux
+make build IFRAME_URL=https://example.com PLATFORM=linux
 ```
 
 ### Using Shell Script
 ```bash
 chmod +x build.sh
-./build.sh https://ecoopsuite.com https://api.ecoopsuite.com linux
+./build.sh https://example.com https://api.example.com linux
 ```
 
 ## All Platforms
 
 ```bash
 # Windows
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform windows
+./build.ps1 -IFrameUrl "https://example.com" -Platform windows
 
 # Linux
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform linux
+./build.ps1 -IFrameUrl "https://example.com" -Platform linux
 
 # macOS ARM (M1/M2)
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform mac-arm
+./build.ps1 -IFrameUrl "https://example.com" -Platform mac-arm
 
 # macOS Intel
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform mac-intel
+./build.ps1 -IFrameUrl "https://example.com" -Platform mac-intel
 ```
 
 ## Common Use Cases
