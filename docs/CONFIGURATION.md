@@ -65,7 +65,7 @@ Additional overrides for production environment. Applied in Release builds.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `BaseUrl` | string | `https://e-coop-server-production.up.railway.app/` | API server base URL |
+| `BaseUrl` | string | `https://api.example.com/` | API server base URL |
 | `Timeout` | int | `12` | HTTP request timeout in seconds |
 | `MaxRetries` | int | `3` | Maximum retry attempts for failed requests |
 | `MaxResponseSizeBytes` | int | `1048576` | Maximum API response size (1MB) |
@@ -74,15 +74,14 @@ Additional overrides for production environment. Applied in Release builds.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `BaseUrl` | string | `https://e-coop-client-production.up.railway.app/` | WebView client URL |
+| `BaseUrl` | string | `https://app.example.com/` | WebView client URL |
 | `TrustedDomains` | array | see below | List of domains the WebView can navigate to |
 | `AllowHttp` | bool | `false` | Whether to allow HTTP connections (HTTPS only in production) |
 
 **Default Trusted Domains:**
-- `e-coop-client-development.up.railway.app`
-- `e-coop-client-production.up.railway.app`
-- `e-coop-suite.com`
-- `ecoopsuite.com`
+- `dev-client.example.com`
+- `app.example.com`
+- `api.example.com`
 
 ### Security
 

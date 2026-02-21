@@ -26,21 +26,23 @@ public class LicenseService
         _logger = logger;
         _http.MaxResponseContentBufferSize = 1024 * 1024;
         
+        
+        
 #if DEBUG
-        _baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
-                   ?? "https://e-coop-server-development.up.railway.app/";
+_baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
+           ?? "https://e-coop-server-development.up.railway.app/";
 #else
-        var buildUrl = BuildConfiguration.ApiUrl;
-        if (!string.IsNullOrEmpty(buildUrl) && 
-            !buildUrl.Contains("$(") &&
-            buildUrl != "https://e-coop-server-development.up.railway.app/")
-        {
-            _baseUrl = buildUrl;
-        }
-        else
-        {
+var buildUrl = BuildConfiguration.ApiUrl;
+if (!string.IsNullOrEmpty(buildUrl) && 
+    !buildUrl.Contains("$(") &&
+    buildUrl != "https://e-coop-server-development.up.railway.app/")
+{
+    _baseUrl = buildUrl;
+}
+else
+{
             _baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
-                       ?? "https://e-coop-server-production.up.railway.app/";
+                       ?? "https://api.example.com/";
         }
 #endif
     }
@@ -49,7 +51,7 @@ public class LicenseService
     {
         // Use IConfiguration instead of static ConfigurationLoader
         var baseUrl = _config.GetValue<string>("ApiSettings:BaseUrl") 
-                      ?? "https://e-coop-server-production.up.railway.app/";
+                      ?? "https://api.example.com/";
         var url = $"{baseUrl.TrimEnd('/')}/web/api/v1/license/activate";
   
         var payload = new

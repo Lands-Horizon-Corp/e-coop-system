@@ -7,25 +7,25 @@ This document explains how to build ECoopSystem with custom configurations for d
 ### Windows (PowerShell)
 ```powershell
 # Build for Windows with custom URL
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform windows
+./build.ps1 -IFrameUrl "https://example.com" -Platform windows
 
 # Build for Linux
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform linux
+./build.ps1 -IFrameUrl "https://example.com" -Platform linux
 
 # Build for macOS ARM (M1/M2)
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform mac-arm
+./build.ps1 -IFrameUrl "https://example.com" -Platform mac-arm
 ```
 
 ### Linux/macOS (Makefile)
 ```bash
 # Build for Windows
-make build IFRAME_URL=https://ecoopsuite.com PLATFORM=windows
+make build IFRAME_URL=https://example.com PLATFORM=windows
 
 # Build for Linux
-make build IFRAME_URL=https://ecoopsuite.com PLATFORM=linux
+make build IFRAME_URL=https://example.com PLATFORM=linux
 
 # Build for macOS ARM
-make build IFRAME_URL=https://ecoopsuite.com PLATFORM=mac-arm
+make build IFRAME_URL=https://example.com PLATFORM=mac-arm
 ```
 
 ---
@@ -49,8 +49,8 @@ make build IFRAME_URL=https://ecoopsuite.com PLATFORM=mac-arm
 
 | Parameter       | Description                          | Default                                    |
 |-----------------|--------------------------------------|--------------------------------------------|
-| `-IFrameUrl`    | WebView/IFrame URL                   | `https://e-coop-client-development.up.railway.app/` |
-| `-ApiUrl`       | API Server URL                       | `https://e-coop-server-development.up.railway.app/` |
+| `-IFrameUrl`    | WebView/IFrame URL                   | `https://dev-client.example.com/` |
+| `-ApiUrl`       | API Server URL                       | `https://dev-api.example.com/` |
 | `-AppName`      | Application display name             | `ECoopSystem`                              |
 | `-AppLogo`      | Path to application logo             | `Assets/Images/logo.png`                   |
 | `-Platform`     | Target platform (see below)          | `windows`                                  |
@@ -74,8 +74,8 @@ make build \
 
 | Variable    | Description              | Default                                    |
 |-------------|--------------------------|---------------------------------------------|
-| `IFRAME_URL`| WebView/IFrame URL       | `https://e-coop-client-development.up.railway.app/` |
-| `API_URL`   | API Server URL           | `https://e-coop-server-development.up.railway.app/` |
+| `IFRAME_URL`| WebView/IFrame URL       | `https://dev-client.example.com/` |
+| `API_URL`   | API Server URL           | `https://dev-api.example.com/` |
 | `APP_NAME`  | Application name         | `ECoopSystem`                              |
 | `APP_LOGO`  | Logo file path           | `Assets/Images/logo.png`                   |
 | `PLATFORM`  | Target platform          | `windows`                                  |
@@ -101,16 +101,16 @@ make build \
 ### Example 1: Production Build for Windows
 ```powershell
 ./build.ps1 `
-    -IFrameUrl "https://app.ecoopsuite.com" `
-    -ApiUrl "https://api.ecoopsuite.com" `
+    -IFrameUrl "https://app.example.com" `
+    -ApiUrl "https://api.example.com" `
     -Platform windows
 ```
 
 ### Example 2: Staging Build for Linux
 ```bash
 make build \
-    IFRAME_URL=https://staging.ecoopsuite.com \
-    API_URL=https://staging-api.ecoopsuite.com \
+    IFRAME_URL=https://staging.example.com \
+    API_URL=https://api-staging.example.com \
     PLATFORM=linux
 ```
 
@@ -127,16 +127,16 @@ make build \
 ### Example 4: Multi-Platform Release
 ```bash
 # Windows
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform windows
+./build.ps1 -IFrameUrl "https://example.com" -Platform windows
 
 # Linux
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform linux
+./build.ps1 -IFrameUrl "https://example.com" -Platform linux
 
 # macOS Intel
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform mac-intel
+./build.ps1 -IFrameUrl "https://example.com" -Platform mac-intel
 
 # macOS ARM
-./build.ps1 -IFrameUrl "https://ecoopsuite.com" -Platform mac-arm
+./build.ps1 -IFrameUrl "https://example.com" -Platform mac-arm
 ```
 
 ---

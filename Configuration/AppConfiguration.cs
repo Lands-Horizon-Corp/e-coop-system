@@ -44,8 +44,9 @@ public class WebViewSettings
     public List<string> TrustedDomains { get; set; } = new()
     {
         "e-coop-client-development.up.railway.app",
-        "e-coop-client-production.up.railway.app",
-        "e-coop-suite.com"
+        "example.com",
+        "app.example.com",
+        "api.example.com"
     };
 
     /// <summary>

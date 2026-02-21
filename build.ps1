@@ -3,8 +3,8 @@
 # Usage: ./build.ps1 -IFrameUrl "https://yoursite.com" -Platform windows
 
 param(
-    [string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
-    [string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
+[string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
+[string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
     [string]$AppName = "ECoopSystem",
     [string]$AppLogo = "Assets/Images/logo.png",
     [ValidateSet("windows", "linux", "linux-deb", "linux-arm", "mac-intel", "mac-arm")]
