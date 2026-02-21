@@ -277,7 +277,7 @@
                         Background="#66000000"
                         Foreground="White"
                         CornerRadius="18"
-                        Content="✕"
+                        Content="X"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
                         FontSize="18"

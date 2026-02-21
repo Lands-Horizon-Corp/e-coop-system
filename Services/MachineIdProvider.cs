@@ -20,7 +20,17 @@ public static class MachineIdProvider
             }
             else if (OperatingSystem.IsLinux())
             {
+                // Try primary location
                 var path = "/etc/machine-id";
+                if (File.Exists(path))
+                {
+                    var value = File.ReadAllText(path).Trim();
+                    if (!string.IsNullOrEmpty(value))
+                        return value;
+                }
+                
+                // Fallback to dbus machine-id
+                path = "/var/lib/dbus/machine-id";
                 if (File.Exists(path))
                 {
                     var value = File.ReadAllText(path).Trim();
@@ -50,9 +60,9 @@ public static class MachineIdProvider
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-
+            Debug.WriteLine($"MachineId: Failed to get platform-specific ID: {ex.Message}");
         }
 
         return Environment.MachineName;
