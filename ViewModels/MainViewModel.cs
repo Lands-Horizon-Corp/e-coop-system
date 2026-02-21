@@ -20,6 +20,8 @@ public class MainViewModel : ViewModelBase
     private readonly ILogger<MainViewModel> _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly Stopwatch _loadingStopwatch = new();
+    private PeriodicTimer? _backgroundVerificationTimer;
+    private CancellationTokenSource? _backgroundVerificationCts;
 
     private bool _isLoading = true;
     private bool _isVerified;
@@ -89,11 +91,12 @@ public class MainViewModel : ViewModelBase
 
             if (verify.IsOk)
             {
-                _state.LastVerifiedUtc = DateTimeOffset.UtcNow;
+            _state.LastVerifiedUtc = DateTimeOffset.UtcNow;
                 _state.Counter++;
                 _store.Save(_state);
                 IsVerified = true;
                 _logger.LogInformation("License verification successful");
+                StartBackgroundVerification();
             }
             else if (verify.IsInvalid)
             {
@@ -110,6 +113,7 @@ public class MainViewModel : ViewModelBase
                 {
                     IsVerified = true;
                     _logger.LogInformation("Within grace period, allowing access");
+                    StartBackgroundVerification();
                 }
                 else
                 {
@@ -127,6 +131,7 @@ public class MainViewModel : ViewModelBase
             {
                 IsVerified = true;
                 _logger.LogInformation("Timeout within grace period, allowing access");
+                StartBackgroundVerification();
             }
             else
             {
@@ -143,6 +148,7 @@ public class MainViewModel : ViewModelBase
             {
                 IsVerified = true;
                 _logger.LogInformation("Error within grace period, allowing access");
+                StartBackgroundVerification();
             }
             else
             {
@@ -196,9 +202,126 @@ public class MainViewModel : ViewModelBase
         _shell.Navigate(activationViewModel, WindowMode.Locked);
     }
 
+    private void StartBackgroundVerification()
+    {
+        // Stop any existing background verification
+        StopBackgroundVerification();
+
+        var intervalMinutes = Constants.BackgroundVerificationIntervalMinutes;
+        if (intervalMinutes <= 0)
+        {
+            _logger.LogInformation("Background verification disabled (interval <= 0)");
+            return;
+        }
+
+        _backgroundVerificationCts = new CancellationTokenSource();
+        _backgroundVerificationTimer = new PeriodicTimer(TimeSpan.FromMinutes(intervalMinutes));
+        
+        _logger.LogInformation("Starting background verification with interval: {Interval} minutes", intervalMinutes);
+        
+        _ = RunBackgroundVerificationAsync(_backgroundVerificationCts.Token);
+    }
+
+    private void StopBackgroundVerification()
+    {
+        if (_backgroundVerificationTimer != null)
+        {
+            _logger.LogDebug("Stopping background verification");
+            _backgroundVerificationCts?.Cancel();
+            _backgroundVerificationTimer?.Dispose();
+            _backgroundVerificationTimer = null;
+            _backgroundVerificationCts?.Dispose();
+            _backgroundVerificationCts = null;
+        }
+    }
+
+    private async Task RunBackgroundVerificationAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (await _backgroundVerificationTimer!.WaitForNextTickAsync(ct))
+            {
+                _logger.LogInformation("Running background license verification");
+                await PerformBackgroundVerificationAsync(ct);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogDebug("Background verification cancelled");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Background verification task failed unexpectedly");
+        }
+    }
+
+    private async Task PerformBackgroundVerificationAsync(CancellationToken ct)
+    {
+        try
+        {
+            var secret = _secretStore.Load();
+
+            if (string.IsNullOrWhiteSpace(secret))
+            {
+                _logger.LogWarning("Background verification failed: No secret key found");
+                StopBackgroundVerification();
+                Logout();
+                return;
+            }
+
+            var fingerprint = FingerprintService.ComputeFingerprint(_state);
+            var verify = await _licenseService.VerifyAsync(secret, fingerprint, _state.Counter, ct);
+
+            if (verify.IsOk)
+            {
+                _state.LastVerifiedUtc = DateTimeOffset.UtcNow;
+                _state.Counter++;
+                _store.Save(_state);
+                _logger.LogInformation("Background license verification successful");
+            }
+            else if (verify.IsInvalid)
+            {
+                _logger.LogWarning("Background verification failed: Invalid license");
+                _secretStore.Delete();
+                StopBackgroundVerification();
+                Logout();
+            }
+            else
+            {
+                // Server error - check grace period
+                _logger.LogWarning("Background verification server error, checking grace period");
+                if (!IsWithinGrace())
+                {
+                    _logger.LogWarning("Grace period expired during background verification");
+                    StopBackgroundVerification();
+                    Logout();
+                }
+                else
+                {
+                    _logger.LogInformation("Background verification failed but within grace period");
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw; // Re-throw to be caught by RunBackgroundVerificationAsync
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Background verification failed with unexpected error");
+            if (!IsWithinGrace())
+            {
+                _logger.LogWarning("Grace period expired during background verification error");
+                StopBackgroundVerification();
+                Logout();
+            }
+        }
+    }
+
     public void Logout()
     {
         _logger.LogInformation("User logged out");
+        StopBackgroundVerification();
         NavigateToActivation();
     }
 
@@ -213,6 +336,7 @@ public class MainViewModel : ViewModelBase
         if (disposing)
         {
             _logger.LogDebug("MainViewModel disposed");
+            StopBackgroundVerification();
         }
         base.Dispose(disposing);
     }

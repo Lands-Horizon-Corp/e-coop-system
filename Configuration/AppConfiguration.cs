@@ -78,6 +78,11 @@ public class SecuritySettings
     /// Time window for counting failed activation attempts (in minutes)
     /// </summary>
     public int ActivationLookbackMinutes { get; set; } = 1;
+
+    /// <summary>
+    /// Interval for background license re-verification (in minutes)
+    /// </summary>
+    public int BackgroundVerificationIntervalMinutes { get; set; } = 60;
 }
 
 /// <summary>

@@ -19,6 +19,7 @@ public static class Constants
     public static int MaxActivationAttempts => ConfigurationLoader.Current.Security.MaxActivationAttempts;
     public static int LockoutMinutes => ConfigurationLoader.Current.Security.LockoutMinutes;
     public static int ActivationLookbackMinutes => ConfigurationLoader.Current.Security.ActivationLookbackMinutes;
+    public static int BackgroundVerificationIntervalMinutes => ConfigurationLoader.Current.Security.BackgroundVerificationIntervalMinutes;
 
     // Application settings - from configuration
     public static int MinimumLoadingTimeSeconds => ConfigurationLoader.Current.Application.MinimumLoadingTimeSeconds;
