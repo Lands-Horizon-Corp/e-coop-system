@@ -11,6 +11,9 @@
         <Setter Property="Foreground" Value="White"></Setter>
         <Setter Property="Background" Value="{DynamicResource PrimaryColor}"></Setter>
         <Setter Property="IsVisible" Value="True"></Setter>
+        <Setter Property="CornerRadius" Value="12"></Setter>
+        <Setter Property="Padding" Value="40,12"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
     </Style>
 
     <Style Selector="Button:pointerover /template/ ContentPresenter">

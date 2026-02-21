@@ -75,17 +75,6 @@
                             HorizontalContentAlignment="Center"
                             IsEnabled="{Binding CanActivate}"
                             Click="OnActivateClicked"/>
-                                    <TextBlock Text="{Binding Error}"
-                               Foreground="Red"
-                               FontSize="11"
-                               IsVisible="{Binding Error}"
-                               TextWrapping="Wrap"/>
-
-                    <TextBlock Text="{Binding LockoutMessage}"
-                               Foreground="#B45309"
-                               FontSize="11"
-                               IsVisible="{Binding LockoutMessage}"
-                               TextWrapping="Wrap"/>
 
                     <StackPanel Orientation="Horizontal"
                                 Spacing="10">
@@ -103,7 +92,6 @@
                                 Background="{DynamicResource PrimaryColor}"
                                 Opacity="0.5"/>
                     </StackPanel>
-
                     
                     <StackPanel HorizontalAlignment="Center"
                                 Orientation="Horizontal"
@@ -128,6 +116,18 @@
                             </Button.Styles>
                         </Button>
                     </StackPanel>
+
+                    <TextBlock Text="{Binding Error}"
+                               Foreground="Red"
+                               FontSize="11"
+                               IsVisible="{Binding Error}"
+                               TextWrapping="Wrap"/>
+
+                    <TextBlock Text="{Binding LockoutMessage}"
+                               Foreground="#B45309"
+                               FontSize="11"
+                               IsVisible="{Binding LockoutMessage}"
+                               TextWrapping="Wrap"/>
 
                 </StackPanel>
             </StackPanel>
@@ -172,7 +172,6 @@
                         Foreground="White"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
-                        Padding="40,12"
                         Click="OnGoToDashboardClicked"/>
             </StackPanel>
 
