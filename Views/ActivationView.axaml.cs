@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using ECoopSystem.ViewModels;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace ECoopSystem.Views;

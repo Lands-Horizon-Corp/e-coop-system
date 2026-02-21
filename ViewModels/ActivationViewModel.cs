@@ -139,11 +139,15 @@ public class ActivationViewModel : ViewModelBase
         }
         catch (TaskCanceledException)
         {
-            Error = "Request timed out. Check your ineternet and try again.";
+            Error = "Request timed out. Check your internet and try again.";
         }
         catch (Exception ex)
         {
-            Error = "Activation failed: " + ex.Message;
+            // Log detailed error for debugging
+            System.Diagnostics.Debug.WriteLine($"Activation error: {ex}");
+            
+            // Show generic error to user (don't expose internal details)
+            Error = "An unexpected error occurred. Please try again or contact support.";
         }
         finally
         {
