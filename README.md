@@ -4,9 +4,9 @@ A cross-platform desktop application built with Avalonia UI and .NET 9, supporti
 
 ## Supported Platforms
 
-- ? **Windows** (x64)
-- ? **Linux** (x64)
-- ?? **macOS** (planned for future release)
+- **Windows** (x64)
+- **Linux** (x64)
+- **macOS** (planned for future release)
 
 ## Prerequisites
 
@@ -105,20 +105,6 @@ The application uses configuration files:
 - **Data Protection**: ASP.NET Core Data Protection
 - **WebView**: WebViewControl-Avalonia (CEF-based)
 
-## Cross-Platform Compatibility
-
-The application uses platform-specific code where necessary:
-
-- **Machine ID Detection**:
-  - Windows: Uses Registry (`HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid`)
-  - Linux: Uses `/etc/machine-id` with fallback to `/var/lib/dbus/machine-id`
-
-- **File Paths**: Cross-platform paths using `Path.Combine()` and `Environment.SpecialFolder`
-
-- **URL Opening**:
-  - Windows: Uses `Process.Start()` with `UseShellExecute = true`
-  - Linux: Uses `xdg-open` command
-
 ## Known Limitations
 
 ### Linux-Specific
@@ -147,12 +133,6 @@ chmod +x ./ECoopSystem
 
 ## Development
 
-### Debug Mode
-The application includes debug logging in development builds:
-- SSL certificate warnings
-- WebView navigation validation
-- Machine ID detection fallbacks
-
 ### Building for Multiple Platforms
 You can build for all supported platforms:
 ```bash
@@ -163,13 +143,6 @@ dotnet publish -c Release -r win-x64 --self-contained
 dotnet publish -c Release -r linux-x64 --self-contained
 ```
 
-## License Activation
-
-The application requires license activation on first run. The license is validated against:
-- Machine ID (hardware fingerprint)
-- Installation ID (unique per installation)
-- Timestamp (installation time)
-
 ## Security Features
 
 - Data Protection API for sensitive data storage
@@ -177,15 +150,3 @@ The application requires license activation on first run. The license is validat
 - Trusted domain validation for WebView navigation
 - Encrypted secret key storage
 
-## Contributing
-
-Contributions are welcome! Please ensure your code:
-- Builds on both Windows and Linux
-- Follows existing code style
-- Includes appropriate error handling
-- Works in both Debug and Release configurations
-
-## Support
-
-For issues and feature requests, please use the GitHub issue tracker:
-https://github.com/BlirrHub/ECoopSystem/issues
