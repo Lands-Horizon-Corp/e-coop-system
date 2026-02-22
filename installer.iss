@@ -1,50 +1,63 @@
-ï»¿; ECoopSystem Installer Script for Inno Setup
-; Requires Inno Setup 6.0 or later
+; Inno Setup Script for ECoopSystem
+; Lands Horizon Corporation
+; https://github.com/Lands-Horizon-Corp/e-coop-system
 
 #define MyAppName "ECoopSystem"
 #define MyAppVersion "1.0.0"
-#define MyAppPublisher "Lands Horizon Corp"
+#define MyAppPublisher "Lands Horizon Corporation"
 #define MyAppURL "https://github.com/Lands-Horizon-Corp/e-coop-system"
 #define MyAppExeName "ECoopSystem.exe"
-#define MyAppId "{{3F8A9B2C-1D4E-4B6C-9A8D-2E5F1C7B4A9E}"
+#define MyAppCopyright "Copyright ©2026 Lands Horizon"
 
 [Setup]
-; Basic Information
-AppId={#MyAppId}
+; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
+; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+AppId={{8F5A3D2C-1B4E-4C9A-A8F3-2D6E8C9B1A7F}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
-AppSupportURL={#MyAppURL}
-AppUpdatesURL={#MyAppURL}
+AppSupportURL={#MyAppURL}/issues
+AppUpdatesURL={#MyAppURL}/releases
+AppCopyright={#MyAppCopyright}
+VersionInfoVersion={#MyAppVersion}
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoDescription={#MyAppName} Desktop Application
+VersionInfoCopyright={#MyAppCopyright}
+
+; Default installation directory
 DefaultDirName={autopf}\{#MyAppName}
-DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=LICENSE.md
-OutputDir=installer\output
-OutputBaseFilename={#MyAppName}-Setup-v{#MyAppVersion}
-SetupIconFile=Assets\Icons\ecoopsuite.ico
-Compression=lzma2/max
+
+; Output configuration
+OutputDir=output\installer
+OutputBaseFilename=ECoopSystem-Setup-{#MyAppVersion}-win-x64
+SetupIconFile=Assets\Images\logo.png
+UninstallDisplayIcon={app}\{#MyAppExeName}
+
+; Compression
+Compression=lzma2/ultra64
 SolidCompression=yes
-WizardStyle=modern
+
+; Windows version requirements
+MinVersion=10.0.17763
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 ; Privileges
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 
-; Architecture
-ArchitecturesAllowed=x64compatible
-ArchitecturesInstallIn64BitMode=x64compatible
+; Visual appearance
+WizardStyle=modern
+WizardImageFile=compiler:WizModernImage-IS.bmp
+WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
-; Version Info
-VersionInfoVersion={#MyAppVersion}
-VersionInfoCompany={#MyAppPublisher}
-VersionInfoDescription={#MyAppName} Setup
-VersionInfoCopyright=Copyright (C) 2026 {#MyAppPublisher}
-
-; Uninstall
-UninstallDisplayIcon={app}\{#MyAppExeName}
+; Uninstall configuration
 UninstallDisplayName={#MyAppName}
+UninstallFilesDir={app}\uninst
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -54,16 +67,24 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-; Main executable and dependencies
+; Main application executable
 Source: "bin\Release\net9.0\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+
+; All other files from publish directory
 Source: "bin\Release\net9.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Configuration files
-Source: "appsettings.json"; DestDir: "{app}"; Flags: ignoreversion
+
+; Configuration files (if not already included above)
+Source: "bin\Release\net9.0\win-x64\publish\appsettings.json"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{app}\appsettings.json'))
+Source: "bin\Release\net9.0\win-x64\publish\appsettings.Production.json"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{app}\appsettings.Production.json'))
+
+; Documentation
+Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme
+Source: "LICENSE.md"; DestDir: "{app}"; Flags: ignoreversion
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
@@ -71,47 +92,64 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-// Check if .NET 9 is installed
-function IsDotNet9Installed: Boolean;
+// Custom code for checking .NET runtime
+function IsDotNetInstalled(): Boolean;
 var
   ResultCode: Integer;
+  DotNetVersion: String;
 begin
-  // Check for .NET 9 Runtime
-  Result := RegKeyExists(HKLM, 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost\9.0.0') or
-            RegKeyExists(HKLM, 'SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\x64\sharedhost\9.0.0');
+  Result := False;
+  
+  // Check if dotnet command is available
+  if Exec('cmd.exe', '/c dotnet --version', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  begin
+    if ResultCode = 0 then
+    begin
+      Result := True;
+    end;
+  end;
 end;
 
-function InitializeSetup: Boolean;
+function InitializeSetup(): Boolean;
+var
+  ErrorCode: Integer;
 begin
   Result := True;
   
-  // Optional: Check for .NET 9 (only needed for framework-dependent builds)
-  // Uncomment if not using self-contained deployment
+  // Check for .NET 9 runtime (optional check)
+  // Uncomment the following lines if you want to enforce .NET 9 runtime check
   {
-  if not IsDotNet9Installed then
+  if not IsDotNetInstalled() then
   begin
-    if MsgBox('.NET 9 Runtime is required but not installed. Do you want to download it now?', 
+    if MsgBox('.NET 9 Runtime does not appear to be installed. ' +
+              'This application requires .NET 9 to run.' + #13#10#13#10 +
+              'Would you like to download and install .NET 9 now?' + #13#10 +
+              '(The installation will continue, but the application may not run without .NET 9)',
               mbConfirmation, MB_YESNO) = IDYES then
     begin
-      ShellExec('open', 'https://dotnet.microsoft.com/download/dotnet/9.0', '', '', SW_SHOW, ewNoWait, ResultCode);
+      ShellExec('open',
+        'https://dotnet.microsoft.com/download/dotnet/9.0',
+        '', '', SW_SHOW, ewNoWait, ErrorCode);
     end;
-    Result := False;
   end;
   }
 end;
 
+// Clean up user data on uninstall (optional)
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   AppDataDir: String;
   ResultCode: Integer;
 begin
-  // Optional: Clean up user data on uninstall
   if CurUninstallStep = usPostUninstall then
   begin
     AppDataDir := ExpandConstant('{userappdata}\ECoopSystem');
+    
     if DirExists(AppDataDir) then
     begin
-      if MsgBox('Do you want to remove application data and settings?', 
+      if MsgBox('Do you want to remove all application data and settings?' + #13#10 +
+                'This includes configuration files, data protection keys, and cached data.' + #13#10#13#10 +
+                'Location: ' + AppDataDir,
                 mbConfirmation, MB_YESNO) = IDYES then
       begin
         DelTree(AppDataDir, True, True, True);
@@ -119,3 +157,6 @@ begin
     end;
   end;
 end;
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"

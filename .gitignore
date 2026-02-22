@@ -489,5 +489,14 @@ crash-*.dmp
 *-backup.*
 
 # Installer output
-installer/output/
+output/installer/
 *.exe
+!output/installer/.gitkeep
+
+# Inno Setup temporary files
+installer.temp.iss
+Output/
+setup-*.exe
+
+# Installer build artifacts
+*.iss.bak

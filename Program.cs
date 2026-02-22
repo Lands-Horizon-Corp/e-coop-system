@@ -3,45 +3,37 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using Avalonia;
+using ECoopSystem.Build;
 using ECoopSystem.Services;
 using ECoopSystem.Stores;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 namespace ECoopSystem
 {
     internal class Program
     {
-        // Initialization code. Don't use any Avalonia, third-party APIs or any
-        // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-        // yet and stuff might break.
 #if WINDOWS
         [STAThread]
 #endif
         public static void Main(string[] args) => BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
 
-        // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
         {
-            // Build configuration from appsettings.json files
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
 #if DEBUG
                 .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
 #endif
                 .Build();
 
             var services = new ServiceCollection();
-            
-            // Register configuration
             services.AddSingleton<IConfiguration>(configuration);
             
-            // Configure logging
             services.AddLogging(builder =>
             {
 #if DEBUG
@@ -68,26 +60,20 @@ namespace ECoopSystem
             services.AddSingleton<AppStateStore>();
             services.AddSingleton<SecretKeyStore>();
             
-            // Get timeout from configuration
-            var timeoutSeconds = configuration.GetValue<int>("ApiSettings:Timeout", 12);
-            
             services.AddHttpClient<LicenseService>(client =>
             {
-                client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                client.Timeout = TimeSpan.FromSeconds(BuildConfiguration.ApiTimeout);
             })
             .ConfigurePrimaryHttpMessageHandler(() =>
             {
                 var handler = new HttpClientHandler();
                 
 #if !DEBUG
-                // Production: Enable strict SSL certificate validation
                 handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
                 {
-                    // Only accept valid certificates in production
                     if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.None)
                         return true;
                     
-                    // Log certificate validation errors
                     Debug.WriteLine($"SSL Certificate Error: {sslPolicyErrors}");
                     if (cert != null)
                     {
@@ -98,14 +84,13 @@ namespace ECoopSystem
                     return false;
                 };
 #else
-                // Development: Allow self-signed certificates but log warnings
                 handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
                 {
                     if (sslPolicyErrors != System.Net.Security.SslPolicyErrors.None)
                     {
                         Debug.WriteLine($"[DEV] SSL Warning: {sslPolicyErrors}");
                     }
-                    return true; // Accept in development
+                    return true;
                 };
 #endif
                 
@@ -113,7 +98,6 @@ namespace ECoopSystem
             });
 
             var provider = services.BuildServiceProvider();
-
 
             return AppBuilder.Configure<App>()
                     .UsePlatformDetect()

@@ -1,30 +1,17 @@
-# Response
-````````powershell
 #!/usr/bin/env pwsh
-# ECoopSystem Build Script
-# Usage: ./build.ps1 -IFrameUrl "https://yoursite.com" -Platform windows
-#
-# ?? For SECURE builds with string encryption & obfuscation, use:
-#    .\Build\build-secure.ps1 -IFrameUrl "..." -ApiUrl "..." -Platform windows
-#
-# See: docs/OBFUSCATION.md for details
-
 param(
-[string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
-[string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
+    [string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
+    [string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
     [string]$AppName = "ECoopSystem",
     [string]$AppLogo = "Assets/Images/logo.png",
     
-    # API Settings
     [int]$ApiTimeout = 12,
     [int]$ApiMaxRetries = 3,
     [int]$ApiMaxResponseSizeBytes = 1048576,
     
-    # WebView Settings
     [string[]]$WebViewTrustedDomains = @("dev-client.example.com", "app.example.com", "api.example.com"),
     [bool]$WebViewAllowHttp = $false,
     
-    # Security Settings
     [int]$SecurityGracePeriodDays = 7,
     [int]$SecurityMaxActivationAttempts = 3,
     [int]$SecurityLockoutMinutes = 5,
@@ -43,7 +30,6 @@ Write-Host "  ECoopSystem Build Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Display configuration
 Write-Host "Build Configuration:" -ForegroundColor Yellow
 Write-Host "  IFrame URL:    $IFrameUrl" -ForegroundColor White
 Write-Host "  API URL:       $ApiUrl" -ForegroundColor White
@@ -52,7 +38,6 @@ Write-Host "  Platform:      $Platform" -ForegroundColor White
 Write-Host "  Configuration: $Configuration" -ForegroundColor White
 Write-Host ""
 
-# Determine runtime identifier based on platform
 $runtimeId = switch ($Platform) {
     "windows"       { "win-x64" }
     "linux"         { "linux-x64" }
@@ -65,7 +50,6 @@ $runtimeId = switch ($Platform) {
 Write-Host "Target Runtime: $runtimeId" -ForegroundColor Green
 Write-Host ""
 
-# Generate BuildConfiguration.cs from template
 Write-Host "Generating BuildConfiguration.cs..." -ForegroundColor Yellow
 
 $templateContent = Get-Content "Build/BuildConfiguration.template.cs" -Raw
@@ -92,7 +76,6 @@ $generatedContent | Out-File -FilePath "Build/BuildConfiguration.cs" -Encoding U
 Write-Host "? BuildConfiguration.cs generated" -ForegroundColor Green
 Write-Host ""
 
-# Build command
 Write-Host "Building application..." -ForegroundColor Yellow
 
 $buildArgs = @(

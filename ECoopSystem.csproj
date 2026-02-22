@@ -41,10 +41,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
     <PackageReference Include="WebViewControl-Avalonia" Version="3.120.11" />
-    
-    <!-- Code protection packages -->
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-    <PackageReference Include="System.Security.Cryptography.Primitives" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,19 +62,11 @@
     </None>
   </ItemGroup>
 
-  <!-- Exclude template files from compilation -->
   <ItemGroup>
     <Compile Remove="Build\BuildConfiguration.template.cs" />
-    <None Include=".github\workflows\build-release.yml" />
-    <None Include=".github\workflows\linux-tests.yml" />
     <None Include="Build\BuildConfiguration.template.cs" />
-    <None Include="confuser.crproj" />
     <None Include="LICENSE.md" />
     <None Include="README.md" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Assets\Videos\" />
   </ItemGroup>
 
   <ItemGroup>
