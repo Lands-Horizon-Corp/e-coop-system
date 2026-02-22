@@ -108,7 +108,7 @@
                                 Padding="0"
                                 Cursor="Hand"
                                 Click="OnContactSupportClicked"
-                                Tag="https://e-coop-suite.com/contact">
+                                Tag="https://ecoop-suite.org/#contact">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                                     <Setter Property="Background" Value="Transparent"/>
