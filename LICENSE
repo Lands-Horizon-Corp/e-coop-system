@@ -1,149 +1,100 @@
-ÔªøSOFTWARE LICENSE AGREEMENT
+SOFTWARE LICENSE AGREEMENT
 E-COOP SUITE
 
-This Software License Agreement (‚ÄúAgreement‚Äù) governs the installation, access, and use of the E-COOP SUITE software application (‚ÄúSoftware‚Äù).
+This Software License Agreement ("Agreement") governs the installation, access, and use of the E-COOP SUITE software application ("Software").
 
 This Agreement is entered into between:
-
-Lands Horizon (‚ÄúCompany‚Äù), and
-The installing entity or individual (‚ÄúLicensee‚Äù).
+  ï Lands Horizon ("Company"), and
+  ï The installing entity or individual ("Licensee").
 
 By installing, accessing, or using the Software, the Licensee agrees to be legally bound by the terms and conditions set forth herein.
 
 1. COPYRIGHT OWNERSHIP
 
 E-COOP SUITE is a proprietary software product developed and exclusively owned by Lands Horizon.
-
-¬© 2026 Lands Horizon. All Rights Reserved.
+© 2026 Lands Horizon. All Rights Reserved.
 
 All intellectual property rights, including but not limited to:
-
-Source code
-
-Object code
-
-Software architecture
-
-Databases and schemas
-
-Workflows and algorithms
-
-User interface designs
-
-Documentation
-
-Branding and trademarks
-
-Trade secrets and confidential materials
+  ï Source code
+  ï Object code
+  ï Software architecture
+  ï Databases and schemas
+  ï Workflows and algorithms
+  ï User interface designs
+  ï Documentation
+  ï Branding and trademarks
+  ï Trade secrets and confidential materials
 
 are the sole and exclusive property of Lands Horizon.
-
 The Software is protected by Philippine copyright laws, intellectual property regulations, and international treaties.
 
 2. DESCRIPTION OF THE SOFTWARE
 
 E-COOP SUITE is an integrated cooperative management platform designed to digitize and streamline cooperative operations.
-
 Modules may include, but are not limited to:
-
-Core Cooperative Management
-
-Member Information System
-
-Savings and Deposits Management
-
-Loans and Credit Processing
-
-Accounting and Financial Reporting
-
-Teller and Cashiering Operations
-
-POS and Transaction Processing
-
-Administrative and Audit Controls
+  ï Core Cooperative Management
+  ï Member Information System
+  ï Savings and Deposits Management
+  ï Loans and Credit Processing
+  ï Accounting and Financial Reporting
+  ï Teller and Cashiering Operations
+  ï POS and Transaction Processing
+  ï Administrative and Audit Controls
 
 Module access is subject to the purchased license or subscription plan.
 
 3. GRANT OF LICENSE
 
 Subject to full compliance with this Agreement, Lands Horizon grants the Licensee a:
-
-Non-exclusive
-
-Non-transferable
-
-Non-sublicensable
-
-Limited license
-
+  ï Non-exclusive
+  ï Non-transferable
+  ï Non-sublicensable
+  ï Limited license
 to:
-
-Install and use the Software solely for internal business operations.
-
-Access features based on the purchased licensing plan.
-
-Operate the Software within the licensed deployment scope.
+  ï Install and use the Software solely for internal business operations.
+  ï Access features based on the purchased licensing plan.
+  ï Operate the Software within the licensed deployment scope.
 
 This Agreement does not transfer ownership of the Software.
-
 All rights not expressly granted are reserved by Lands Horizon.
 
 4. LICENSE RESTRICTIONS
 
 The Licensee shall not:
-
-Copy, reproduce, duplicate, or distribute the Software.
-
-Modify, adapt, translate, or create derivative works.
-
-Reverse engineer, decompile, disassemble, or attempt to extract source code.
-
-Lease, sublicense, assign, or transfer the Software to any third party.
-
-Share activation credentials, license keys, or installer files.
-
-Remove or alter proprietary notices.
-
-Use the Software to develop or support a competing product.
-
-Deploy the Software beyond the licensed scope.
+  ï Copy, reproduce, duplicate, or distribute the Software.
+  ï Modify, adapt, translate, or create derivative works.
+  ï Reverse engineer, decompile, disassemble, or attempt to extract source code.
+  ï Lease, sublicense, assign, or transfer the Software to any third party.
+  ï Share activation credentials, license keys, or installer files.
+  ï Remove or alter proprietary notices.
+  ï Use the Software to develop or support a competing product.
+  ï Deploy the Software beyond the licensed scope.
 
 Unauthorized use constitutes copyright infringement and may result in civil and criminal liability.
 
 5. COMMERCIAL USE POLICY
 
 Commercial deployment requires:
-
-A valid commercial license agreement.
-
-Written authorization from Lands Horizon.
-
-Compliance with subscription and deployment limitations.
+  ï A valid commercial license agreement.
+  ï Written authorization from Lands Horizon.
+  ï Compliance with subscription and deployment limitations.
 
 Unauthorized commercial hosting, duplication of installer files, or credential sharing is strictly prohibited and subject to immediate termination and legal action.
 
 6. LICENSE SHARING PROHIBITION
 
 The Licensee agrees:
-
-Not to share license credentials or system access.
-
-Not to install the Software on unlicensed systems.
-
-That each deployment requires proper licensing.
-
+  ï Not to share license credentials or system access.
+  ï Not to install the Software on unlicensed systems.
+  ï That each deployment requires proper licensing.
 Violation may result in:
-
-Immediate termination
-
-System deactivation
-
-Legal damages
+  ï Immediate termination
+  ï System deactivation
+  ï Legal damages
 
 7. INTELLECTUAL PROPERTY RIGHTS
 
 All updates, upgrades, patches, enhancements, and future versions remain the exclusive property of Lands Horizon unless otherwise agreed in writing.
-
 No ownership rights are granted under this Agreement.
 
 8. CONFIDENTIALITY
@@ -151,64 +102,44 @@ No ownership rights are granted under this Agreement.
 The Software contains proprietary and confidential information.
 
 The Licensee agrees to:
-
-Protect all proprietary materials.
-
-Prevent unauthorized access.
-
-Not disclose technical details to third parties.
+  ï Protect all proprietary materials.
+  ï Prevent unauthorized access.
+  ï Not disclose technical details to third parties.
 
 9. DATA PRIVACY AND PROTECTION COMPLIANCE
 
-Lands Horizon shall process personal data in accordance with the:
-
-Data Privacy Act of 2012
-(Republic Act No. 10173) and its Implementing Rules and Regulations.
+Lands Horizon shall process personal data in accordance with the Data Privacy Act of 2012 (Republic Act No. 10173) and its Implementing Rules and Regulations.
 
 9.1 Roles of the Parties
 
 The Licensee acts as the Personal Information Controller (PIC).
-
 Lands Horizon acts as the Personal Information Processor (PIP) where applicable.
 
 The Licensee is responsible for:
-
-Lawful data collection
-
-Obtaining necessary consent
-
-Defining processing purposes
+  ï Lawful data collection
+  ï Obtaining necessary consent
+  ï Defining processing purposes
 
 9.2 Types of Data Processed
 
 The Software may process:
-
-Member personal information
-
-Financial records
-
-Loan and savings data
-
-Identification details
-
-Transaction histories
+  ï Member personal information
+  ï Financial records
+  ï Loan and savings data
+  ï Identification details
+  ï Transaction histories
 
 9.3 Security Measures
 
 Lands Horizon shall implement reasonable:
-
-Technical safeguards (encryption, authentication, access control)
-
-Organizational safeguards
-
-Physical safeguards (where applicable)
-
+  ï Technical safeguards (encryption, authentication, access control)
+  ï Organizational safeguards
+  ï Physical safeguards (where applicable)
 No system is completely immune from risk; the Licensee acknowledges inherent cybersecurity risks.
 
 9.4 Data Breach Handling
 
 In case of a confirmed breach affecting infrastructure managed by Lands Horizon, reasonable notification shall be provided.
-
 The Licensee is responsible for regulatory reporting obligations unless otherwise agreed in writing.
 
 9.5 Data Retention
@@ -218,36 +149,23 @@ The Licensee determines data retention policies and ensures compliance with appl
 10. TERMINATION
 
 This Agreement becomes effective upon installation.
-
 Lands Horizon may terminate this Agreement immediately if:
-
-The Licensee violates any provision.
-
-Unauthorized copying or exploitation is detected.
-
+  ï The Licensee violates any provision.
+  ï Unauthorized copying or exploitation is detected.
 Upon termination, the Licensee must:
-
-Cease all use.
-
-Remove the Software from all systems.
-
-Destroy all installer copies.
+  ï Cease all use.
+  ï Remove the Software from all systems.
+  ï Destroy all installer copies.
 
 11. LIMITATION OF LIABILITY
 
-Unless covered under a separate Service Level Agreement (SLA), the Software is provided ‚Äúas is.‚Äù
-
+Unless covered under a separate Service Level Agreement (SLA), the Software is provided "as is."
 Lands Horizon shall not be liable for:
-
-Indirect or consequential damages
-
-Loss of profits
-
-Business interruption
-
-Data loss due to misuse
-
-Unauthorized modifications
+  ï Indirect or consequential damages
+  ï Loss of profits
+  ï Business interruption
+  ï Data loss due to misuse
+  ï Unauthorized modifications
 
 Maximum liability shall not exceed the amount paid for the license in the preceding twelve (12) months.
 
@@ -258,17 +176,13 @@ This Agreement shall be governed by the laws of the Republic of the Philippines,
 13. ENTIRE AGREEMENT
 
 This Agreement constitutes the entire agreement between the parties and supersedes all prior discussions or agreements.
-
 Any amendments must be in writing and signed by both parties.
 
 14. ACCEPTANCE OF TERMS
 
 By installing, accessing, or using E-COOP SUITE, the Licensee acknowledges that they:
-
-Have read this Agreement
-
-Understand its terms
-
-Agree to be legally bound
+  ï Have read this Agreement
+  ï Understand its terms
+  ï Agree to be legally bound
 
 If you do not agree to these terms, do not install or use the Software.

@@ -110,6 +110,14 @@
                                 Click="OnContactSupportClicked"
                                 Tag="https://e-coop-suite.com/contact">
                             <Button.Styles>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryColor}"/>
+                                </Style>
+                                <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryColor}"/>
+                                </Style>
                                 <Style Selector="Button:pointerover">
                                     <Setter Property="TextBlock.TextDecorations" Value="Underline"/>
                                 </Style>
@@ -169,7 +177,7 @@
                                MaxWidth="340"/>
                 </StackPanel>
 
-                <Button Content="Go to Dashboard"
+                <Button Content="Get Started"
                         Background="{DynamicResource PrimaryColor}"
                         Foreground="White"
                         HorizontalAlignment="Stretch"
@@ -217,18 +225,9 @@
                             Padding="0" 
                             Cursor="Hand"
                             Click="OnSocialMediaClicked"
-                            Tag="https://www.linkedin.com/company/landshorizo"
+                            Tag="https://www.linkedin.com/company/landshorizon"
                             ToolTip.Tip="LinkedIn">
                         <Image Source="/Assets/Icons/linkedin.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
-                    </Button>
-                    
-                    <Button Classes="transparent"
-                            Padding="0" 
-                            Cursor="Hand"
-                            Click="OnSocialMediaClicked"
-                            Tag="tel:+639916171081"
-                            ToolTip.Tip="Phone: +63 991 617 1081">
-                        <Image Source="/Assets/Icons/instagram.png" Width="{StaticResource IconSize}" Height="{StaticResource IconSize}"/>
                     </Button>
                     
                     <Button Classes="transparent"
@@ -271,18 +270,20 @@
 				<Image Source="/Assets/Images/activation_image.png"
                    Stretch="UniformToFill"/>
 
-                <Button Width="36"
-                        Height="36"
+                <Button Content="X"
+                        Width="32"
+                        Height="32"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Margin="12"
+                        Padding="0"
                         Background="#66000000"
-                        Foreground="White"
+                        Foreground="WhiteSmoke"
                         CornerRadius="18"
-                        Content="X"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
-                        FontSize="18"
+                        FontSize="16"
+                        FontWeight="Bold"
                         Click="OnCloseClicked"/>
             </Grid>
         </Border>

@@ -48,6 +48,13 @@
 	<AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <!-- Ensure icon is included as Win32 resource -->
+  <ItemGroup>
+    <Content Include="Assets\Icons\ecoopsuite.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <!-- Include appsettings.json files and copy to output -->
   <ItemGroup>
     <None Update="appsettings.json">

@@ -2,7 +2,7 @@
 
 A secure, cross-platform desktop application built with Avalonia UI and .NET 9, supporting Windows and Linux.
 
-## ?? Quick Start
+## Quick Start
 
 ### Prerequisites
 - .NET 9 SDK or Runtime
@@ -28,7 +28,7 @@ dotnet run
 make build IFRAME_URL=https://your-client.com API_URL=https://your-api.com PLATFORM=linux
 ```
 
-## ?? Documentation
+## Documentation
 
 | Document | Description |
 |----------|-------------|
@@ -38,7 +38,7 @@ make build IFRAME_URL=https://your-client.com API_URL=https://your-api.com PLATF
 | **[Linux Deployment](docs/LINUX.md)** | Linux-specific installation and troubleshooting |
 | **[Cross-Platform Dev](docs/QUICK-REFERENCE.md)** | Platform detection and development tips |
 
-## ?? Security Architecture
+## Security Architecture
 
 ECoopSystem uses a **hybrid configuration model** for maximum security:
 
@@ -50,7 +50,7 @@ ECoopSystem uses a **hybrid configuration model** for maximum security:
 
 **Users cannot tamper with security-critical configuration** - it's baked into the executable.
 
-## ??? Architecture
+## Architecture
 
 | Component | Technology |
 |-----------|------------|
@@ -63,17 +63,17 @@ ECoopSystem uses a **hybrid configuration model** for maximum security:
 | **HTTP Client** | Microsoft.Extensions.Http 10.0.3 |
 | **Logging** | Microsoft.Extensions.Logging 10.0.3 |
 
-## ?? Supported Platforms
+## Supported Platforms
 
 | Platform | Status | Runtime ID | Notes |
 |----------|--------|------------|-------|
-| **Windows 10/11 (x64)** | ? Fully Supported | `win-x64` | Primary target |
-| **Linux x64** | ? Fully Supported | `linux-x64` | Ubuntu, Debian, Fedora, Arch |
-| **Linux ARM64** | ? Supported | `linux-arm64` | Raspberry Pi, ARM servers |
-| **macOS Intel** | ?? Planned | `osx-x64` | Future release |
-| **macOS ARM (M1/M2)** | ?? Planned | `osx-arm64` | Future release |
+| **Windows 10/11 (x64)** | Fully Supported | `win-x64` | Primary target |
+| **Linux x64** | Fully Supported | `linux-x64` | Ubuntu, Debian, Fedora, Arch |
+| **Linux ARM64** | Supported | `linux-arm64` | Raspberry Pi, ARM servers |
+| **macOS Intel** | Planned | `osx-x64` | Future release |
+| **macOS ARM (M1/M2)** | Planned | `osx-arm64` | Future release |
 
-## ??? Development
+## Development
 
 ### Building from Source
 
@@ -124,19 +124,7 @@ Use the build scripts for production deployments with custom configurations:
 
 See [docs/BUILD.md](docs/BUILD.md) for all available build parameters.
 
-## ?? Configuration
-
-### User-Modifiable Settings (appsettings.json)
-
-Users can customize:
-- Application name and version display
-- Window dimensions
-- Logging preferences
-
-**File Locations:**
-- Windows: `%APPDATA%\ECoopSystem\appsettings.json`
-- Linux: `~/.config/ECoopSystem/appsettings.json`
-- Or: Same directory as executable
+## Configuration
 
 ### Build-Time Settings (Not User-Modifiable)
 
@@ -149,17 +137,7 @@ The following are **compiled into the binary** and cannot be changed after deplo
 
 To change these, rebuild with new parameters. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
-## ??? Data Storage Locations
-
-| Data Type | Windows | Linux |
-|-----------|---------|-------|
-| **Application Data** | `%APPDATA%\ECoopSystem\` | `~/.config/ECoopSystem/` |
-| **Data Protection Keys** | `%APPDATA%\ECoopSystem\dp-keys\` | `~/.config/ECoopSystem/dp-keys/` |
-| **Application State** | `%APPDATA%\ECoopSystem\appstate.dat` | `~/.config/ECoopSystem/appstate.dat` |
-| **Secret Key (Encrypted)** | `%APPDATA%\ECoopSystem\secret.dat` | `~/.config/ECoopSystem/secret.dat` |
-| **Configuration** | Same as executable or AppData | Same as executable or ~/.config |
-
-## ?? Known Limitations
+## Known Limitations
 
 ### Linux-Specific
 1. **WebView Performance**: CEF initialization may be slower on first run
@@ -169,7 +147,7 @@ To change these, rebuild with new parameters. See [docs/CONFIGURATION.md](docs/C
 
 See [docs/LINUX.md](docs/LINUX.md) for detailed Linux setup and troubleshooting.
 
-## ?? Troubleshooting
+## Troubleshooting
 
 ### Windows
 - Ensure .NET 9 runtime is installed
@@ -201,18 +179,18 @@ Contributions are welcome! Please:
 4. Push to the branch
 5. Open a Pull Request
 
-## ?? License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
-## ?? Organization
+## Organization
 
 Developed and maintained by **Lands Horizon Corporation**
 
 - **Repository**: https://github.com/Lands-Horizon-Corp/e-coop-system
 - **Copyright**: ©2026 Lands Horizon
 
-## ?? Support
+## Support
 
 For issues, questions, or support:
 - Open an issue on [GitHub Issues](https://github.com/Lands-Horizon-Corp/e-coop-system/issues)
