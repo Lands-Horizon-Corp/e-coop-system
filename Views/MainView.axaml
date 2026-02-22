@@ -55,7 +55,9 @@
                     <ProgressBar IsIndeterminate="True"
                                  Width="200"
                                  Height="4"
-                                 HorizontalAlignment="Center"/>
+                                 HorizontalAlignment="Center"
+                                 Background="White"
+                                 Foreground="#50e893"/>
                 </StackPanel>
             </Grid>
         </Border>

@@ -121,13 +121,15 @@
                                Foreground="Red"
                                FontSize="11"
                                IsVisible="{Binding Error}"
-                               TextWrapping="Wrap"/>
+                               TextWrapping="Wrap"
+                               MaxWidth="340"/>
 
                     <TextBlock Text="{Binding LockoutMessage}"
                                Foreground="#B45309"
                                FontSize="11"
                                IsVisible="{Binding LockoutMessage}"
-                               TextWrapping="Wrap"/>
+                               TextWrapping="Wrap"
+                               MaxWidth="340"/>
 
                 </StackPanel>
             </StackPanel>

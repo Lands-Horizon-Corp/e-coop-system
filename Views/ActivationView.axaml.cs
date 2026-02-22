@@ -23,10 +23,19 @@ public partial class ActivationView : UserControl
             await vm.ActivateAsync();
     }
 
-    private void OnGoToDashboardClicked(object? sender, RoutedEventArgs e)
+    private async void OnGoToDashboardClicked(object? sender, RoutedEventArgs e)
     {
         if (DataContext is ActivationViewModel vm)
-            vm.GoToDashboard();
+        {
+            try
+            {
+                await vm.GoToDashboard();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error navigating to dashboard: {ex}");
+            }
+        }
     }
 
     private void OnCloseClicked(object? sender, RoutedEventArgs e)

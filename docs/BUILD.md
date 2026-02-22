@@ -175,6 +175,13 @@ For example:
 - Linux: `bin/Release/net9.0/linux-x64/publish/ECoopSystem`
 - macOS: `bin/Release/net9.0/osx-arm64/publish/ECoopSystem`
 
+**Important:** The build creates a **directory** with multiple files, not a single executable. This is required because:
+- WebView/CEF (Chromium Embedded Framework) requires external runtime files
+- CEF binaries (libcef.dll/libcef.so), locales, resources must be accessible
+- Single-file publish is **not supported** with WebView controls
+
+**Do not delete or move files** from the publish directory - distribute the entire folder.
+
 ---
 
 ## Clean Build Artifacts

@@ -41,9 +41,9 @@ public static class BuildConfiguration
     // WebView Trusted Domains (Build-time only)
     public static readonly string[] WebViewTrustedDomains = new[]
     {
-        "dev-client.example.com",
-        "app.example.com",
-        "api.example.com"
+        "e-coop-client-development.up.railway.app",
+        "e-coop-server-development.up.railway.app",
+        "railway.app"
     };
     public const bool WebViewAllowHttp = false;
 

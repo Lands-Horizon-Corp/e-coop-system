@@ -25,6 +25,15 @@ Write-Host "  Version:         $Version" -ForegroundColor Gray
 Write-Host "  Skip Build:      $SkipBuild" -ForegroundColor Gray
 Write-Host ""
 
+# Warning if using development URLs
+if ($ApiUrl -like "*development*" -or $IFrameUrl -like "*development*") {
+    Write-Host "WARNING: You are building an installer with DEVELOPMENT URLs!" -ForegroundColor Yellow
+    Write-Host "The installed application will connect to development servers." -ForegroundColor Yellow
+    Write-Host "For production builds, use:" -ForegroundColor Yellow
+    Write-Host "  ./build-installer.ps1 -ApiUrl 'https://api.production.com' -IFrameUrl 'https://app.production.com'" -ForegroundColor Cyan
+    Write-Host ""
+}
+
 # Check if Inno Setup is installed
 $isccPath = Get-Command iscc -ErrorAction SilentlyContinue
 
@@ -63,13 +72,12 @@ if (-not $SkipBuild) {
     Write-Host "[2/5] Building application with custom configuration..." -ForegroundColor Cyan
     Write-Host ""
     
-    $buildArgs = @(
-        "-IFrameUrl", $IFrameUrl,
-        "-ApiUrl", $ApiUrl,
-        "-Platform", "windows",
-        "-Configuration", $Configuration,
-        "-SkipClean"
-    )
+    $buildArgs = @{
+        IFrameUrl = $IFrameUrl
+        ApiUrl = $ApiUrl
+        Platform = "windows"
+        Configuration = $Configuration
+    }
     
     & .\build.ps1 @buildArgs
     

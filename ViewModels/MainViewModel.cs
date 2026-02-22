@@ -59,6 +59,7 @@ public class MainViewModel : ViewModelBase
 
     public async Task VerifyLicenseAsync()
     {
+        _logger.LogInformation("VerifyLicenseAsync started");
         IsLoading = true;
         IsVerified = false;
         _loadingStopwatch.Restart();
@@ -69,10 +70,12 @@ public class MainViewModel : ViewModelBase
 
             if (string.IsNullOrWhiteSpace(secret))
             {
+                _logger.LogWarning("No secret key found, navigating to activation");
                 NavigateToActivation();
                 return;
             }
 
+            _logger.LogInformation("Secret key found, verifying license");
             var fingerprint = FingerprintService.ComputeFingerprint(_state);
             var verify = await _licenseService.VerifyAsync(secret, fingerprint, _state.Counter, CancellationToken.None);
 
@@ -149,6 +152,7 @@ public class MainViewModel : ViewModelBase
             // Ensure minimum loading time to hide website's white-black-content transitions
             await EnsureMinimumLoadingTime();
             IsLoading = false;
+            _logger.LogInformation("VerifyLicenseAsync completed. IsLoading={IsLoading}, IsVerified={IsVerified}", IsLoading, IsVerified);
         }
     }
 

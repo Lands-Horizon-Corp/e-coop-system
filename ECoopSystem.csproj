@@ -7,6 +7,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest Condition="'$(OS)' == 'Windows_NT'">app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\Icons\ecoopsuite.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     
     <!-- Runtime identifiers for publishing -->
@@ -65,7 +66,6 @@
   <ItemGroup>
     <Compile Remove="Build\BuildConfiguration.template.cs" />
     <None Include="Build\BuildConfiguration.template.cs" />
-    <None Include="LICENSE.md" />
     <None Include="README.md" />
   </ItemGroup>
 

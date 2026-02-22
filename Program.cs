@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Avalonia;
 using ECoopSystem.Build;
 using ECoopSystem.Services;
@@ -15,11 +16,99 @@ namespace ECoopSystem
 {
     internal class Program
     {
+        private static System.Threading.Mutex? _mutex;
+        private const string MutexName = "Global\\ECoopSystem-8F5A3D2C-1B4E-4C9A-A8F3-2D6E8C9B1A7F";
+
 #if WINDOWS
         [STAThread]
 #endif
-        public static void Main(string[] args) => BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        public static void Main(string[] args)
+        {
+            // Check for single instance
+            bool createdNew;
+            _mutex = new System.Threading.Mutex(true, MutexName, out createdNew);
+
+            if (!createdNew)
+            {
+                // Another instance is already running
+                Debug.WriteLine("Another instance of ECoopSystem is already running.");
+                
+                // Log to file if possible
+                try
+                {
+                    var logDir = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "ECoopSystem",
+                        "logs"
+                    );
+                    Directory.CreateDirectory(logDir);
+                    var logFile = Path.Combine(logDir, $"single-instance-{DateTime.Now:yyyyMMdd}.log");
+                    File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Another instance already running, exiting.\n");
+                }
+                catch { /* Ignore logging errors */ }
+                
+                return;
+            }
+
+            try
+            {
+                // Set up global exception handlers
+                AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+                {
+                    var ex = e.ExceptionObject as Exception;
+                    Debug.WriteLine($"[FATAL] Unhandled exception: {ex}");
+                    
+                    // Try to log to file if possible
+                    try
+                    {
+                        var logDir = Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                            "ECoopSystem",
+                            "logs"
+                        );
+                        Directory.CreateDirectory(logDir);
+                        var crashLog = Path.Combine(logDir, $"crash-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+                        File.WriteAllText(crashLog, $"Unhandled Exception:\n{ex}");
+                    }
+                    catch { /* Ignore logging errors */ }
+                };
+
+                TaskScheduler.UnobservedTaskException += (sender, e) =>
+                {
+                    Debug.WriteLine($"[ERROR] Unobserved task exception: {e.Exception}");
+                    e.SetObserved(); // Prevent process termination
+                };
+
+                BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FATAL] Application crashed: {ex}");
+                
+                // Try to show message box or log
+                try
+                {
+                    var logDir = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "ECoopSystem",
+                        "logs"
+                    );
+                    Directory.CreateDirectory(logDir);
+                    var crashLog = Path.Combine(logDir, $"crash-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+                    File.WriteAllText(crashLog, $"Fatal Exception in Main:\n{ex}");
+                }
+                catch { /* Ignore logging errors */ }
+                
+                
+                throw;
+            }
+            finally
+            {
+                // Release mutex on exit
+                _mutex?.ReleaseMutex();
+                _mutex?.Dispose();
+            }
+        }
 
         public static AppBuilder BuildAvaloniaApp()
         {
@@ -42,6 +131,24 @@ namespace ECoopSystem
                 builder.SetMinimumLevel(LogLevel.Debug);
 #else
                 builder.SetMinimumLevel(LogLevel.Information);
+                
+                // Add file logging in Release builds for diagnostics
+                var logDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "ECoopSystem",
+                    "logs"
+                );
+                Directory.CreateDirectory(logDir);
+                
+                builder.AddSimpleConsole(options =>
+                {
+                    options.SingleLine = true;
+                    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+                });
+                
+                // Add custom file logger
+                builder.Services.AddSingleton<ILoggerProvider, FileLoggerProvider>(sp => 
+                    new FileLoggerProvider(Path.Combine(logDir, $"ecoopsystem-{DateTime.Now:yyyyMMdd}.log")));
 #endif
             });
             

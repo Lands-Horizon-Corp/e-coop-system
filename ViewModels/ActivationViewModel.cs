@@ -121,6 +121,8 @@ public class ActivationViewModel : ViewModelBase
         
         // Add diagnostic logging
         _logger.LogInformation("Starting activation with API URL: {ApiUrl}", ApiService.BaseUrl);
+        _logger.LogInformation("BuildConfiguration.ApiUrl value: {BuildApiUrl}", ECoopSystem.Build.BuildConfiguration.ApiUrl);
+        _logger.LogInformation("Attempting to activate with fingerprint for installation: {InstallationId}", _state.InstallationId);
         
         try
         {
@@ -164,7 +166,22 @@ public class ActivationViewModel : ViewModelBase
             {
                 _logger.LogError("Socket error code: {ErrorCode}, Message: {Message}", 
                     socketEx.SocketErrorCode, socketEx.Message);
-                Error = $"Cannot connect to activation server. Check your internet connection. (Error: {socketEx.SocketErrorCode})";
+                
+                // NoData, HostNotFound, or TryAgain indicate DNS resolution failure
+                if (socketEx.SocketErrorCode == System.Net.Sockets.SocketError.NoData ||
+                    socketEx.SocketErrorCode == System.Net.Sockets.SocketError.HostNotFound ||
+                    socketEx.SocketErrorCode == System.Net.Sockets.SocketError.TryAgain)
+                {
+#if DEBUG
+                    Error = $"Cannot resolve server '{ApiService.BaseUrl}'. Check DNS settings and internet connection, or verify the server URL is correct. (Error: {socketEx.SocketErrorCode})";
+#else
+                    Error = "Cannot resolve activation server address. Check your DNS settings and internet connection. If this persists, contact support.";
+#endif
+                }
+                else
+                {
+                    Error = $"Cannot connect to activation server. Check your internet connection. (Error: {socketEx.SocketErrorCode})";
+                }
             }
             else if (ex.Message.Contains("SSL") || ex.Message.Contains("certificate"))
             {
@@ -277,17 +294,40 @@ public class ActivationViewModel : ViewModelBase
         _lockoutTimer?.Stop();
     }
 
-    public void GoToDashboard()
+    public async Task GoToDashboard()
     {
-        var mainViewModel = new MainViewModel(
-            _shell, 
-            _store, 
-            _state, 
-            _secretStore, 
-            _licenseService, 
-            _loggerFactory.CreateLogger<MainViewModel>(),
-            _loggerFactory);
-        _shell.Navigate(mainViewModel, WindowMode.Normal);
+        _logger.LogInformation("Navigating to dashboard after successful activation");
+        
+        try
+        {
+            StopTimer();
+            
+            var mainViewModel = new MainViewModel(
+                _shell, 
+                _store, 
+                _state, 
+                _secretStore, 
+                _licenseService, 
+                _loggerFactory.CreateLogger<MainViewModel>(),
+                _loggerFactory);
+            
+            _logger.LogInformation("MainViewModel created, navigating...");
+            _shell.Navigate(mainViewModel, WindowMode.Normal);
+            
+            // Small delay to allow UI thread to process navigation
+            await Task.Delay(100);
+            
+            _logger.LogInformation("Navigation complete, starting license verification...");
+            // Trigger verification after navigation
+            await mainViewModel.VerifyLicenseAsync();
+            _logger.LogInformation("License verification completed after navigation");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to navigate to dashboard");
+            Error = "Failed to load dashboard. Please restart the application.";
+            IsActivationSuccess = false;
+        }
     }
 
     protected override void Dispose(bool disposing)

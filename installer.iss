@@ -29,12 +29,12 @@ VersionInfoCopyright={#MyAppCopyright}
 ; Default installation directory
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=LICENSE.md
+LicenseFile=LICENSE
 
 ; Output configuration
 OutputDir=output\installer
 OutputBaseFilename=ECoopSystem-Setup-{#MyAppVersion}-win-x64
-SetupIconFile=Assets\Images\logo.png
+SetupIconFile=Assets\Icons\ecoopsuite.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 ; Compression
@@ -52,8 +52,6 @@ PrivilegesRequiredOverridesAllowed=dialog
 
 ; Visual appearance
 WizardStyle=modern
-WizardImageFile=compiler:WizModernImage-IS.bmp
-WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
 ; Uninstall configuration
 UninstallDisplayName={#MyAppName}
@@ -73,20 +71,15 @@ Source: "bin\Release\net9.0\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; 
 ; All other files from publish directory
 Source: "bin\Release\net9.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-; Configuration files (if not already included above)
-Source: "bin\Release\net9.0\win-x64\publish\appsettings.json"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{app}\appsettings.json'))
-Source: "bin\Release\net9.0\win-x64\publish\appsettings.Production.json"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{app}\appsettings.Production.json'))
-
 ; Documentation
-Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme
-Source: "LICENSE.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Assets\Icons\ecoopsuite.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Assets\Icons\ecoopsuite.ico"; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Assets\Icons\ecoopsuite.ico"; Tasks: quicklaunchicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

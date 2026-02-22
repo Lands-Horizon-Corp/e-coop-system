@@ -36,11 +36,17 @@ public partial class MainWindow : Window
 
         _shell.PropertyChanged += ShellOnPropertyChanged;
         Closing += OnClosing;
-        Opened += (_, _) =>
+        Opened += async (_, _) =>
         {
             var route = DecideInitialRoute();
             _shell.Navigate(route.ViewModel, route.Mode);
             ApplyWindowMode();
+            
+            // If navigating to MainView, trigger license verification
+            if (route.ViewModel is MainViewModel mainVm)
+            {
+                await mainVm.VerifyLicenseAsync();
+            }
         };
     }
 

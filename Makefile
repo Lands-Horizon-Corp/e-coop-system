@@ -15,9 +15,9 @@ API_MAX_RETRIES ?= 3
 API_MAX_RESPONSE_SIZE ?= 1048576
 
 # WebView Settings (secure, compiled into binary)
-WEBVIEW_DOMAIN1 ?= dev-client.example.com
-WEBVIEW_DOMAIN2 ?= app.example.com
-WEBVIEW_DOMAIN3 ?= api.example.com
+WEBVIEW_DOMAIN1 ?= e-coop-client-development.up.railway.app
+WEBVIEW_DOMAIN2 ?= e-coop-server-development.up.railway.app
+WEBVIEW_DOMAIN3 ?= railway.app
 WEBVIEW_ALLOW_HTTP ?= false
 
 # Security Settings (secure, compiled into binary)
@@ -81,10 +81,8 @@ build: generate-config
 	@echo "Platform:   $(PLATFORM) ($(RID))"
 	@echo "Config:     $(CONFIG)"
 	@echo ""
-	@dotnet publish -c $(CONFIG) -r $(RID) \
-		--self-contained \
-		-p:PublishSingleFile=true \
-		-p:IncludeNativeLibrariesForSelfExtract=true
+	@echo "Note: Single-file publish disabled due to WebView/CEF requirements"
+	@dotnet publish -c $(CONFIG) -r $(RID) --self-contained
 	@echo ""
 	@echo "? Build completed: bin/$(CONFIG)/net9.0/$(RID)/publish/"
 

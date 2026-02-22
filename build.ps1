@@ -9,7 +9,7 @@ param(
     [int]$ApiMaxRetries = 3,
     [int]$ApiMaxResponseSizeBytes = 1048576,
     
-    [string[]]$WebViewTrustedDomains = @("dev-client.example.com", "app.example.com", "api.example.com"),
+    [string[]]$WebViewTrustedDomains = @("e-coop-client-development.up.railway.app", "e-coop-server-development.up.railway.app", "railway.app"),
     [bool]$WebViewAllowHttp = $false,
     
     [int]$SecurityGracePeriodDays = 7,
@@ -89,8 +89,10 @@ $buildArgs = @(
 
 if ($SelfContained) {
     $buildArgs += "--self-contained"
-    $buildArgs += "-p:PublishSingleFile=true"
-    $buildArgs += "-p:IncludeNativeLibrariesForSelfExtract=true"
+    # Note: PublishSingleFile is disabled because WebView/CEF requires external files
+    # CEF (Chromium Embedded Framework) cannot run from a single extracted file
+    # $buildArgs += "-p:PublishSingleFile=true"
+    # $buildArgs += "-p:IncludeNativeLibrariesForSelfExtract=true"
 }
 
 Write-Host "Command: dotnet $($buildArgs -join ' ')" -ForegroundColor Gray
