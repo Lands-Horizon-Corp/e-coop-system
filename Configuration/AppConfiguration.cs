@@ -87,7 +87,7 @@ public class SecuritySettings
 }
 
 /// <summary>
-/// Application-wide settings
+/// Application-wide settings (User-configurable via appsettings.json)
 /// </summary>
 public class ApplicationSettings
 {
@@ -118,7 +118,7 @@ public class ApplicationSettings
 }
 
 /// <summary>
-/// Logging configuration settings
+/// Logging configuration settings (User-configurable)
 /// </summary>
 public class LoggingSettings
 {
@@ -134,13 +134,11 @@ public class LoggingSettings
 }
 
 /// <summary>
-/// Root configuration class containing all application settings
+/// Root configuration class containing user-configurable settings only
+/// Sensitive settings (API, WebView, Security) are now in BuildConfiguration
 /// </summary>
 public class AppConfiguration
 {
-    public ApiSettings ApiSettings { get; set; } = new();
-    public WebViewSettings WebViewSettings { get; set; } = new();
-    public SecuritySettings Security { get; set; } = new();
     public ApplicationSettings Application { get; set; } = new();
     public LoggingSettings Logging { get; set; } = new();
 }

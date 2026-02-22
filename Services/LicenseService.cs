@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using ECoopSystem.Build;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -25,20 +26,18 @@ public class LicenseService
         _config = config;
         _logger = logger;
         _http.MaxResponseContentBufferSize = 1024 * 1024;
-        
-        
-        
+
 #if DEBUG
-_baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
+        _baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
            ?? "https://e-coop-server-development.up.railway.app/";
 #else
-var buildUrl = BuildConfiguration.ApiUrl;
-if (!string.IsNullOrEmpty(buildUrl) && 
-    !buildUrl.Contains("$(") &&
-    buildUrl != "https://e-coop-server-development.up.railway.app/")
-{
-    _baseUrl = buildUrl;
-}
+        var buildUrl = BuildConfiguration.ApiUrl;
+        if (!string.IsNullOrEmpty(buildUrl) && 
+            !buildUrl.Contains("$(") &&
+            buildUrl != "https://e-coop-server-development.up.railway.app/")
+        {
+            _baseUrl = buildUrl;
+        }
 else
 {
             _baseUrl = config.GetValue<string>("ApiSettings:BaseUrl") 
@@ -52,7 +51,10 @@ else
         // Use IConfiguration instead of static ConfigurationLoader
         var baseUrl = _config.GetValue<string>("ApiSettings:BaseUrl") 
                       ?? "https://api.example.com/";
-        var url = $"{baseUrl.TrimEnd('/')}/web/api/v1/license/activate";
+        // Encrypted endpoint for security
+        const string encEndpoint = "L3dlYi9hcGkvdjEvbGljZW5zZS9hY3RpdmF0ZQ=="; // "/web/api/v1/license/activate"
+        var endpoint = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encEndpoint));
+        var url = $"{baseUrl.TrimEnd('/')}{endpoint}";
   
         var payload = new
         {
@@ -110,7 +112,10 @@ else
 
     public async Task<VerifyResult> VerifyAsync(string secretKey, string fingerprint, int counter, CancellationToken ct)
     {
-        var url = $"{ApiService.BaseUrl.TrimEnd('/')}/web/api/v1/license/verify";
+        // Encrypted endpoint for security
+        const string encEndpoint = "L3dlYi9hcGkvdjEvbGljZW5zZS92ZXJpZnk="; // "/web/api/v1/license/verify"
+        var endpoint = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encEndpoint));
+        var url = $"{ApiService.BaseUrl.TrimEnd('/')}{endpoint}";
 
         var payload = new
         {

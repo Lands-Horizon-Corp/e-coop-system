@@ -1,12 +1,36 @@
+# Response
+````````powershell
 #!/usr/bin/env pwsh
 # ECoopSystem Build Script
 # Usage: ./build.ps1 -IFrameUrl "https://yoursite.com" -Platform windows
+#
+# ?? For SECURE builds with string encryption & obfuscation, use:
+#    .\Build\build-secure.ps1 -IFrameUrl "..." -ApiUrl "..." -Platform windows
+#
+# See: docs/OBFUSCATION.md for details
 
 param(
 [string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
 [string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
     [string]$AppName = "ECoopSystem",
     [string]$AppLogo = "Assets/Images/logo.png",
+    
+    # API Settings
+    [int]$ApiTimeout = 12,
+    [int]$ApiMaxRetries = 3,
+    [int]$ApiMaxResponseSizeBytes = 1048576,
+    
+    # WebView Settings
+    [string[]]$WebViewTrustedDomains = @("dev-client.example.com", "app.example.com", "api.example.com"),
+    [bool]$WebViewAllowHttp = $false,
+    
+    # Security Settings
+    [int]$SecurityGracePeriodDays = 7,
+    [int]$SecurityMaxActivationAttempts = 3,
+    [int]$SecurityLockoutMinutes = 5,
+    [int]$SecurityActivationLookbackMinutes = 1,
+    [int]$SecurityBackgroundVerificationIntervalMinutes = 1,
+    
     [ValidateSet("windows", "linux", "linux-deb", "linux-arm", "mac-intel", "mac-arm")]
     [string]$Platform = "windows",
     [ValidateSet("Debug", "Release")]
@@ -49,7 +73,19 @@ $generatedContent = $templateContent `
     -replace '\$\(IFrameUrl\)', $IFrameUrl `
     -replace '\$\(ApiUrl\)', $ApiUrl `
     -replace '\$\(AppName\)', $AppName `
-    -replace '\$\(AppLogo\)', $AppLogo
+    -replace '\$\(AppLogo\)', $AppLogo `
+    -replace '\$\(ApiTimeout\)', $ApiTimeout `
+    -replace '\$\(ApiMaxRetries\)', $ApiMaxRetries `
+    -replace '\$\(ApiMaxResponseSizeBytes\)', $ApiMaxResponseSizeBytes `
+    -replace '\$\(WebViewTrustedDomain1\)', $WebViewTrustedDomains[0] `
+    -replace '\$\(WebViewTrustedDomain2\)', $WebViewTrustedDomains[1] `
+    -replace '\$\(WebViewTrustedDomain3\)', $WebViewTrustedDomains[2] `
+    -replace '\$\(WebViewAllowHttp\)', $WebViewAllowHttp.ToString().ToLower() `
+    -replace '\$\(SecurityGracePeriodDays\)', $SecurityGracePeriodDays `
+    -replace '\$\(SecurityMaxActivationAttempts\)', $SecurityMaxActivationAttempts `
+    -replace '\$\(SecurityLockoutMinutes\)', $SecurityLockoutMinutes `
+    -replace '\$\(SecurityActivationLookbackMinutes\)', $SecurityActivationLookbackMinutes `
+    -replace '\$\(SecurityBackgroundVerificationIntervalMinutes\)', $SecurityBackgroundVerificationIntervalMinutes
 
 $generatedContent | Out-File -FilePath "Build/BuildConfiguration.cs" -Encoding UTF8 -NoNewline
 
@@ -93,3 +129,4 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "========================================" -ForegroundColor Red
     exit $LASTEXITCODE
 }
+

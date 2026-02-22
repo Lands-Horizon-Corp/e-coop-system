@@ -13,14 +13,23 @@ public class AppStateStore
     
     public AppStateStore(IDataProtectionProvider provider)
     {
+        // Encrypted folder name and file name
+        const string encFolderName = "RUNvb3BTeXN0ZW0="; // "ECoopSystem"
+        const string encFileName = "YXBwc3RhdGUuZGF0"; // "appstate.dat"
+        const string encPurpose = "RUNvb3BTeXN0ZW0uQXBwU3RhdGUudjE="; // "ECoopSystem.AppState.v1"
+        
+        var folderName = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encFolderName));
+        var fileName = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encFileName));
+        var purpose = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encPurpose));
+        
         var dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ECoopSystem");
+            folderName);
 
         Directory.CreateDirectory(dir);
-        _filePath = Path.Combine(dir, "appstate.dat");
+        _filePath = Path.Combine(dir, fileName);
 
-        _protector = provider.CreateProtector("ECoopSystem.AppState.v1");
+        _protector = provider.CreateProtector(purpose);
     }
 
     public AppState Load()

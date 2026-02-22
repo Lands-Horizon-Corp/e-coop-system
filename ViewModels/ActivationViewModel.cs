@@ -118,10 +118,15 @@ public class ActivationViewModel : ViewModelBase
         }
 
         IsBusy = true;
+        
+        // Add diagnostic logging
+        _logger.LogInformation("Starting activation with API URL: {ApiUrl}", ApiService.BaseUrl);
+        
         try
         {
             var fingerprint = FingerprintService.ComputeFingerprint(_state);
 
+            _logger.LogInformation("Sending activation request for key: {KeyPrefix}...", key[..4]);
             var result = await _licenseService.ActivateAsync(key, fingerprint, CancellationToken.None);
 
             if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.SecretKey))
@@ -144,17 +149,69 @@ public class ActivationViewModel : ViewModelBase
 
             Error = "Activation server is unavailable. Please try again later.";
         }
-        catch (TaskCanceledException)
+        catch (TaskCanceledException ex)
         {
+            _logger.LogWarning(ex, "Activation request timed out");
             Error = "Request timed out. Check your internet and try again.";
+        }
+        catch (System.Net.Http.HttpRequestException ex)
+        {
+            // Network/HTTP errors
+            _logger.LogError(ex, "HTTP request failed during activation. Inner exception: {InnerException}", 
+                ex.InnerException?.GetType().Name ?? "None");
+            
+            if (ex.InnerException is System.Net.Sockets.SocketException socketEx)
+            {
+                _logger.LogError("Socket error code: {ErrorCode}, Message: {Message}", 
+                    socketEx.SocketErrorCode, socketEx.Message);
+                Error = $"Cannot connect to activation server. Check your internet connection. (Error: {socketEx.SocketErrorCode})";
+            }
+            else if (ex.Message.Contains("SSL") || ex.Message.Contains("certificate"))
+            {
+                Error = "SSL certificate validation failed. Check your system date/time settings.";
+            }
+            else
+            {
+                _logger.LogError("HTTP error: {Message}", ex.Message);
+                Error = "Network error occurred. Please check your internet connection and try again.";
+            }
+        }
+        catch (System.Security.Cryptography.CryptographicException ex)
+        {
+            // Data protection / encryption errors
+            _logger.LogError(ex, "Cryptographic error during activation");
+            Error = "Security error occurred. Please restart the application and try again.";
+        }
+        catch (System.IO.IOException ex)
+        {
+            // File system errors (saving secret key or state)
+            _logger.LogError(ex, "File system error during activation");
+            Error = "Cannot save activation data. Check file permissions and disk space.";
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            // Permission errors
+            _logger.LogError(ex, "Access denied during activation");
+            Error = "Access denied. Please run the application with appropriate permissions.";
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            // JSON parsing errors
+            _logger.LogError(ex, "Invalid response format from activation server");
+            Error = "Invalid server response. The activation server may be experiencing issues.";
         }
         catch (Exception ex)
         {
-            // Log detailed error for debugging
-            _logger.LogError(ex, "Activation failed for license key");
+            // Log detailed error for debugging with full exception details
+            _logger.LogError(ex, "Activation failed unexpectedly. Type: {ExceptionType}, Message: {Message}", 
+                ex.GetType().FullName, ex.Message);
             
-            // Show generic error to user (don't expose internal details)
-            Error = "An unexpected error occurred. Please try again or contact support.";
+            // More helpful generic error with exception type hint
+#if DEBUG
+            Error = $"Error: {ex.GetType().Name} - {ex.Message}";
+#else
+            Error = "An unexpected error occurred. Please check your internet connection and try again, or contact support if the issue persists.";
+#endif
         }
         finally
         {

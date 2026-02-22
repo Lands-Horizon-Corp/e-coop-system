@@ -5,7 +5,8 @@ using System.Text.Json;
 namespace ECoopSystem.Configuration;
 
 /// <summary>
-/// Loads and manages application configuration from appsettings.json
+/// Loads and manages user-configurable application settings from appsettings.json
+/// Sensitive settings (API, WebView, Security) are compiled into BuildConfiguration
 /// </summary>
 public static class ConfigurationLoader
 {
@@ -31,7 +32,7 @@ public static class ConfigurationLoader
     }
 
     /// <summary>
-    /// Loads configuration from appsettings.json and environment-specific overrides
+    /// Loads user-configurable settings from appsettings.json
     /// </summary>
     public static AppConfiguration Load()
     {
@@ -67,9 +68,6 @@ public static class ConfigurationLoader
                     MergeConfiguration(config, envConfig);
                 }
             }
-
-            // Override with build configuration if available
-            OverrideFromBuildConfig(config);
         }
         catch (Exception ex)
         {
@@ -123,33 +121,6 @@ public static class ConfigurationLoader
 
     private static void MergeConfiguration(AppConfiguration target, AppConfiguration source)
     {
-        // Merge API settings
-        if (!string.IsNullOrEmpty(source.ApiSettings.BaseUrl))
-            target.ApiSettings.BaseUrl = source.ApiSettings.BaseUrl;
-        if (source.ApiSettings.Timeout > 0)
-            target.ApiSettings.Timeout = source.ApiSettings.Timeout;
-        if (source.ApiSettings.MaxRetries > 0)
-            target.ApiSettings.MaxRetries = source.ApiSettings.MaxRetries;
-        if (source.ApiSettings.MaxResponseSizeBytes > 0)
-            target.ApiSettings.MaxResponseSizeBytes = source.ApiSettings.MaxResponseSizeBytes;
-
-        // Merge WebView settings
-        if (!string.IsNullOrEmpty(source.WebViewSettings.BaseUrl))
-            target.WebViewSettings.BaseUrl = source.WebViewSettings.BaseUrl;
-        if (source.WebViewSettings.TrustedDomains.Count > 0)
-            target.WebViewSettings.TrustedDomains = source.WebViewSettings.TrustedDomains;
-        target.WebViewSettings.AllowHttp = source.WebViewSettings.AllowHttp;
-
-        // Merge Security settings
-        if (source.Security.GracePeriodDays > 0)
-            target.Security.GracePeriodDays = source.Security.GracePeriodDays;
-        if (source.Security.MaxActivationAttempts > 0)
-            target.Security.MaxActivationAttempts = source.Security.MaxActivationAttempts;
-        if (source.Security.LockoutMinutes > 0)
-            target.Security.LockoutMinutes = source.Security.LockoutMinutes;
-        if (source.Security.ActivationLookbackMinutes > 0)
-            target.Security.ActivationLookbackMinutes = source.Security.ActivationLookbackMinutes;
-
         // Merge Application settings
         if (!string.IsNullOrEmpty(source.Application.Name))
             target.Application.Name = source.Application.Name;
@@ -166,33 +137,5 @@ public static class ConfigurationLoader
         target.Logging.EnableDebugLogging = source.Logging.EnableDebugLogging;
         if (!string.IsNullOrEmpty(source.Logging.LogLevel))
             target.Logging.LogLevel = source.Logging.LogLevel;
-    }
-
-    private static void OverrideFromBuildConfig(AppConfiguration config)
-    {
-        try
-        {
-            // Override with build-time configuration if available
-            var buildApiUrl = Build.BuildConfiguration.ApiUrl;
-            var buildIFrameUrl = Build.BuildConfiguration.IFrameUrl;
-
-            if (!string.IsNullOrEmpty(buildApiUrl) && 
-                !buildApiUrl.Contains("$(") && // Not a placeholder
-                buildApiUrl != "https://e-coop-server-development.up.railway.app/")
-            {
-                config.ApiSettings.BaseUrl = buildApiUrl;
-            }
-
-            if (!string.IsNullOrEmpty(buildIFrameUrl) && 
-                !buildIFrameUrl.Contains("$(") && // Not a placeholder
-                buildIFrameUrl != "https://e-coop-client-development.up.railway.app/")
-            {
-                config.WebViewSettings.BaseUrl = buildIFrameUrl;
-            }
-        }
-        catch
-        {
-            // Build configuration not available or invalid, skip override
-        }
     }
 }

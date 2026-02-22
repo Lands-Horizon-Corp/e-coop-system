@@ -368,6 +368,18 @@ FodyWeavers.xsd
 
 # Build-time generated configuration (contains build-specific URLs)
 Build/BuildConfiguration.cs
+Build/SecureBuildConfiguration.cs
+
+# Obfuscation output
+Confused/
+*-Obfuscated/
+*-obfuscated.dll
+*-obfuscated.exe
+
+# Obfuscation mapping files (keep these secure!)
+obfuscation-map.txt
+*.obfmap
+symbols-mapping.xml
 
 # Environment-specific settings that may contain secrets
 appsettings.Development.json
@@ -448,6 +460,7 @@ artifacts/
 # Temporary build scripts
 build-temp.ps1
 build-temp.bat
+confuser-temp.crproj
 
 # Test results
 TestResults/
@@ -474,3 +487,7 @@ crash-*.dmp
 *.bak
 *.backup
 *-backup.*
+
+# Installer output
+installer/output/
+*.exe

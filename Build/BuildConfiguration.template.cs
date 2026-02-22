@@ -9,6 +9,7 @@ namespace ECoopSystem.Build;
 /// <summary>
 /// Build-time configuration generated from MSBuild properties.
 /// Values can be overridden via command-line arguments during build.
+/// These settings are compiled into the binary and cannot be modified by end users.
 /// </summary>
 public static class BuildConfiguration
 {
@@ -31,4 +32,25 @@ public static class BuildConfiguration
     /// Application Logo Path - Set via: -p:AppLogo="path/to/logo.png"
     /// </summary>
     public const string AppLogo = "$(AppLogo)";
+
+    // API Settings (Build-time only, not user-configurable)
+    public const int ApiTimeout = $(ApiTimeout);
+    public const int ApiMaxRetries = $(ApiMaxRetries);
+    public const int ApiMaxResponseSizeBytes = $(ApiMaxResponseSizeBytes);
+
+    // WebView Trusted Domains (Build-time only)
+    public static readonly string[] WebViewTrustedDomains = new[]
+    {
+        "$(WebViewTrustedDomain1)",
+        "$(WebViewTrustedDomain2)",
+        "$(WebViewTrustedDomain3)"
+    };
+    public const bool WebViewAllowHttp = $(WebViewAllowHttp);
+
+    // Security Settings (Build-time only, not user-configurable)
+    public const int SecurityGracePeriodDays = $(SecurityGracePeriodDays);
+    public const int SecurityMaxActivationAttempts = $(SecurityMaxActivationAttempts);
+    public const int SecurityLockoutMinutes = $(SecurityLockoutMinutes);
+    public const int SecurityActivationLookbackMinutes = $(SecurityActivationLookbackMinutes);
+    public const int SecurityBackgroundVerificationIntervalMinutes = $(SecurityBackgroundVerificationIntervalMinutes);
 }
