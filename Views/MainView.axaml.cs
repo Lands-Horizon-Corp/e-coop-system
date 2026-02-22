@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ECoopSystem.Configuration;
+using ECoopSystem.Build;
 using ECoopSystem.ViewModels;
 using System;
 using System.ComponentModel;
@@ -61,24 +61,24 @@ public partial class MainView : UserControl
             return;
         }
 
-        var config = ConfigurationLoader.Current;
+        // WebView security settings from BuildConfiguration (compiled at build time)
+        var allowHttp = BuildConfiguration.WebViewAllowHttp;
+        var trustedDomains = BuildConfiguration.WebViewTrustedDomains;
 
-        // Only allow HTTPS (no HTTP in production) unless configured otherwise
+        // Only allow HTTPS (no HTTP in production) unless configured at build time
 #if !DEBUG
-        if (uri.Scheme != "https" && !config.WebViewSettings.AllowHttp)
+        if (uri.Scheme != "https" && !allowHttp)
         {
             Debug.WriteLine($"WebView Security Warning: Non-HTTPS URL in production: {uri.Scheme}://{uri.Host}");
         }
 #else
-        if (uri.Scheme != "https" && !config.WebViewSettings.AllowHttp)
+        if (uri.Scheme != "https" && !allowHttp)
         {
             Debug.WriteLine($"WebView Warning: Non-HTTPS URL: {uri.Scheme}://{uri.Host}");
         }
 #endif
 
-        // Only allow navigation to trusted domains from configuration
-        var trustedDomains = config.WebViewSettings.TrustedDomains;
-
+        // Only allow navigation to trusted domains from BuildConfiguration (compiled at build time)
         var isTrusted = false;
         foreach (var domain in trustedDomains)
         {
@@ -93,6 +93,7 @@ public partial class MainView : UserControl
         if (!isTrusted)
         {
             Debug.WriteLine($"WebView Security Warning: Navigation to untrusted domain: {uri.Host}");
+            Debug.WriteLine($"  Trusted domains (from build): {string.Join(", ", trustedDomains)}");
         }
         else
         {

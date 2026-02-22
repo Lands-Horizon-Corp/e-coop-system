@@ -9,6 +9,24 @@ APP_LOGO ?= Assets/Images/logo.png
 PLATFORM ?= windows
 CONFIG ?= Release
 
+# API Settings (secure, compiled into binary)
+API_TIMEOUT ?= 12
+API_MAX_RETRIES ?= 3
+API_MAX_RESPONSE_SIZE ?= 1048576
+
+# WebView Settings (secure, compiled into binary)
+WEBVIEW_DOMAIN1 ?= dev-client.example.com
+WEBVIEW_DOMAIN2 ?= app.example.com
+WEBVIEW_DOMAIN3 ?= api.example.com
+WEBVIEW_ALLOW_HTTP ?= false
+
+# Security Settings (secure, compiled into binary)
+SECURITY_GRACE_PERIOD ?= 7
+SECURITY_MAX_ACTIVATION_ATTEMPTS ?= 3
+SECURITY_LOCKOUT_MINUTES ?= 5
+SECURITY_ACTIVATION_LOOKBACK ?= 1
+SECURITY_BG_VERIFICATION ?= 1
+
 # Runtime identifiers
 ifeq ($(PLATFORM),windows)
     RID = win-x64
@@ -38,6 +56,18 @@ generate-config:
 	     -e 's|\$$(ApiUrl)|$(API_URL)|g' \
 	     -e 's|\$$(AppName)|$(APP_NAME)|g' \
 	     -e 's|\$$(AppLogo)|$(APP_LOGO)|g' \
+	     -e 's|\$$(ApiTimeout)|$(API_TIMEOUT)|g' \
+	     -e 's|\$$(ApiMaxRetries)|$(API_MAX_RETRIES)|g' \
+	     -e 's|\$$(ApiMaxResponseSizeBytes)|$(API_MAX_RESPONSE_SIZE)|g' \
+	     -e 's|\$$(WebViewTrustedDomain1)|$(WEBVIEW_DOMAIN1)|g' \
+	     -e 's|\$$(WebViewTrustedDomain2)|$(WEBVIEW_DOMAIN2)|g' \
+	     -e 's|\$$(WebViewTrustedDomain3)|$(WEBVIEW_DOMAIN3)|g' \
+	     -e 's|\$$(WebViewAllowHttp)|$(WEBVIEW_ALLOW_HTTP)|g' \
+	     -e 's|\$$(SecurityGracePeriodDays)|$(SECURITY_GRACE_PERIOD)|g' \
+	     -e 's|\$$(SecurityMaxActivationAttempts)|$(SECURITY_MAX_ACTIVATION_ATTEMPTS)|g' \
+	     -e 's|\$$(SecurityLockoutMinutes)|$(SECURITY_LOCKOUT_MINUTES)|g' \
+	     -e 's|\$$(SecurityActivationLookbackMinutes)|$(SECURITY_ACTIVATION_LOOKBACK)|g' \
+	     -e 's|\$$(SecurityBackgroundVerificationIntervalMinutes)|$(SECURITY_BG_VERIFICATION)|g' \
 	     Build/BuildConfiguration.template.cs > Build/BuildConfiguration.cs
 	@echo "? Configuration generated"
 
@@ -54,10 +84,7 @@ build: generate-config
 	@dotnet publish -c $(CONFIG) -r $(RID) \
 		--self-contained \
 		-p:PublishSingleFile=true \
-		-p:IncludeNativeLibrariesForSelfExtract=true \
-		-p:IFrameUrl="$(IFRAME_URL)" \
-		-p:ApiUrl="$(API_URL)" \
-		-p:AppName="$(APP_NAME)"
+		-p:IncludeNativeLibrariesForSelfExtract=true
 	@echo ""
 	@echo "? Build completed: bin/$(CONFIG)/net9.0/$(RID)/publish/"
 

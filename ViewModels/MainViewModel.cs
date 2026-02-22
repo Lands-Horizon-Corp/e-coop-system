@@ -28,24 +28,11 @@ public class MainViewModel : ViewModelBase
 
     public event EventHandler? WebViewReady;
 
-    public string URL { get; } = 
-#if DEBUG
-        ConfigurationLoader.Current.WebViewSettings.BaseUrl;
-#else
-        GetProductionUrl();
-#endif
-
-    private static string GetProductionUrl()
-    {
-        var buildUrl = BuildConfiguration.IFrameUrl;
-        if (!string.IsNullOrEmpty(buildUrl) && 
-            !buildUrl.Contains("$(") && // Not a placeholder
-            buildUrl != "https://e-coop-client-development.up.railway.app/")
-        {
-            return buildUrl;
-        }
-        return ConfigurationLoader.Current.WebViewSettings.BaseUrl;
-    }
+    /// <summary>
+    /// WebView URL from BuildConfiguration (compiled at build time, not user-modifiable).
+    /// In all environments (Debug/Release), this comes from build parameters.
+    /// </summary>
+    public string URL { get; } = BuildConfiguration.IFrameUrl;
 
     public bool IsLoading
     {

@@ -2,6 +2,28 @@
 
 This document explains how to build ECoopSystem with custom configurations for different environments and platforms.
 
+## Quick Reference
+
+| Platform | Command |
+|----------|---------|
+| **Windows** | `./build.ps1 -IFrameUrl "https://example.com" -ApiUrl "https://api.example.com" -Platform windows` |
+| **Linux** | `make build IFRAME_URL=https://example.com API_URL=https://api.example.com PLATFORM=linux` |
+| **Linux (alt)** | `./build.sh https://example.com https://api.example.com linux` |
+| **macOS ARM** | `./build.ps1 -IFrameUrl "https://example.com" -ApiUrl "https://api.example.com" -Platform mac-arm` |
+| **macOS Intel** | `./build.ps1 -IFrameUrl "https://example.com" -ApiUrl "https://api.example.com" -Platform mac-intel` |
+
+**Development (uses default dev URLs):**
+```bash
+dotnet run
+```
+
+**Clean build artifacts:**
+```bash
+make clean  # or: Remove-Item -Recurse bin,obj,Build/BuildConfiguration.cs
+```
+
+---
+
 ## Quick Start
 
 ### Windows (PowerShell)

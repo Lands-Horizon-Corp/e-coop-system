@@ -1,152 +1,223 @@
 # ECoopSystem
 
-A cross-platform desktop application built with Avalonia UI and .NET 9, supporting Windows and Linux.
+A secure, cross-platform desktop application built with Avalonia UI and .NET 9, supporting Windows and Linux.
 
-## Supported Platforms
+## ?? Quick Start
 
-- **Windows** (x64)
-- **Linux** (x64)
-- **macOS** (planned for future release)
-
-## Prerequisites
-
-### Windows
+### Prerequisites
 - .NET 9 SDK or Runtime
-- Windows 10/11 (x64)
-
-### Linux
-- .NET 9 SDK or Runtime
-- X11 or Wayland display server
-- GTK3 (usually pre-installed)
-- libX11, libXext (for Avalonia)
-- CEF/Chromium dependencies for WebView (if using WebViewControl)
-
-#### Ubuntu/Debian Dependencies
-```bash
-sudo apt update
-sudo apt install -y dotnet-sdk-9.0 libx11-6 libxext6 libgtk-3-0
-```
-
-#### Fedora/RHEL Dependencies
-```bash
-sudo dnf install -y dotnet-sdk-9.0 libX11 libXext gtk3
-```
-
-#### Arch Linux Dependencies
-```bash
-sudo pacman -S dotnet-sdk libx11 libxext gtk3
-```
-
-## Building from Source
+- Platform-specific dependencies:
+  - **Windows**: Windows 10/11 (x64)
+  - **Linux**: See [docs/LINUX.md](docs/LINUX.md) for distribution-specific requirements
 
 ### Development Build
 ```bash
-# Clone the repository
-git clone https://github.com/BlirrHub/ECoopSystem.git
+# Clone and build
+git clone https://github.com/Lands-Horizon-Corp/e-coop-system.git
 cd ECoopSystem
-
-# Restore dependencies
 dotnet restore
-
-# Build the project
-dotnet build
-```
-
-### Run in Development Mode
-```bash
 dotnet run
 ```
 
-## Publishing for Distribution
+### Production Build
+```powershell
+# Windows
+./build.ps1 -IFrameUrl "https://your-client.com" -ApiUrl "https://your-api.com" -Platform windows
 
-### Windows (x64)
+# Linux
+make build IFRAME_URL=https://your-client.com API_URL=https://your-api.com PLATFORM=linux
+```
+
+## ?? Documentation
+
+| Document | Description |
+|----------|-------------|
+| **[Build System](docs/BUILD.md)** | Complete build instructions and options |
+| **[Configuration](docs/CONFIGURATION.md)** | Settings, configuration system, and security model |
+| **[Linux Deployment](docs/LINUX.md)** | Linux-specific installation and troubleshooting |
+| **[Cross-Platform Dev](docs/QUICK-REFERENCE.md)** | Platform detection and development tips |
+
+## ?? Security Architecture
+
+ECoopSystem uses a **hybrid configuration model** for maximum security:
+
+- ? **Hardcoded Sensitive Settings**: API URLs, security parameters, and trusted domains are **compiled into the binary** at build time
+- ? **User Settings Only**: `appsettings.json` contains only non-sensitive UI preferences that users can safely modify
+- ? **Encrypted Storage**: License keys and secrets use ASP.NET Data Protection with file system persistence
+- ? **SSL/TLS Validation**: Strict certificate validation in production, configurable for development
+- ? **Domain Whitelisting**: WebView navigation restricted to build-time defined trusted domains
+
+**Users cannot tamper with security-critical configuration** - it's baked into the executable.
+
+## ??? Architecture
+
+| Component | Technology |
+|-----------|------------|
+| **Framework** | .NET 9 |
+| **UI Framework** | Avalonia UI 11.3.11 |
+| **MVVM** | CommunityToolkit.Mvvm 8.4.0 |
+| **WebView** | WebViewControl-Avalonia 3.120.11 (CEF) |
+| **Configuration** | Microsoft.Extensions.Configuration 10.0.3 |
+| **Data Protection** | ASP.NET Core Data Protection 10.0.2 |
+| **HTTP Client** | Microsoft.Extensions.Http 10.0.3 |
+| **Logging** | Microsoft.Extensions.Logging 10.0.3 |
+
+## ?? Supported Platforms
+
+| Platform | Status | Runtime ID | Notes |
+|----------|--------|------------|-------|
+| **Windows 10/11 (x64)** | ? Fully Supported | `win-x64` | Primary target |
+| **Linux x64** | ? Fully Supported | `linux-x64` | Ubuntu, Debian, Fedora, Arch |
+| **Linux ARM64** | ? Supported | `linux-arm64` | Raspberry Pi, ARM servers |
+| **macOS Intel** | ?? Planned | `osx-x64` | Future release |
+| **macOS ARM (M1/M2)** | ?? Planned | `osx-arm64` | Future release |
+
+## ??? Development
+
+### Building from Source
+
 ```bash
+# Restore dependencies
+dotnet restore
+
+# Build
+dotnet build
+
+# Run with hot reload
+dotnet watch
+
+# Run tests (if available)
+dotnet test
+```
+
+### Publishing for Distribution
+
+```bash
+# Windows (x64) - Self-contained
 dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
-```
-Output: `bin/Release/net9.0/win-x64/publish/`
 
-### Linux (x64)
-```bash
+# Linux (x64) - Self-contained
 dotnet publish -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true
-```
-Output: `bin/Release/net9.0/linux-x64/publish/`
 
-### Platform-Specific Notes
-
-#### Linux Execution
-After publishing, you may need to make the binary executable:
-```bash
-chmod +x ./bin/Release/net9.0/linux-x64/publish/ECoopSystem
-./bin/Release/net9.0/linux-x64/publish/ECoopSystem
+# Framework-dependent (requires .NET runtime)
+dotnet publish -c Release -r linux-x64 --no-self-contained
 ```
 
-## Configuration
+**Output location:** `bin/Release/net9.0/<runtime-id>/publish/`
 
-The application uses configuration files:
-- `appsettings.json` - Base configuration
-- `appsettings.Development.json` - Development environment settings
-- `appsettings.Production.json` - Production environment settings
+### Custom Builds
 
-### Data Storage Locations
+Use the build scripts for production deployments with custom configurations:
 
-#### Windows
-- Application Data: `%APPDATA%\ECoopSystem\`
-- Data Protection Keys: `%APPDATA%\ECoopSystem\dp-keys\`
+```powershell
+# Production build with all options
+./build.ps1 `
+    -IFrameUrl "https://app.production.com" `
+    -ApiUrl "https://api.production.com" `
+    -ApiTimeout 30 `
+    -SecurityGracePeriodDays 14 `
+    -WebViewTrustedDomains @("production.com", "api.production.com", "cdn.production.com") `
+    -Platform windows `
+    -Configuration Release
+```
 
-#### Linux
-- Application Data: `~/.config/ECoopSystem/`
-- Data Protection Keys: `~/.config/ECoopSystem/dp-keys/`
+See [docs/BUILD.md](docs/BUILD.md) for all available build parameters.
 
-## Architecture
+## ?? Configuration
 
-- **Framework**: .NET 9
-- **UI**: Avalonia UI 11.3.11
-- **MVVM**: CommunityToolkit.Mvvm
-- **Data Protection**: ASP.NET Core Data Protection
-- **WebView**: WebViewControl-Avalonia (CEF-based)
+### User-Modifiable Settings (appsettings.json)
 
-## Known Limitations
+Users can customize:
+- Application name and version display
+- Window dimensions
+- Logging preferences
+
+**File Locations:**
+- Windows: `%APPDATA%\ECoopSystem\appsettings.json`
+- Linux: `~/.config/ECoopSystem/appsettings.json`
+- Or: Same directory as executable
+
+### Build-Time Settings (Not User-Modifiable)
+
+The following are **compiled into the binary** and cannot be changed after deployment:
+- API server URLs
+- WebView client URLs
+- Trusted domain whitelist
+- Security parameters (grace periods, lockout durations, retry limits)
+- HTTP timeouts and size limits
+
+To change these, rebuild with new parameters. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+
+## ??? Data Storage Locations
+
+| Data Type | Windows | Linux |
+|-----------|---------|-------|
+| **Application Data** | `%APPDATA%\ECoopSystem\` | `~/.config/ECoopSystem/` |
+| **Data Protection Keys** | `%APPDATA%\ECoopSystem\dp-keys\` | `~/.config/ECoopSystem/dp-keys/` |
+| **Application State** | `%APPDATA%\ECoopSystem\appstate.dat` | `~/.config/ECoopSystem/appstate.dat` |
+| **Secret Key (Encrypted)** | `%APPDATA%\ECoopSystem\secret.dat` | `~/.config/ECoopSystem/secret.dat` |
+| **Configuration** | Same as executable or AppData | Same as executable or ~/.config |
+
+## ?? Known Limitations
 
 ### Linux-Specific
 1. **WebView Performance**: CEF initialization may be slower on first run
-2. **System Tray**: May have limited support depending on desktop environment
+2. **System Tray**: May have limited support depending on desktop environment  
 3. **Hardware Acceleration**: Requires proper graphics drivers for optimal performance
+4. **Dependencies**: Requires GTK3, X11/Wayland, and various system libraries
 
-## Troubleshooting
+See [docs/LINUX.md](docs/LINUX.md) for detailed Linux setup and troubleshooting.
 
-### Linux: Application won't start
+## ?? Troubleshooting
+
+### Windows
+- Ensure .NET 9 runtime is installed
+- Check Windows Defender hasn't quarantined the executable
+- Run as administrator if file permission issues occur
+
+### Linux
 ```bash
-# Check if all dependencies are installed
+# Check dependencies
 ldd ./ECoopSystem
 
-# Run with verbose logging
+# Run with debug logging
 DOTNET_LOGGING_LEVEL=Debug ./ECoopSystem
-```
 
-### Linux: WebView not loading
-Ensure CEF runtime libraries are present in the application directory or system paths.
-
-### Linux: Permission denied
-```bash
+# Set executable permission
 chmod +x ./ECoopSystem
 ```
 
-## Development
+For comprehensive troubleshooting, see:
+- [Linux Guide](docs/LINUX.md)
+- [Configuration Guide](docs/CONFIGURATION.md)
 
-### Building for Multiple Platforms
-You can build for all supported platforms:
-```bash
-# Windows
-dotnet publish -c Release -r win-x64 --self-contained
+## Contributing
 
-# Linux
-dotnet publish -c Release -r linux-x64 --self-contained
-```
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-## Security Features
+## ?? License
 
-- Data Protection API for sensitive data storage
-- SSL/TLS certificate validation
-- Trusted domain validation for WebView navigation
-- Encrypted secret key storage
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
+## ?? Organization
+
+Developed and maintained by **Lands Horizon Corporation**
+
+- **Repository**: https://github.com/Lands-Horizon-Corp/e-coop-system
+- **Copyright**: ©2026 Lands Horizon
+
+## ?? Support
+
+For issues, questions, or support:
+- Open an issue on [GitHub Issues](https://github.com/Lands-Horizon-Corp/e-coop-system/issues)
+- Check the [documentation](docs/)
+- Review [Linux troubleshooting guide](docs/LINUX.md)
+
+---
+
+**Built with using Avalonia UI and .NET 9**

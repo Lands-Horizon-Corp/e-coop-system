@@ -1,26 +1,29 @@
+using ECoopSystem.Build;
 using ECoopSystem.Configuration;
 
 namespace ECoopSystem;
 
 /// <summary>
-/// Application constants. Most values now come from appsettings.json via ConfigurationLoader.
+/// Application constants.
+/// - User-configurable values come from appsettings.json via ConfigurationLoader
+/// - Security-critical values are compiled into BuildConfiguration at build time
 /// </summary>
 public static class Constants
 {
     // License key length is fixed and cannot be configured
     public const int LicenseKeyLength = 127;
 
-    // Window dimensions - uses configuration if available, otherwise defaults
+    // Window dimensions - user-configurable from appsettings.json
     public static int WindowWidth => ConfigurationLoader.Current.Application.WindowWidth;
     public static int WindowHeight => ConfigurationLoader.Current.Application.WindowHeight;
 
-    // Security settings - from configuration
-    public static int GracePeriodDays => ConfigurationLoader.Current.Security.GracePeriodDays;
-    public static int MaxActivationAttempts => ConfigurationLoader.Current.Security.MaxActivationAttempts;
-    public static int LockoutMinutes => ConfigurationLoader.Current.Security.LockoutMinutes;
-    public static int ActivationLookbackMinutes => ConfigurationLoader.Current.Security.ActivationLookbackMinutes;
-    public static int BackgroundVerificationIntervalMinutes => ConfigurationLoader.Current.Security.BackgroundVerificationIntervalMinutes;
+    // Security settings - compiled into binary at build time (not user-modifiable)
+    public static int GracePeriodDays => BuildConfiguration.SecurityGracePeriodDays;
+    public static int MaxActivationAttempts => BuildConfiguration.SecurityMaxActivationAttempts;
+    public static int LockoutMinutes => BuildConfiguration.SecurityLockoutMinutes;
+    public static int ActivationLookbackMinutes => BuildConfiguration.SecurityActivationLookbackMinutes;
+    public static int BackgroundVerificationIntervalMinutes => BuildConfiguration.SecurityBackgroundVerificationIntervalMinutes;
 
-    // Application settings - from configuration
+    // Application settings - user-configurable from appsettings.json
     public static int MinimumLoadingTimeSeconds => ConfigurationLoader.Current.Application.MinimumLoadingTimeSeconds;
 }
