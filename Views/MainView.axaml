@@ -25,22 +25,39 @@
 
         <!-- Loading Overlay -->
         <Border IsVisible="{Binding IsLoading}">
-            <StackPanel VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Spacing="20">
-                
-                <!-- Loading Spinner using ProgressBar -->
-                <ProgressBar IsIndeterminate="True"
-                             Width="200"
-                             Height="4"
-                             Foreground="White"/>
+            <Grid>
+                <!-- Loading Logo at Center -->
+                <Image Source="avares://ECoopSystem/Assets/Images/loading-logo.png"
+                       Width="180"
+                       Height="180"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,0,0,150"/>
 
-                <!-- Loading Text -->
-                <TextBlock Text="Verifying License..."
-                           FontSize="18"
-                           Foreground="White"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
+                <!-- Footer at Bottom -->
+                <StackPanel VerticalAlignment="Bottom"
+                            HorizontalAlignment="Center"
+                            Spacing="16"
+                            Margin="0,0,0,20">
+                    <StackPanel Spacing="24">
+						<TextBlock Text="BUILT IN TRUST"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="POWERED BY LANDS HORIZON CORP 2026."
+                                   FontSize="10"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="200"
+                                 Height="4"
+                                 HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>
