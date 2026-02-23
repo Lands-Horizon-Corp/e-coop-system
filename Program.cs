@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia;
@@ -10,7 +8,6 @@ using ECoopSystem.Stores;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace ECoopSystem
 {
@@ -24,87 +21,30 @@ namespace ECoopSystem
 #endif
         public static void Main(string[] args)
         {
-            // Check for single instance
             bool createdNew;
             _mutex = new System.Threading.Mutex(true, MutexName, out createdNew);
 
             if (!createdNew)
             {
-                // Another instance is already running
-                Debug.WriteLine("Another instance of ECoopSystem is already running.");
-                
-                // Log to file if possible
-                try
-                {
-                    var logDir = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        "ECoopSystem",
-                        "logs"
-                    );
-                    Directory.CreateDirectory(logDir);
-                    var logFile = Path.Combine(logDir, $"single-instance-{DateTime.Now:yyyyMMdd}.log");
-                    File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Another instance already running, exiting.\n");
-                }
-                catch { /* Ignore logging errors */ }
-                
                 return;
             }
 
             try
             {
-                // Set up global exception handlers
                 AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
                 {
-                    var ex = e.ExceptionObject as Exception;
-                    Debug.WriteLine($"[FATAL] Unhandled exception: {ex}");
-                    
-                    // Try to log to file if possible
-                    try
-                    {
-                        var logDir = Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                            "ECoopSystem",
-                            "logs"
-                        );
-                        Directory.CreateDirectory(logDir);
-                        var crashLog = Path.Combine(logDir, $"crash-{DateTime.Now:yyyyMMdd-HHmmss}.log");
-                        File.WriteAllText(crashLog, $"Unhandled Exception:\n{ex}");
-                    }
-                    catch { /* Ignore logging errors */ }
+                    // Silently handle to prevent information disclosure
                 };
 
                 TaskScheduler.UnobservedTaskException += (sender, e) =>
                 {
-                    Debug.WriteLine($"[ERROR] Unobserved task exception: {e.Exception}");
-                    e.SetObserved(); // Prevent process termination
+                    e.SetObserved();
                 };
 
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[FATAL] Application crashed: {ex}");
-                
-                // Try to show message box or log
-                try
-                {
-                    var logDir = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        "ECoopSystem",
-                        "logs"
-                    );
-                    Directory.CreateDirectory(logDir);
-                    var crashLog = Path.Combine(logDir, $"crash-{DateTime.Now:yyyyMMdd-HHmmss}.log");
-                    File.WriteAllText(crashLog, $"Fatal Exception in Main:\n{ex}");
-                }
-                catch { /* Ignore logging errors */ }
-                
-                
-                throw;
-            }
             finally
             {
-                // Release mutex on exit
                 _mutex?.ReleaseMutex();
                 _mutex?.Dispose();
             }
@@ -115,53 +55,21 @@ namespace ECoopSystem
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-#if DEBUG
-                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
-#endif
                 .Build();
 
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(configuration);
             
-            services.AddLogging(builder =>
-            {
-#if DEBUG
-                builder.AddDebug();
-                builder.AddConsole();
-                builder.SetMinimumLevel(LogLevel.Debug);
-#else
-                builder.SetMinimumLevel(LogLevel.Information);
-                
-                // Add file logging in Release builds for diagnostics
-                var logDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "ECoopSystem",
-                    "logs"
-                );
-                Directory.CreateDirectory(logDir);
-                
-                builder.AddSimpleConsole(options =>
-                {
-                    options.SingleLine = true;
-                    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-                });
-                
-                // Add custom file logger
-                builder.Services.AddSingleton<ILoggerProvider, FileLoggerProvider>(sp => 
-                    new FileLoggerProvider(Path.Combine(logDir, $"ecoopsystem-{DateTime.Now:yyyyMMdd}.log")));
-#endif
-            });
-            
-            var keysDir = Path.Combine(
+            var keysDir = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "ECoopSystem",
                 "dp-keys"
             );
 
-            Directory.CreateDirectory(keysDir);
+            System.IO.Directory.CreateDirectory(keysDir);
 
             services.AddDataProtection()
-                    .PersistKeysToFileSystem(new DirectoryInfo(keysDir))
+                    .PersistKeysToFileSystem(new System.IO.DirectoryInfo(keysDir))
                     .SetApplicationName("ECoopSystem");
 
             services.AddSingleton<AppStateStore>();
@@ -174,33 +82,10 @@ namespace ECoopSystem
             .ConfigurePrimaryHttpMessageHandler(() =>
             {
                 var handler = new HttpClientHandler();
-                
-#if !DEBUG
                 handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
                 {
-                    if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.None)
-                        return true;
-                    
-                    Debug.WriteLine($"SSL Certificate Error: {sslPolicyErrors}");
-                    if (cert != null)
-                    {
-                        Debug.WriteLine($"Certificate Subject: {cert.Subject}");
-                        Debug.WriteLine($"Certificate Issuer: {cert.Issuer}");
-                    }
-                    
-                    return false;
+                    return sslPolicyErrors == System.Net.Security.SslPolicyErrors.None;
                 };
-#else
-                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
-                {
-                    if (sslPolicyErrors != System.Net.Security.SslPolicyErrors.None)
-                    {
-                        Debug.WriteLine($"[DEV] SSL Warning: {sslPolicyErrors}");
-                    }
-                    return true;
-                };
-#endif
-                
                 return handler;
             });
 
@@ -209,7 +94,6 @@ namespace ECoopSystem
             return AppBuilder.Configure<App>()
                     .UsePlatformDetect()
                     .WithInterFont()
-                    .LogToTrace()
                     .AfterSetup(_ =>
                     {
                         App.Services = provider;

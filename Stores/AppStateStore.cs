@@ -8,28 +8,23 @@ namespace ECoopSystem.Stores;
 
 public class AppStateStore
 {
+    private static readonly string FolderName = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("RUNvb3BTeXN0ZW0="));
+    private static readonly string FileName = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("YXBwc3RhdGUuZGF0"));
+    private static readonly string Purpose = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("RUNvb3BTeXN0ZW0uQXBwU3RhdGUudjE="));
+    
     private readonly string _filePath;
     private readonly IDataProtector _protector;
     
     public AppStateStore(IDataProtectionProvider provider)
     {
-        // Encrypted folder name and file name
-        const string encFolderName = "RUNvb3BTeXN0ZW0="; // "ECoopSystem"
-        const string encFileName = "YXBwc3RhdGUuZGF0"; // "appstate.dat"
-        const string encPurpose = "RUNvb3BTeXN0ZW0uQXBwU3RhdGUudjE="; // "ECoopSystem.AppState.v1"
-        
-        var folderName = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encFolderName));
-        var fileName = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encFileName));
-        var purpose = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encPurpose));
-        
         var dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            folderName);
+            FolderName);
 
         Directory.CreateDirectory(dir);
-        _filePath = Path.Combine(dir, fileName);
+        _filePath = Path.Combine(dir, FileName);
 
-        _protector = provider.CreateProtector(purpose);
+        _protector = provider.CreateProtector(Purpose);
     }
 
     public AppState Load()

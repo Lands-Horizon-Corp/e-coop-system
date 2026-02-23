@@ -1,6 +1,5 @@
 ﻿using ECoopSystem.Services;
 using ECoopSystem.Stores;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -16,8 +15,6 @@ public class ActivationViewModel : ViewModelBase
     private readonly AppState _state;
     private readonly SecretKeyStore _secretStore;
     private readonly LicenseService _licenseService;
-    private readonly ILogger<ActivationViewModel> _logger;
-    private readonly ILoggerFactory _loggerFactory;
     private readonly DispatcherTimer _lockoutTimer;
 
     private string _licenseKey = "";
@@ -30,26 +27,20 @@ public class ActivationViewModel : ViewModelBase
         AppStateStore store, 
         AppState state,
         SecretKeyStore secretStore,
-        LicenseService licenseService,
-        ILogger<ActivationViewModel> logger,
-        ILoggerFactory loggerFactory)
+        LicenseService licenseService)
     {
         _shell = shell;
         _store = store;
         _state = state;
         _secretStore = secretStore;
         _licenseService = licenseService;
-        _logger = logger;
-        _loggerFactory = loggerFactory;
 
-        // Setup timer to update lockout countdown every second
         _lockoutTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
         };
         _lockoutTimer.Tick += OnLockoutTimerTick;
         
-        // Start timer if currently locked out
         if (IsLockedOut())
         {
             _lockoutTimer.Start();
@@ -119,16 +110,9 @@ public class ActivationViewModel : ViewModelBase
 
         IsBusy = true;
         
-        // Add diagnostic logging
-        _logger.LogInformation("Starting activation with API URL: {ApiUrl}", ApiService.BaseUrl);
-        _logger.LogInformation("BuildConfiguration.ApiUrl value: {BuildApiUrl}", ECoopSystem.Build.BuildConfiguration.ApiUrl);
-        _logger.LogInformation("Attempting to activate with fingerprint for installation: {InstallationId}", _state.InstallationId);
-        
         try
         {
             var fingerprint = FingerprintService.ComputeFingerprint(_state);
-
-            _logger.LogInformation("Sending activation request for key: {KeyPrefix}...", key[..4]);
             var result = await _licenseService.ActivateAsync(key, fingerprint, CancellationToken.None);
 
             if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.SecretKey))
@@ -137,7 +121,6 @@ public class ActivationViewModel : ViewModelBase
                 _state.Counter = 1;
                 _store.Save(_state);
                 
-                // Show success screen instead of navigating immediately
                 IsActivationSuccess = true;
                 return;
             }
@@ -151,84 +134,33 @@ public class ActivationViewModel : ViewModelBase
 
             Error = "Activation server is unavailable. Please try again later.";
         }
-        catch (TaskCanceledException ex)
+        catch (TaskCanceledException)
         {
-            _logger.LogWarning(ex, "Activation request timed out");
             Error = "Request timed out. Check your internet and try again.";
         }
-        catch (System.Net.Http.HttpRequestException ex)
+        catch (System.Net.Http.HttpRequestException)
         {
-            // Network/HTTP errors
-            _logger.LogError(ex, "HTTP request failed during activation. Inner exception: {InnerException}", 
-                ex.InnerException?.GetType().Name ?? "None");
-            
-            if (ex.InnerException is System.Net.Sockets.SocketException socketEx)
-            {
-                _logger.LogError("Socket error code: {ErrorCode}, Message: {Message}", 
-                    socketEx.SocketErrorCode, socketEx.Message);
-                
-                // NoData, HostNotFound, or TryAgain indicate DNS resolution failure
-                if (socketEx.SocketErrorCode == System.Net.Sockets.SocketError.NoData ||
-                    socketEx.SocketErrorCode == System.Net.Sockets.SocketError.HostNotFound ||
-                    socketEx.SocketErrorCode == System.Net.Sockets.SocketError.TryAgain)
-                {
-#if DEBUG
-                    Error = $"Cannot resolve server '{ApiService.BaseUrl}'. Check DNS settings and internet connection, or verify the server URL is correct. (Error: {socketEx.SocketErrorCode})";
-#else
-                    Error = "Cannot resolve activation server address. Check your DNS settings and internet connection. If this persists, contact support.";
-#endif
-                }
-                else
-                {
-                    Error = $"Cannot connect to activation server. Check your internet connection. (Error: {socketEx.SocketErrorCode})";
-                }
-            }
-            else if (ex.Message.Contains("SSL") || ex.Message.Contains("certificate"))
-            {
-                Error = "SSL certificate validation failed. Check your system date/time settings.";
-            }
-            else
-            {
-                _logger.LogError("HTTP error: {Message}", ex.Message);
-                Error = "Network error occurred. Please check your internet connection and try again.";
-            }
+            Error = "Network error occurred. Please check your internet connection and try again.";
         }
-        catch (System.Security.Cryptography.CryptographicException ex)
+        catch (System.Security.Cryptography.CryptographicException)
         {
-            // Data protection / encryption errors
-            _logger.LogError(ex, "Cryptographic error during activation");
             Error = "Security error occurred. Please restart the application and try again.";
         }
-        catch (System.IO.IOException ex)
+        catch (System.IO.IOException)
         {
-            // File system errors (saving secret key or state)
-            _logger.LogError(ex, "File system error during activation");
             Error = "Cannot save activation data. Check file permissions and disk space.";
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
-            // Permission errors
-            _logger.LogError(ex, "Access denied during activation");
             Error = "Access denied. Please run the application with appropriate permissions.";
         }
-        catch (System.Text.Json.JsonException ex)
+        catch (System.Text.Json.JsonException)
         {
-            // JSON parsing errors
-            _logger.LogError(ex, "Invalid response format from activation server");
             Error = "Invalid server response. The activation server may be experiencing issues.";
         }
-        catch (Exception ex)
+        catch
         {
-            // Log detailed error for debugging with full exception details
-            _logger.LogError(ex, "Activation failed unexpectedly. Type: {ExceptionType}, Message: {Message}", 
-                ex.GetType().FullName, ex.Message);
-            
-            // More helpful generic error with exception type hint
-#if DEBUG
-            Error = $"Error: {ex.GetType().Name} - {ex.Message}";
-#else
-            Error = "An unexpected error occurred. Please check your internet connection and try again, or contact support if the issue persists.";
-#endif
+            Error = "An unexpected error occurred. Please check your internet connection and try again.";
         }
         finally
         {
@@ -278,13 +210,11 @@ public class ActivationViewModel : ViewModelBase
     {
         if (!IsLockedOut())
         {
-            // Lockout expired - clear it and stop timer
             _state.LockedUntilUtc = null;
             _store.Save(_state);
-            _lockoutTimer.Stop();
+            _lockoutTimer?.Stop();
         }
 
-        // Update UI properties
         OnPropertyChanged(nameof(CanActivate));
         OnPropertyChanged(nameof(LockoutMessage));
     }
@@ -296,8 +226,6 @@ public class ActivationViewModel : ViewModelBase
 
     public async Task GoToDashboard()
     {
-        _logger.LogInformation("Navigating to dashboard after successful activation");
-        
         try
         {
             StopTimer();
@@ -307,24 +235,16 @@ public class ActivationViewModel : ViewModelBase
                 _store, 
                 _state, 
                 _secretStore, 
-                _licenseService, 
-                _loggerFactory.CreateLogger<MainViewModel>(),
-                _loggerFactory);
+                _licenseService);
             
-            _logger.LogInformation("MainViewModel created, navigating...");
             _shell.Navigate(mainViewModel, WindowMode.Normal);
             
-            // Small delay to allow UI thread to process navigation
             await Task.Delay(100);
             
-            _logger.LogInformation("Navigation complete, starting license verification...");
-            // Trigger verification after navigation
             await mainViewModel.VerifyLicenseAsync();
-            _logger.LogInformation("License verification completed after navigation");
         }
-        catch (Exception ex)
+        catch
         {
-            _logger.LogError(ex, "Failed to navigate to dashboard");
             Error = "Failed to load dashboard. Please restart the application.";
             IsActivationSuccess = false;
         }
@@ -334,12 +254,11 @@ public class ActivationViewModel : ViewModelBase
     {
         if (disposing)
         {
-            _lockoutTimer?.Stop();
             if (_lockoutTimer != null)
             {
+                _lockoutTimer.Stop();
                 _lockoutTimer.Tick -= OnLockoutTimerTick;
             }
-            _logger.LogDebug("ActivationViewModel disposed");
         }
         base.Dispose(disposing);
     }
