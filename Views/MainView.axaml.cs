@@ -60,6 +60,31 @@ public partial class MainView : UserControl
         }
     }
 
+    public void ReloadWebView()
+    {
+        try
+        {
+            Debug.WriteLine("=== ReloadWebView called ===");
+            Debug.WriteLine($"WebView is null: {webView == null}");
+            Debug.WriteLine($"WebView Address before reload: {webView?.Address}");
+            
+            if (webView != null)
+            {
+                webView.Reload();
+                Debug.WriteLine("webView.Reload() executed successfully");
+            }
+            else
+            {
+                Debug.WriteLine("ERROR: webView is null!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"ERROR reloading WebView: {ex.Message}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
+    }
+
     private void ValidateWebViewUrl()
     {
         try
