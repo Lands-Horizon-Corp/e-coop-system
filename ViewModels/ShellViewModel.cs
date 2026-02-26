@@ -18,7 +18,7 @@ public class ShellViewModel : ViewModelBase
     public WindowMode Mode
     {
         get => _mode;
-        private set { _mode = value; OnPropertyChanged(); }
+        set { _mode = value; OnPropertyChanged(); }
     }
 
     public bool IsLocked => Mode == WindowMode.Locked;

@@ -36,15 +36,6 @@ public partial class MainView : UserControl
                 }
             }, DispatcherPriority.Render);
         };
-
-        this.AttachedToVisualTree += (s, e) =>
-        {
-            if (DataContext is MainViewModel vm && !string.IsNullOrEmpty(vm.URL))
-            {
-                // Use Background priority to let the UI finish layout first
-                Dispatcher.UIThread.Post(() => webView.Navigate(vm.URL), DispatcherPriority.Background);
-            }
-        };
     }
 
     public void ReloadWebView()

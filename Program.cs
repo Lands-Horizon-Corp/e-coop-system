@@ -16,9 +16,7 @@ namespace ECoopSystem
         private static System.Threading.Mutex? _mutex;
         private const string MutexName = "Global\\ECoopSystem-8F5A3D2C-1B4E-4C9A-A8F3-2D6E8C9B1A7F";
 
-#if WINDOWS
         [STAThread]
-#endif
         public static void Main(string[] args)
         {
             bool createdNew;

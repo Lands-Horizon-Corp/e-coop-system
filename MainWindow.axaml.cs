@@ -1,9 +1,10 @@
 using Avalonia.Controls;
-using ECoopSystem.ViewModels;
-using System.ComponentModel;
-using ECoopSystem.Stores;
 using ECoopSystem.Services;
+using ECoopSystem.Stores;
+using ECoopSystem.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace ECoopSystem;
 
@@ -39,7 +40,9 @@ public partial class MainWindow : Window
             var route = DecideInitialRoute();
             _shell.Navigate(route.ViewModel, route.Mode);
             ApplyWindowMode();
-            
+
+            await Task.Delay(100);
+
             if (route.ViewModel is MainViewModel mainVm)
             {
                 await mainVm.VerifyLicenseAsync();

@@ -20,13 +20,11 @@
         <!-- WebView (hidden during loading) -->
         <xWebView:CrossPlatformWebView x:Name="webView"
                                        Url="{Binding URL}"
-                                       IsWebViewVisible="{Binding IsWebViewVisible}"
+                                       IsVisible="{Binding IsWebViewVisible}"
                                        Focusable="True"/>
 
         <!-- Loading Overlay -->
-        <Border IsVisible="{Binding IsLoading}"
-                Background="#1A1A1A"
-                ZIndex="10">
+        <Border IsVisible="{Binding IsLoading}">
             <Grid>
                 <!-- Loading Logo at Center -->
                 <Image Source="avares://ECoopSystem/Assets/Images/loading-logo.png"
