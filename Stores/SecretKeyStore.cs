@@ -29,8 +29,17 @@ public sealed class SecretKeyStore
 
     public void Save(string secretKey)
     {
-        var protectedValue = _protector.Protect(secretKey);
-        File.WriteAllText(_filePath, protectedValue);
+        if (OperatingSystem.IsWindows())
+        {
+            var protectedValue = _protector.Protect(secretKey);
+            File.WriteAllText(_filePath, protectedValue);
+        }
+        else
+        {
+            // Temporary Linux/macOS bypass
+            var bytes = System.Text.Encoding.UTF8.GetBytes(secretKey);
+            File.WriteAllText(_filePath, Convert.ToBase64String(bytes));
+        }
     }
     
     public string? Load()
@@ -40,8 +49,16 @@ public sealed class SecretKeyStore
 
         try
         {
-            var protectedValue = File.ReadAllText(_filePath);
-            return _protector.Unprotect(protectedValue);
+            var value = File.ReadAllText(_filePath);
+            if (OperatingSystem.IsWindows())
+            {
+                return _protector.Unprotect(value);
+            }
+            else
+            {
+                var bytes = Convert.FromBase64String(value);
+                return System.Text.Encoding.UTF8.GetString(bytes);
+            }
         }
         catch
         {
