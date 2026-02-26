@@ -238,10 +238,12 @@ public class ActivationViewModel : ViewModelBase
                 _licenseService);
             
             _shell.Navigate(mainViewModel, WindowMode.Normal);
-            
-            await Task.Delay(100);
-            
-            await mainViewModel.VerifyLicenseAsync();
+
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await Task.Delay(500); // Give X11 plenty of time to rebuild the window
+                await mainViewModel.VerifyLicenseAsync();
+            }, DispatcherPriority.Background);
         }
         catch
         {

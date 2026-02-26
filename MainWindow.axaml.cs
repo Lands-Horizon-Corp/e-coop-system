@@ -41,6 +41,8 @@ public partial class MainWindow : Window
     private DispatcherTimer? _keyboardPollTimer;
     private bool _wasF5Pressed;
 
+    private bool _hasOpened;
+
     private sealed record RouteResult(ViewModelBase ViewModel, WindowMode Mode);
 
     public MainWindow()
@@ -66,10 +68,21 @@ public partial class MainWindow : Window
         
         Opened += async (_, _) =>
         {
+            if (_hasOpened) return;
+            _hasOpened = true;
+
             var route = DecideInitialRoute();
+
+            _shell.Mode = route.Mode;
+            ApplyWindowMode();
+
+            await Task.Delay(100);
+
             _shell.Navigate(route.ViewModel, route.Mode);
             ApplyWindowMode();
-            
+
+            await Task.Delay(100);
+
             if (route.ViewModel is MainViewModel mainVm)
             {
                 await mainVm.VerifyLicenseAsync();

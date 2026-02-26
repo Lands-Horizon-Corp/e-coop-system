@@ -29,23 +29,25 @@ public class AppStateStore
 
     public AppState Load()
     {
-        if (!File.Exists(_filePath))
-            return CreateInitial();
+        if (!File.Exists(_filePath)) return CreateInitial();
 
         try
         {
-            var protectedData = File.ReadAllText(_filePath);
-            var json = _protector.Unprotect(protectedData);
-            var state = JsonSerializer.Deserialize<AppState>(json);
-            
-            if (state == null)
+            var fileData = File.ReadAllText(_filePath);
+            string json;
+
+            if (OperatingSystem.IsWindows())
             {
-                Debug.WriteLine("AppState: Deserialization returned null, creating new state");
-                return CreateInitial();
+                json = _protector.Unprotect(fileData);
+            }
+            else
+            {
+                json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(fileData));
             }
 
-            if (string.IsNullOrWhiteSpace(state.InstallationId) || 
-                state.InstallationUnixTime <= 0)
+            var state = JsonSerializer.Deserialize<AppState>(json);
+
+            if (state == null || string.IsNullOrWhiteSpace(state.InstallationId) || state.InstallationUnixTime <= 0)
             {
                 Debug.WriteLine("AppState: Invalid state data detected, creating new state");
                 return CreateInitial();
@@ -64,19 +66,23 @@ public class AppStateStore
     {
         try
         {
-            if (state == null)
-                throw new ArgumentNullException(nameof(state));
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            if (string.IsNullOrWhiteSpace(state.InstallationId)) throw new InvalidOperationException("InstallationId cannot be empty");
 
-            if (string.IsNullOrWhiteSpace(state.InstallationId))
-                throw new InvalidOperationException("InstallationId cannot be empty");
+            var json = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = false });
 
-            var json = JsonSerializer.Serialize(state, new JsonSerializerOptions
+            string dataToSave;
+            if (OperatingSystem.IsWindows())
             {
-                WriteIndented = false
-            });
+                dataToSave = _protector.Protect(json);
+            }
+            else
+            {
+                // Temporary Linux/macOS bypass
+                dataToSave = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+            }
 
-            var protectedData = _protector.Protect(json);
-            File.WriteAllText(_filePath, protectedData);
+            File.WriteAllText(_filePath, dataToSave);
         }
         catch (Exception ex)
         {
