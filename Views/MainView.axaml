@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:wv="clr-namespace:WebViewControl;assembly=WebViewControl.Avalonia"
+             xmlns:xWebView="using:WebView"
              xmlns:vm="using:ECoopSystem.ViewModels"
              xmlns:views="using:ECoopSystem.Views"
              x:DataType="vm:MainViewModel"
@@ -18,13 +18,15 @@
           ColumnDefinitions="*">
 
         <!-- WebView (hidden during loading) -->
-        <wv:WebView x:Name="webView"
-                    Focusable="True"
-                    Address="{Binding URL}"
-                    IsVisible="{Binding !IsLoading}"/>
+        <xWebView:CrossPlatformWebView x:Name="webView"
+                                       Url="{Binding URL}"
+                                       IsWebViewVisible="{Binding IsWebViewVisible}"
+                                       Focusable="True"/>
 
         <!-- Loading Overlay -->
-        <Border IsVisible="{Binding IsLoading}">
+        <Border IsVisible="{Binding IsLoading}"
+                Background="#1A1A1A"
+                ZIndex="10">
             <Grid>
                 <!-- Loading Logo at Center -->
                 <Image Source="avares://ECoopSystem/Assets/Images/loading-logo.png"

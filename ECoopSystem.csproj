@@ -41,7 +41,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
-    <PackageReference Include="WebViewControl-Avalonia" Version="3.120.11" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,6 +76,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="WebView">
+      <HintPath>..\WebView\bin\Debug\net9.0\WebView.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <!-- Platform-specific WebView packages -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2783.1" />
   </ItemGroup>
 </Project>

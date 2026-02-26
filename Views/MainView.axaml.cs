@@ -1,7 +1,9 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using ECoopSystem.Build;
 using ECoopSystem.ViewModels;
 using System;
+using System.Threading.Tasks;
 
 namespace ECoopSystem.Views;
 
@@ -13,38 +15,36 @@ public partial class MainView : UserControl
     {
         InitializeComponent();
 
-        try
+        webView.NavigationCompleted += (s, e) =>
         {
-            webView.PropertyChanged += (sender, args) =>
+            Dispatcher.UIThread.Post(async () => {
+                if (DataContext is MainViewModel vm)
+                {
+                    await Task.Delay(100);
+                    vm.OnWebViewReady();
+                }
+            }, DispatcherPriority.Render);
+        };
+
+        webView.NavigationFailed += (s, e) =>
+        {
+            Dispatcher.UIThread.Post(() => {
+                if (DataContext is MainViewModel vm)
+                {
+                    Console.WriteLine($"Navigation failed: {e}");
+                    vm.OnWebViewReady(); // Proceed anyway so the user can see the error page instead of infinitely loading
+                }
+            }, DispatcherPriority.Render);
+        };
+
+        this.AttachedToVisualTree += (s, e) =>
+        {
+            if (DataContext is MainViewModel vm && !string.IsNullOrEmpty(vm.URL))
             {
-                try
-                {
-                    if (args.Property.Name == nameof(webView.IsVisible))
-                    {
-                        if (webView.IsVisible)
-                        {
-                            if (DataContext is MainViewModel vm)
-                            {
-                                vm.OnWebViewReady();
-                            }
-                        }
-                    }
-                    
-                    if (args.Property.Name == nameof(webView.Address))
-                    {
-                        ValidateWebViewUrl();
-                    }
-                }
-                catch
-                {
-                    // Ignore
-                }
-            };
-        }
-        catch
-        {
-            // Ignore
-        }
+                // Use Background priority to let the UI finish layout first
+                Dispatcher.UIThread.Post(() => webView.Navigate(vm.URL), DispatcherPriority.Background);
+            }
+        };
     }
 
     public void ReloadWebView()
@@ -66,7 +66,7 @@ public partial class MainView : UserControl
     {
         try
         {
-            var currentUrl = webView.Address;
+            var currentUrl = webView.Url;
             
             if (currentUrl == _lastValidatedUrl)
                 return;

@@ -30,8 +30,15 @@ public class MainViewModel : ViewModelBase
     public bool IsLoading
     {
         get => _isLoading;
-        private set { _isLoading = value; OnPropertyChanged(); }
+        private set 
+        { 
+            _isLoading = value; 
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsWebViewVisible));
+        }
     }
+
+    public bool IsWebViewVisible => !IsLoading;
 
     public bool IsVerified
     {
@@ -57,7 +64,6 @@ public class MainViewModel : ViewModelBase
         try
         {
             var secret = _secretStore.Load();
-
             if (string.IsNullOrWhiteSpace(secret))
             {
                 NavigateToActivation();
@@ -95,19 +101,6 @@ public class MainViewModel : ViewModelBase
                 }
             }
         }
-        catch (TaskCanceledException)
-        {
-            if (IsWithinGrace())
-            {
-                IsVerified = true;
-                StartBackgroundVerification();
-            }
-            else
-            {
-                NavigateToActivation();
-                return;
-            }
-        }
         catch
         {
             if (IsWithinGrace())
@@ -123,8 +116,7 @@ public class MainViewModel : ViewModelBase
         }
         finally
         {
-            await EnsureMinimumLoadingTime();
-            IsLoading = false;
+            
         }
     }
 
@@ -263,8 +255,11 @@ public class MainViewModel : ViewModelBase
         NavigateToActivation();
     }
 
-    public void OnWebViewReady()
+    public async void OnWebViewReady()
     {
+        await EnsureMinimumLoadingTime();
+
+        IsLoading = false;
         WebViewReady?.Invoke(this, EventArgs.Empty);
     }
 
