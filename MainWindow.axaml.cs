@@ -115,7 +115,9 @@ public partial class MainWindow : Window
     {
         // Unsubscribe from events
         _shell.PropertyChanged -= ShellOnPropertyChanged;
-        
+
+        Content = null;
+
         // Dispose current ViewModel
         if (_shell.Current is MainViewModel mainVm)
         {
