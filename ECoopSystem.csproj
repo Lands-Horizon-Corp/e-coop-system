@@ -42,6 +42,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
     <PackageReference Include="WebViewControl-Avalonia" Version="3.120.11" />
+    <!-- Explicitly reference HarfBuzzSharp with version matching Avalonia requirements -->
+    <PackageReference Include="HarfBuzzSharp" Version="8.3.1.1" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection;
 using System;
 using System.IO;
 
@@ -11,7 +12,7 @@ public sealed class SecretKeyStore
     private static readonly string Purpose = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("RUNvb3BTeXN0ZW0uU2VjcmV0S2V5LnYx"));
     
     private readonly string _filePath;
-    private readonly IDataProtector _protector;
+    private readonly ISecureStorage _secureStorage;
 
     public SecretKeyStore(IDataProtectionProvider provider)
     {
@@ -22,24 +23,15 @@ public sealed class SecretKeyStore
         Directory.CreateDirectory(dir);
         _filePath = Path.Combine(dir, FileName);
 
-        _protector = provider.CreateProtector(Purpose);
+        _secureStorage = SecureStorageFactory.Create(provider, Purpose);
     }
 
     public bool HasSecret() => File.Exists(_filePath);
 
     public void Save(string secretKey)
     {
-        if (OperatingSystem.IsWindows())
-        {
-            var protectedValue = _protector.Protect(secretKey);
-            File.WriteAllText(_filePath, protectedValue);
-        }
-        else
-        {
-            // Temporary Linux/macOS bypass
-            var bytes = System.Text.Encoding.UTF8.GetBytes(secretKey);
-            File.WriteAllText(_filePath, Convert.ToBase64String(bytes));
-        }
+        var protectedValue = _secureStorage.Protect(secretKey);
+        File.WriteAllText(_filePath, protectedValue);
     }
     
     public string? Load()
@@ -50,15 +42,7 @@ public sealed class SecretKeyStore
         try
         {
             var value = File.ReadAllText(_filePath);
-            if (OperatingSystem.IsWindows())
-            {
-                return _protector.Unprotect(value);
-            }
-            else
-            {
-                var bytes = Convert.FromBase64String(value);
-                return System.Text.Encoding.UTF8.GetString(bytes);
-            }
+            return _secureStorage.Unprotect(value);
         }
         catch
         {

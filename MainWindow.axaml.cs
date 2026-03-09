@@ -1,45 +1,21 @@
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
 using ECoopSystem.ViewModels;
 using System;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using ECoopSystem.Stores;
 using ECoopSystem.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace ECoopSystem;
 
 public partial class MainWindow : Window
 {
-    [DllImport("user32.dll")]
-    private static extern short GetAsyncKeyState(int vKey);
-    
-    [DllImport("libX11.so.6", EntryPoint = "XOpenDisplay")]
-    private static extern IntPtr XOpenDisplay(IntPtr display);
-    
-    [DllImport("libX11.so.6", EntryPoint = "XCloseDisplay")]
-    private static extern int XCloseDisplay(IntPtr display);
-    
-    [DllImport("libX11.so.6", EntryPoint = "XQueryKeymap")]
-    private static extern void XQueryKeymap(IntPtr display, byte[] keys);
-    
-    [DllImport("/System/Library/Frameworks/Carbon.framework/Carbon")]
-    private static extern byte GetKeys(byte[] keyMap);
-    
-    private const int VK_F5 = 0x74;
-    private const int X11_F5_KEYCODE = 71;
-    private const int MAC_F5_KEYCODE = 96;
-    
     private readonly ShellViewModel _shell;
     private readonly AppStateStore _stateStore;
     private readonly AppState _state;
     private readonly SecretKeyStore _secretStore;
     private readonly LicenseService _licenseService;
-    private DispatcherTimer? _keyboardPollTimer;
-    private bool _wasF5Pressed;
 
     private bool _hasOpened;
 
@@ -47,47 +23,177 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
-        InitializeComponent();
-
-        _stateStore = App.Services.GetRequiredService<AppStateStore>();
-        _state = _stateStore.Load();
-        _stateStore.Save(_state);
-
-        _secretStore = App.Services.GetRequiredService<SecretKeyStore>();
-        _licenseService = App.Services.GetRequiredService<LicenseService>();
-
-        _shell = new ShellViewModel();
-        DataContext = _shell;
-
-        _shell.PropertyChanged += ShellOnPropertyChanged;
-        Closing += OnClosing;
-        
-        AddHandler(KeyDownEvent, OnKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
-        
-        StartKeyboardPolling();
-        
-        Opened += async (_, _) =>
+        try
         {
-            if (_hasOpened) return;
-            _hasOpened = true;
+            if (OperatingSystem.IsLinux())
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Starting initialization...");
 
-            var route = DecideInitialRoute();
+            InitializeComponent();
 
-            _shell.Mode = route.Mode;
-            ApplyWindowMode();
+            if (OperatingSystem.IsLinux())
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: InitializeComponent done");
 
-            await Task.Delay(100);
-
-            _shell.Navigate(route.ViewModel, route.Mode);
-            ApplyWindowMode();
-
-            await Task.Delay(100);
-
-            if (route.ViewModel is MainViewModel mainVm)
+            try
             {
-                await mainVm.VerifyLicenseAsync();
+                if (OperatingSystem.IsLinux())
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Getting AppStateStore...");
+
+                _stateStore = App.Services.GetRequiredService<AppStateStore>();
+                
+                if (OperatingSystem.IsLinux())
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Loading state...");
+
+                // Load state with error recovery
+                try
+                {
+                    _state = _stateStore.Load();
+                    
+                    if (OperatingSystem.IsLinux())
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: State loaded, saving...");
+
+                    _stateStore.Save(_state);
+                    
+                    if (OperatingSystem.IsLinux())
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: State saved");
+                }
+                catch (Exception ex)
+                {
+                    if (OperatingSystem.IsLinux())
+                    {
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: ERROR loading/saving state: {ex.Message}");
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Stack trace: {ex.StackTrace}");
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"MainWindow: Failed to load/save state: {ex}");
+                    
+                    // Try to recover by deleting corrupted data
+                    try
+                    {
+                        if (OperatingSystem.IsLinux())
+                            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Attempting recovery...");
+
+                        var configDir = System.IO.Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                            "ECoopSystem");
+                        var stateFile = System.IO.Path.Combine(configDir, "appstate.dat");
+                        if (System.IO.File.Exists(stateFile))
+                        {
+                            if (OperatingSystem.IsLinux())
+                                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Deleting corrupted state file...");
+
+                            System.IO.File.Delete(stateFile);
+                        }
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        if (OperatingSystem.IsLinux())
+                            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Cleanup failed: {cleanupEx.Message}");
+                    }
+                    
+                    // Load fresh state
+                    if (OperatingSystem.IsLinux())
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Loading fresh state...");
+
+                    _state = _stateStore.Load();
+                    _stateStore.Save(_state);
+                }
+
+                if (OperatingSystem.IsLinux())
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Getting SecretKeyStore...");
+
+                _secretStore = App.Services.GetRequiredService<SecretKeyStore>();
+                
+                if (OperatingSystem.IsLinux())
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Getting LicenseService...");
+
+                _licenseService = App.Services.GetRequiredService<LicenseService>();
+
+                if (OperatingSystem.IsLinux())
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Creating ShellViewModel...");
+
+                _shell = new ShellViewModel();
+                DataContext = _shell;
+
+                var initialRoute = DecideInitialRoute();
+                _shell.Mode = initialRoute.Mode;
+                ApplyWindowMode();
+
+                _shell.PropertyChanged += ShellOnPropertyChanged;
+                Closing += OnClosing;
+
+                Opened += async (_, _) =>
+                {
+                    if (_hasOpened) return;
+                    _hasOpened = true;
+
+                    if (OperatingSystem.IsLinux())
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Window opened, proceeding with route...");
+
+                    // On Linux with MainViewModel, wait BEFORE creating the view to let any previous CEF cleanup complete
+                    if (OperatingSystem.IsLinux() && initialRoute.ViewModel is MainViewModel)
+                    {
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Pre-navigation CEF cleanup delay...");
+                        await Task.Delay(1000);
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: CEF cleanup delay complete");
+                    }
+                    else
+                    {
+                        await Task.Delay(100);
+                    }
+
+                    if (OperatingSystem.IsLinux())
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Navigating...");
+
+                    _shell.Navigate(initialRoute.ViewModel, initialRoute.Mode);
+
+                    if (OperatingSystem.IsLinux())
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Navigation complete");
+
+                    // On Linux with MainViewModel, wait after navigation for CEF render process to initialize
+                    if (OperatingSystem.IsLinux() && initialRoute.ViewModel is MainViewModel)
+                    {
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Waiting for CEF render process...");
+                        await Task.Delay(2000);
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: CEF render process ready");
+                    }
+                    else
+                    {
+                        await Task.Delay(100);
+                    }
+
+                    if (initialRoute.ViewModel is MainViewModel mainVm)
+                    {
+                        if (OperatingSystem.IsLinux())
+                            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Verifying license...");
+
+                        await mainVm.VerifyLicenseAsync();
+                    }
+
+                    if (OperatingSystem.IsLinux())
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Initialization complete");
+                };
             }
-        };
+            catch (Exception ex)
+            {
+                if (OperatingSystem.IsLinux())
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: FATAL ERROR during initialization:");
+                    Console.WriteLine(ex.ToString());
+                }
+
+                System.Diagnostics.Debug.WriteLine($"MainWindow: Fatal initialization error: {ex}");
+                throw;
+            }
+        }
+        catch (Exception ex)
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: OUTER FATAL ERROR:");
+                Console.WriteLine(ex.ToString());
+            }
+            throw;
+        }
     }
 
     private void ShellOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -135,180 +241,13 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnWebViewReady(object? sender, System.EventArgs e)
+    private async void OnWebViewReady(object? sender, System.EventArgs e)
     {
         // Maximize window only after WebView is fully loaded
-        WindowState = WindowState.Maximized;
-    }
-
-    private void OnKeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
-    {
-        if (e.Key == Avalonia.Input.Key.F5)
+        await Task.Delay(500);
+        if (this.IsVisible)
         {
-            e.Handled = true;
-            
-            if (_shell.Current is MainViewModel)
-            {
-                var mainView = FindMainView(this);
-                
-                if (mainView != null)
-                {
-                    mainView.ReloadWebView();
-                }
-            }
-        }
-    }
-
-    private Views.MainView? FindMainView(Avalonia.Controls.Control control)
-    {
-        // Direct check
-        if (control is Views.MainView mainView)
-            return mainView;
-
-        // Recursively search children
-        foreach (var child in control.GetVisualChildren())
-        {
-            if (child is Avalonia.Controls.Control childControl)
-            {
-                var found = FindMainView(childControl);
-                if (found != null)
-                    return found;
-            }
-        }
-
-        return null;
-    }
-
-    private void StartKeyboardPolling()
-    {
-        _keyboardPollTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(100)
-        };
-        _keyboardPollTimer.Tick += OnKeyboardPollTick;
-        _keyboardPollTimer.Start();
-    }
-
-    private void StopKeyboardPolling()
-    {
-        if (_keyboardPollTimer != null)
-        {
-            _keyboardPollTimer.Stop();
-            _keyboardPollTimer.Tick -= OnKeyboardPollTick;
-            _keyboardPollTimer = null;
-        }
-    }
-
-    private void OnKeyboardPollTick(object? sender, EventArgs e)
-    {
-        try
-        {
-            bool isF5Pressed = IsKeyPressed(Key.F5);
-
-            if (isF5Pressed && !_wasF5Pressed)
-            {
-                TriggerWebViewReload();
-            }
-
-            _wasF5Pressed = isF5Pressed;
-        }
-        catch
-        {
-            // Ignore
-        }
-    }
-
-    private bool IsKeyPressed(Key key)
-    {
-        if (key != Key.F5)
-            return false;
-            
-        try
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return IsKeyPressedWindows();
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                return IsKeyPressedLinux();
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                return IsKeyPressedMacOS();
-            }
-        }
-        catch
-        {
-            // Ignore
-        }
-        
-        return false;
-    }
-    
-    private bool IsKeyPressedWindows()
-    {
-        try
-        {
-            short keyState = GetAsyncKeyState(VK_F5);
-            return (keyState & 0x8000) != 0;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-    
-    private bool IsKeyPressedLinux()
-    {
-        try
-        {
-            IntPtr display = XOpenDisplay(IntPtr.Zero);
-            if (display == IntPtr.Zero)
-            {
-                return false;
-            }
-            
-            byte[] keys = new byte[32];
-            XQueryKeymap(display, keys);
-            XCloseDisplay(display);
-            
-            int byteIndex = X11_F5_KEYCODE / 8;
-            int bitIndex = X11_F5_KEYCODE % 8;
-            return (keys[byteIndex] & (1 << bitIndex)) != 0;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-    
-    private bool IsKeyPressedMacOS()
-    {
-        try
-        {
-            byte[] keyMap = new byte[16];
-            GetKeys(keyMap);
-            
-            int byteIndex = MAC_F5_KEYCODE / 8;
-            int bitIndex = MAC_F5_KEYCODE % 8;
-            return (keyMap[byteIndex] & (1 << bitIndex)) != 0;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private void TriggerWebViewReload()
-    {
-        if (_shell.Current is MainViewModel)
-        {
-            var mainView = FindMainView(this);
-            if (mainView != null)
-            {
-                mainView.ReloadWebView();
-            }
+            WindowState = WindowState.Maximized;
         }
     }
 
@@ -316,10 +255,8 @@ public partial class MainWindow : Window
     {
         // Unsubscribe from events
         _shell.PropertyChanged -= ShellOnPropertyChanged;
-        RemoveHandler(KeyDownEvent, OnKeyDown);
-        StopKeyboardPolling();
         
-        // Dispose current ViewModel
+        // Dispose current ViewModel (which disposes MainView)
         if (_shell.Current is MainViewModel mainVm)
         {
             mainVm.WebViewReady -= OnWebViewReady;
@@ -329,6 +266,9 @@ public partial class MainWindow : Window
         {
             activationVm.Dispose();
         }
+
+        // Give time for all disposal operations to complete
+        System.Threading.Thread.Sleep(100);
     }
 
     private RouteResult DecideInitialRoute()

@@ -138,6 +138,16 @@ public class MainViewModel : ViewModelBase
         {
             await Task.Delay(minimumTime - elapsed);
         }
+        
+        // On Linux, add extra delay to ensure CEF subprocess is fully ready
+        if (OperatingSystem.IsLinux())
+        {
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainViewModel: Adding Linux CEF stabilization delay...");
+            
+            await Task.Delay(2000); // Extra 2 seconds for CEF to stabilize on Linux
+            
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainViewModel: CEF stabilization complete, showing WebView...");
+        }
     }
 
     private bool IsWithinGrace()
