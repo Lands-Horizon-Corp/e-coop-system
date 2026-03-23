@@ -35,6 +35,7 @@ make build IFRAME_URL=https://your-client.com API_URL=https://your-api.com PLATF
 | **[Build System](docs/BUILD.md)** | Complete build instructions and options |
 | **[Configuration](docs/CONFIGURATION.md)** | Settings, configuration system, and security model |
 | **[Windows Installer](docs/INSTALLER.md)** | Creating Windows installers with Inno Setup |
+| **[Debian Installer](docs/DEB-INSTALLER.md)** | Creating Ubuntu/Debian `.deb` installers |
 | **[Linux Deployment](docs/LINUX.md)** | Linux-specific installation and troubleshooting |
 | **[Cross-Platform Dev](docs/QUICK-REFERENCE.md)** | Platform detection and development tips |
 

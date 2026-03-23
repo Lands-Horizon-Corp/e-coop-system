@@ -137,5 +137,11 @@ public static class ConfigurationLoader
         target.Logging.EnableDebugLogging = source.Logging.EnableDebugLogging;
         if (!string.IsNullOrEmpty(source.Logging.LogLevel))
             target.Logging.LogLevel = source.Logging.LogLevel;
+
+        // Merge local license settings
+        target.LicenseLocal.Enabled = source.LicenseLocal.Enabled;
+        target.LicenseLocal.FallbackToLocalOnServerError = source.LicenseLocal.FallbackToLocalOnServerError;
+        if (!string.IsNullOrEmpty(source.LicenseLocal.TestLicenseKey))
+            target.LicenseLocal.TestLicenseKey = source.LicenseLocal.TestLicenseKey;
     }
 }

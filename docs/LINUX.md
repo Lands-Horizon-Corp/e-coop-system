@@ -118,11 +118,19 @@ Requires .NET runtime installed on target system:
 dotnet publish -c Release -r linux-x64 --no-self-contained -p:PublishSingleFile=true
 ```
 
-### Using the Build Script
+### Building a Debian Installer (`.deb`)
 ```bash
-chmod +x build-linux.sh
-./build-linux.sh
+chmod +x scripts/package-deb.sh
+./scripts/package-deb.sh --version 1.0.0
 ```
+
+Install the generated package:
+
+```bash
+sudo apt install ./output/installer/ECoopSystem_1.0.0_amd64.deb
+```
+
+See [Debian Installer Guide](DEB-INSTALLER.md) for advanced options.
 
 ## Installation
 

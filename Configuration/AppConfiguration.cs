@@ -49,6 +49,13 @@ public class LoggingSettings
     public string LogLevel { get; set; } = "Warning";
 }
 
+public class LicenseLocalSettings
+{
+    public bool Enabled { get; set; } = false;
+    public bool FallbackToLocalOnServerError { get; set; } = true;
+    public string TestLicenseKey { get; set; } = "";
+}
+
 /// <summary>
 /// Root configuration class containing user-configurable settings only
 /// Sensitive settings (API, WebView, Security) are now in BuildConfiguration
@@ -57,4 +64,5 @@ public class AppConfiguration
 {
     public ApplicationSettings Application { get; set; } = new();
     public LoggingSettings Logging { get; set; } = new();
+    public LicenseLocalSettings LicenseLocal { get; set; } = new();
 }

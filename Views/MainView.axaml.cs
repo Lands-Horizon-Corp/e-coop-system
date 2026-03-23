@@ -14,6 +14,12 @@ public partial class MainView : UserControl, IDisposable
     private WebView? _webView;
     private bool _webViewCreated;
 
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        UpdateWebViewAddressFromViewModel();
+    }
+
     public MainView()
     {
         try
@@ -82,10 +88,7 @@ public partial class MainView : UserControl, IDisposable
             };
 
             // Bind to ViewModel URL
-            if (DataContext is MainViewModel vm)
-            {
-                _webView.Address = vm.URL;
-            }
+            UpdateWebViewAddressFromViewModel();
 
             if (OperatingSystem.IsLinux())
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: CreateWebView - Setting up event handlers...");
@@ -104,7 +107,7 @@ public partial class MainView : UserControl, IDisposable
                                 {
                                     vm.OnWebViewReady();
                                 }
-                            }
+                        }
                         }
                         
                         if (args.Property.Name == nameof(_webView.Address))
@@ -142,6 +145,19 @@ public partial class MainView : UserControl, IDisposable
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: ERROR creating WebView: {ex.Message}");
                 Console.WriteLine(ex.ToString());
             }
+        }
+    }
+
+    private void UpdateWebViewAddressFromViewModel()
+    {
+        if (_webView == null)
+            return;
+
+        if (DataContext is MainViewModel vm &&
+            !string.IsNullOrWhiteSpace(vm.URL) &&
+            !string.Equals(_webView.Address, vm.URL, StringComparison.OrdinalIgnoreCase))
+        {
+            _webView.Address = vm.URL;
         }
     }
 
