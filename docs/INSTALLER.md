@@ -37,40 +37,26 @@ If the command is not found, add Inno Setup to your PATH:
 
 ### Quick Start
 
-### Option 1: Simple Build (Batch Script)
+### Windows Build (PowerShell)
 
-For a quick installer build with default settings:
-
-```batch
-build-installer.bat
-```
-
-This will:
-1. Clean previous builds
-2. Build the application in Release mode for win-x64
-3. Create the installer using Inno Setup
-4. Output the installer to `output\installer\`
-
-### Option 2: Custom Build (PowerShell)
-
-For advanced builds with custom configuration:
+Use the Windows installer script:
 
 ```powershell
 # Basic build
-.\build-installer.ps1
+.\build-windows-installer.ps1
 
 # Production build with custom URLs
-.\build-installer.ps1 `
+.\build-windows-installer.ps1 `
     -IFrameUrl "https://your-production-app.com" `
     -ApiUrl "https://your-production-api.com" `
     -Configuration Release `
     -Version "1.0.0"
 
 # Skip rebuild and just create installer
-.\build-installer.ps1 -SkipBuild
+.\build-windows-installer.ps1 -SkipBuild
 
 # Build and open output folder
-.\build-installer.ps1 -OpenOutput
+.\build-windows-installer.ps1 -OpenOutput
 ```
 
 ## PowerShell Script Parameters

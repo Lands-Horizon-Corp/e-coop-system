@@ -56,11 +56,11 @@ if ($isWindows) {
     Write-Host ""
     Write-Host "Option 1: Git Bash (Recommended)" -ForegroundColor Cyan
     Write-Host "  1. Right-click in project folder ? Git Bash Here"
-    Write-Host "  2. Run: bash build-linux-appimage.sh 1.0.0"
+    Write-Host "  2. Run: bash build-linux-installer.sh 1.0.0"
     Write-Host ""
     Write-Host "Option 2: WSL (Windows Subsystem for Linux)" -ForegroundColor Cyan
     Write-Host "  1. Open WSL terminal in project directory"
-    Write-Host "  2. Run: bash build-linux-appimage.sh 1.0.0"
+    Write-Host "  2. Run: bash build-linux-installer.sh 1.0.0"
     Write-Host ""
     exit 1
 }

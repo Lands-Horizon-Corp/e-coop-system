@@ -30,7 +30,7 @@ if ($ApiUrl -like "*development*" -or $IFrameUrl -like "*development*") {
     Write-Host "WARNING: You are building an installer with DEVELOPMENT URLs!" -ForegroundColor Yellow
     Write-Host "The installed application will connect to development servers." -ForegroundColor Yellow
     Write-Host "For production builds, use:" -ForegroundColor Yellow
-    Write-Host "  ./build-installer.ps1 -ApiUrl 'https://api.production.com' -IFrameUrl 'https://app.production.com'" -ForegroundColor Cyan
+    Write-Host "  ./build-windows-installer.ps1 -ApiUrl 'https://api.production.com' -IFrameUrl 'https://app.production.com'" -ForegroundColor Cyan
     Write-Host ""
 }
 

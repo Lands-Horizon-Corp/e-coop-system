@@ -21,15 +21,15 @@ ECoopSystem supports multiple Linux distribution formats:
 
 ### Building AppImage (Recommended)
 
-#### On Linux
+#### On Linux / Git Bash
 ```bash
-chmod +x build-linux-appimage.sh
-./build-linux-appimage.sh 1.0.0
+chmod +x build-linux-installer.sh
+./build-linux-installer.sh 1.0.0
 ```
 
 #### On Windows (with WSL)
 ```powershell
-.\build-linux-appimage.ps1 -Version 1.0.0
+.\build-linux-installer.ps1 -Version 1.0.0
 ```
 
 #### Output
@@ -177,19 +177,19 @@ sudo pacman -S \
 
 #### Bash Script (Linux/macOS)
 ```bash
-./build-linux-appimage.sh [VERSION]
+./build-linux-installer.sh [VERSION]
 
 # Examples:
-./build-linux-appimage.sh              # Default: 1.0.0
-./build-linux-appimage.sh 1.0.1
-./build-linux-appimage.sh 2.0.0-beta
+./build-linux-installer.sh              # Default: 1.0.0
+./build-linux-installer.sh 1.0.1
+./build-linux-installer.sh 2.0.0-beta
 ```
 
 #### PowerShell Script (Windows with WSL/Linux)
 ```powershell
-.\build-linux-appimage.ps1 -Version 1.0.0
-.\build-linux-appimage.ps1 -Version 1.0.0 -SkipBuild
-.\build-linux-appimage.ps1 -Version 1.0.0 -OpenOutput
+.\build-linux-installer.ps1 -Version 1.0.0
+.\build-linux-installer.ps1 -Version 1.0.0 -SkipBuild
+.\build-linux-installer.ps1 -Version 1.0.0 -OpenOutput
 ```
 
 ### Build Process
