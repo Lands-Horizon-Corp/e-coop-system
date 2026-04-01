@@ -353,7 +353,7 @@ Use environment variables or secrets:
 
 ## Security Notes
 
-?? **Important Security Considerations:**
+**Important Security Considerations:**
 
 1. **Never commit production secrets** to source control
    - Use build-time parameters for production URLs

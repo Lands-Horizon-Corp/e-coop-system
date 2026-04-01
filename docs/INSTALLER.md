@@ -75,14 +75,14 @@ Use the Windows installer script:
 The installer script (`installer.iss`) includes the following features:
 
 ### Features
-- ? **64-bit Windows Support** - Targets Windows 10/11 x64
-- ? **Modern UI** - Uses Inno Setup's modern wizard style
-- ? **Compression** - LZMA2 ultra compression for smaller file size
-- ? **Desktop & Start Menu Shortcuts** - Optional during installation
-- ? **Uninstaller** - Clean uninstallation with optional data removal
-- ? **License Agreement** - Shows LICENSE.md during installation
-- ? **README** - Includes README.md in installation
-- ? **.NET Check** - Optional runtime detection (commented out by default)
+- **64-bit Windows Support** - Targets Windows 10/11 x64
+- **Modern UI** - Uses Inno Setup's modern wizard style
+- **Compression** - LZMA2 ultra compression for smaller file size
+- **Desktop & Start Menu Shortcuts** - Optional during installation
+- **Uninstaller** - Clean uninstallation with optional data removal
+- **License Agreement** - Shows LICENSE.md during installation
+- **README** - Includes README.md in installation
+- **.NET Check** - Optional runtime detection (commented out by default)
 
 ### Installation Locations
 
@@ -132,8 +132,8 @@ After successful build, you'll find:
 
 ```
 output/
-??? installer/
-    ??? ECoopSystem-Setup-1.0.0-win-x64.exe
+installer/
+    ECoopSystem-Setup-1.0.0-win-x64.exe
 ```
 
 **Installer Naming Convention:**

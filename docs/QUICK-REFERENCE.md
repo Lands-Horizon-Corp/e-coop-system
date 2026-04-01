@@ -16,7 +16,7 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) { }
 ## File Paths
 
 ```csharp
-// ? CORRECT - Cross-platform
+// CORRECT - Cross-platform
 var path = Path.Combine(
     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
     "ECoopSystem",
@@ -25,7 +25,7 @@ var path = Path.Combine(
 // Windows: C:\Users\Username\AppData\Roaming\ECoopSystem\file.dat
 // Linux: /home/username/.config/ECoopSystem/file.dat
 
-// ? WRONG - Windows-specific
+// WRONG - Windows-specific
 var path = @"C:\Users\Username\AppData\Roaming\ECoopSystem\file.dat";
 var path = "C:\\Users\\Username\\AppData\\...";
 ```
@@ -33,7 +33,7 @@ var path = "C:\\Users\\Username\\AppData\\...";
 ## Process Execution
 
 ```csharp
-// ? CORRECT - Platform-aware
+// CORRECT - Platform-aware
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {
     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
@@ -43,7 +43,7 @@ else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
     Process.Start("xdg-open", url);
 }
 
-// ? WRONG - Windows-only
+// WRONG - Windows-only
 Process.Start(url); // Won't work on Linux
 ```
 
@@ -65,21 +65,21 @@ public static void Main(string[] args) { }
 ## Registry Access (Windows-only)
 
 ```csharp
-// ? CORRECT - Guarded
+// CORRECT - Guarded
 if (OperatingSystem.IsWindows())
 {
     using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\...");
     // Registry code
 }
 
-// ? WRONG - Crashes on Linux
+// WRONG - Crashes on Linux
 using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\...");
 ```
 
 ## Environment Variables
 
 ```csharp
-// ? CORRECT - Cross-platform
+// CORRECT - Cross-platform
 var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 // Windows: C:\Users\Username
 // Linux: /home/username
@@ -88,18 +88,18 @@ var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationDat
 // Windows: C:\Users\Username\AppData\Roaming
 // Linux: /home/username/.config
 
-// ? WRONG - Windows-specific
+// WRONG - Windows-specific
 var appData = Environment.GetEnvironmentVariable("APPDATA");
 ```
 
 ## Line Endings
 
 ```csharp
-// ? CORRECT - Platform-independent
+// CORRECT - Platform-independent
 var newLine = Environment.NewLine;
 File.WriteAllText(path, $"Line 1{Environment.NewLine}Line 2");
 
-// ? WRONG - Windows-specific
+// WRONG - Windows-specific
 var text = "Line 1\r\nLine 2"; // \r\n is Windows-specific
 ```
 
@@ -139,20 +139,20 @@ dotnet run --configuration Release
 
 ### 1. Path Separators
 ```csharp
-// ? WRONG
+// WRONG
 var path = "folder\\subfolder\\file.txt"; // Windows-only
 
-// ? CORRECT
+// CORRECT
 var path = Path.Combine("folder", "subfolder", "file.txt");
 ```
 
 ### 2. Case Sensitivity
 ```csharp
 // Linux filesystems are case-sensitive!
-// ? Might work on Windows, fail on Linux
+// Might work on Windows, fail on Linux
 File.Exists("MyFile.txt") // but file is named "myfile.txt"
 
-// ? Always use exact casing
+// Always use exact casing
 File.Exists("myfile.txt")
 ```
 
@@ -164,7 +164,7 @@ chmod +x ./ECoopSystem
 
 ### 4. Native Libraries
 ```csharp
-// ? Use platform-specific library loading
+// Use platform-specific library loading
 [DllImport("user32.dll")] // Windows-only
 [DllImport("libX11.so")] // Linux-only
 
