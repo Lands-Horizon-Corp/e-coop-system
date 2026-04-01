@@ -182,20 +182,6 @@ public partial class MainView : UserControl, IDisposable
                 return;
             }
 
-            var allowHttp = BuildConfiguration.WebViewAllowHttp;
-            var trustedDomains = BuildConfiguration.WebViewTrustedDomains;
-
-            var isTrusted = false;
-            foreach (var domain in trustedDomains)
-            {
-                if (uri.Host.Equals(domain, StringComparison.OrdinalIgnoreCase) ||
-                    uri.Host.EndsWith($".{domain}", StringComparison.OrdinalIgnoreCase))
-                {
-                    isTrusted = true;
-                    break;
-                }
-            }
-
             _lastValidatedUrl = currentUrl;
         }
         catch

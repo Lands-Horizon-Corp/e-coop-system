@@ -500,3 +500,4 @@ setup-*.exe
 
 # Installer build artifacts
 *.iss.bak
+/build-deb/pkg

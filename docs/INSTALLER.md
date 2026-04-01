@@ -4,7 +4,7 @@ This guide explains how to create installers for ECoopSystem across all platform
 
 **Platform-Specific Guides:**
 - **[Windows Installer](#windows-installer-inno-setup)** - Inno Setup (.exe)
-- **[Linux Installer](LINUX-INSTALLER.md)** - AppImage & tar.gz
+- **[Linux Installer](LINUX-INSTALLER.md)** - Ubuntu .deb
 - **[macOS Installer](MACOS.md)** - DMG & app bundle
 
 ---
@@ -192,14 +192,14 @@ Source: "config\*.json"; DestDir: "{app}\config"; Flags: ignoreversion
 
 ### Development Build
 ```powershell
-.\build-installer.ps1 `
+.\build-windows-installer.ps1 `
     -Configuration Release `
     -Version "1.0.0-dev"
 ```
 
 ### Staging Build
 ```powershell
-.\build-installer.ps1 `
+.\build-windows-installer.ps1 `
     -IFrameUrl "https://staging-client.com" `
     -ApiUrl "https://staging-api.com" `
     -Configuration Release `
@@ -208,7 +208,7 @@ Source: "config\*.json"; DestDir: "{app}\config"; Flags: ignoreversion
 
 ### Production Build
 ```powershell
-.\build-installer.ps1 `
+.\build-windows-installer.ps1 `
     -IFrameUrl "https://production-client.com" `
     -ApiUrl "https://production-api.com" `
     -Configuration Release `
@@ -277,7 +277,7 @@ jobs:
       run: choco install innosetup -y
     
     - name: Build Installer
-      run: .\build-installer.ps1 -Version ${{ github.ref_name }}
+      run: .\build-windows-installer.ps1 -Version ${{ github.ref_name }}
     
     - name: Upload Installer
       uses: actions/upload-artifact@v3

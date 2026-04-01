@@ -3,6 +3,12 @@
 ###############################################################################
 * text=auto
 
+# Ensure Linux shell scripts always use LF (important for WSL/Linux execution)
+*.sh text eol=lf
+
+# Keep PowerShell scripts Windows-friendly
+*.ps1 text eol=crlf
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #

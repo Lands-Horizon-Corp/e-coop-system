@@ -51,20 +51,25 @@ public class LinuxSecureStorage : ISecureStorage
 
     public string Unprotect(string protectedText)
     {
+        if (string.IsNullOrEmpty(protectedText))
+            throw new CryptographicException("Protected data cannot be null or empty");
+
+        var encryptedValue = protectedText;
+
         try
         {
             if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] LinuxSecureStorage: Unprotect called, data length: {protectedText?.Length ?? 0}");
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] LinuxSecureStorage: Unprotect called, data length: {encryptedValue.Length}");
 
             // Check if data was stored in keyring (legacy format)
-            if (protectedText.StartsWith("KEYRING:"))
+            if (encryptedValue.StartsWith("KEYRING:"))
             {
                 if (OperatingSystem.IsLinux())
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] LinuxSecureStorage: KEYRING format detected");
 
                 try
                 {
-                    var label = protectedText.Substring(8);
+                    var label = encryptedValue.Substring(8);
                     var retrieved = RetrieveWithLibsecret(label);
                     if (retrieved != null)
                         return retrieved;
@@ -83,7 +88,7 @@ public class LinuxSecureStorage : ISecureStorage
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] LinuxSecureStorage: Using DecryptWithMachineKey...");
 
             // Default: Decrypt using machine-bound key
-            var result = DecryptWithMachineKey(protectedText);
+            var result = DecryptWithMachineKey(encryptedValue);
             
             if (OperatingSystem.IsLinux())
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] LinuxSecureStorage: Unprotect succeeded");

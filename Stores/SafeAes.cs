@@ -13,43 +13,22 @@ internal static class SafeAes
     {
         try
         {
-            // Try to create AES instance
             var aes = Aes.Create();
+            if (aes == null)
+                throw new CryptographicException("Unable to create AES instance");
             
             // Verify it works by setting a dummy key
             aes.KeySize = 256;
             aes.BlockSize = 128;
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.PKCS7;
-            
+
             return aes;
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"SafeAes: Failed to create standard AES: {ex}");
-            
-            // Try explicit implementation
-            try
-            {
-                var aes = new AesCryptoServiceProvider();
-                aes.KeySize = 256;
-                aes.BlockSize = 128;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                return aes;
-            }
-            catch (Exception ex2)
-            {
-                Debug.WriteLine($"SafeAes: Failed to create AesCryptoServiceProvider: {ex2}");
-                
-                // Last resort: AesManaged (slower but more compatible)
-                var aes = new AesManaged();
-                aes.KeySize = 256;
-                aes.BlockSize = 128;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                return aes;
-            }
+            throw new CryptographicException("Failed to create AES provider", ex);
         }
     }
     
