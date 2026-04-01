@@ -320,17 +320,10 @@ namespace ECoopSystem
                 if (OperatingSystem.IsLinux())
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Building configuration...");
 
-                var configurationBuilder = new ConfigurationBuilder()
+                var configuration = new ConfigurationBuilder()
                     .SetBasePath(AppContext.BaseDirectory)
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
-
-#if DEBUG
-                configurationBuilder.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false);
-#else
-                configurationBuilder.AddJsonFile("appsettings.Production.json", optional: true, reloadOnChange: false);
-#endif
-
-                var configuration = configurationBuilder.Build();
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                    .Build();
 
                 if (OperatingSystem.IsLinux())
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Setting up services...");

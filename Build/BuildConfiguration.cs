@@ -16,12 +16,12 @@ public static class BuildConfiguration
     /// <summary>
     /// WebView/IFrame URL - Set via: -p:IFrameUrl="https://yoursite.com"
     /// </summary>
-    public const string IFrameUrl = "https://e-coop-client-development.up.railway.app/";
+    public const string IFrameUrl = "https://e-coop-client.site/";
 
     /// <summary>
     /// API Server URL - Set via: -p:ApiUrl="https://api.yoursite.com"
     /// </summary>
-    public const string ApiUrl = "https://e-coop-server-development.up.railway.app/";
+    public const string ApiUrl = "https://e-coop-server-production.up.railway.app/web/api/v1/license";
 
     /// <summary>
     /// Application Name - Set via: -p:AppName="YourAppName"

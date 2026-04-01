@@ -1,10 +1,19 @@
-# Creating Windows Installer with Inno Setup
+# Building Installers for ECoopSystem
 
-This guide explains how to create a Windows installer for ECoopSystem using Inno Setup.
+This guide explains how to create installers for ECoopSystem across all platforms.
 
-## Prerequisites
+**Platform-Specific Guides:**
+- **[Windows Installer](#windows-installer-inno-setup)** - Inno Setup (.exe)
+- **[Linux Installer](LINUX-INSTALLER.md)** - AppImage & tar.gz
+- **[macOS Installer](MACOS.md)** - DMG & app bundle
 
-### 1. Install Inno Setup
+---
+
+## Windows Installer (Inno Setup)
+
+### Prerequisites
+
+#### Install Inno Setup
 
 Download and install Inno Setup from: https://jrsoftware.org/isdl.php
 
@@ -14,7 +23,7 @@ Download and install Inno Setup from: https://jrsoftware.org/isdl.php
 - Default: `C:\Program Files (x86)\Inno Setup 6`
 - Make sure to add the installation directory to your system PATH
 
-### 2. Verify Installation
+#### Verify Installation
 
 Open a command prompt or PowerShell and run:
 ```bash
@@ -26,7 +35,7 @@ If the command is not found, add Inno Setup to your PATH:
 2. Add `C:\Program Files (x86)\Inno Setup 6` to the PATH variable
 3. Restart your terminal
 
-## Quick Start
+### Quick Start
 
 ### Option 1: Simple Build (Batch Script)
 
