@@ -1,5 +1,4 @@
 # Windows Deployment Guide for ECoopSystem
-# Windows Deployment Guide for ECoopSystem
 
 ## System Requirements
 

@@ -21,7 +21,7 @@ public static class BuildConfiguration
     /// <summary>
     /// API Server URL - Set via: -p:ApiUrl="https://api.yoursite.com"
     /// </summary>
-    public const string ApiUrl = "https://e-coop-server-production.up.railway.app/web/api/v1/license";
+    public const string ApiUrl = "https://e-coop-server-production.up.railway.app";
 
     /// <summary>
     /// Application Name - Set via: -p:AppName="YourAppName"

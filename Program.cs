@@ -27,8 +27,6 @@ namespace ECoopSystem
                 {
                     try
                     {
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Killing orphaned CEF processes...");
-                        
                         // Kill any CefGlue browser processes
                         var killCefGlue = new System.Diagnostics.ProcessStartInfo
                         {
@@ -44,16 +42,12 @@ namespace ECoopSystem
                         {
                             process?.WaitForExit(2000);
                         }
-                        
+
                         // Give processes time to fully terminate and release resources
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Waiting for CEF processes to terminate...");
                         System.Threading.Thread.Sleep(1000);
-                        
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] CEF processes cleaned");
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Warning: Could not kill CEF processes: {ex.Message}");
                     }
                 }
 
@@ -244,66 +238,24 @@ namespace ECoopSystem
 
             try
             {
-                // Add detailed console logging for Linux debugging
-                if (OperatingSystem.IsLinux())
-                {
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] ECoopSystem starting...");
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] .NET Version: {Environment.Version}");
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Working Directory: {Environment.CurrentDirectory}");
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] User: {Environment.UserName}");
-                }
-
                 // Clean CEF cache on startup to prevent segmentation faults from corrupted cache
                 try
                 {
-                    if (OperatingSystem.IsLinux())
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Cleaning CEF cache...");
-                    
                     CleanCefCache();
-                    
-                    if (OperatingSystem.IsLinux())
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] CEF cache cleaned");
                 }
-                catch (Exception ex)
+                catch
                 {
-                    if (OperatingSystem.IsLinux())
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Warning: Failed to clean CEF cache: {ex.Message}");
                 }
-
-                AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-                {
-                    if (OperatingSystem.IsLinux())
-                    {
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] UNHANDLED EXCEPTION:");
-                        Console.WriteLine(e.ExceptionObject?.ToString() ?? "null");
-                    }
-                };
 
                 TaskScheduler.UnobservedTaskException += (sender, e) =>
                 {
-                    if (OperatingSystem.IsLinux())
-                    {
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] UNOBSERVED TASK EXCEPTION:");
-                        Console.WriteLine(e.Exception?.ToString() ?? "null");
-                    }
                     e.SetObserved();
                 };
 
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Building Avalonia app...");
-
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-                
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Application exited normally");
             }
-            catch (Exception ex)
+            catch
             {
-                if (OperatingSystem.IsLinux())
-                {
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] FATAL ERROR in Main:");
-                    Console.WriteLine(ex.ToString());
-                }
                 throw;
             }
             finally
@@ -317,16 +269,10 @@ namespace ECoopSystem
         {
             try
             {
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Building configuration...");
-
                 var configuration = new ConfigurationBuilder()
                     .SetBasePath(AppContext.BaseDirectory)
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                     .Build();
-
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Setting up services...");
 
                 var services = new ServiceCollection();
                 services.AddSingleton<IConfiguration>(configuration);
@@ -337,26 +283,14 @@ namespace ECoopSystem
                     "dp-keys"
                 );
 
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Keys directory: {keysDir}");
-
                 System.IO.Directory.CreateDirectory(keysDir);
-
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Configuring DataProtection...");
 
                 services.AddDataProtection()
                         .PersistKeysToFileSystem(new System.IO.DirectoryInfo(keysDir))
                         .SetApplicationName("ECoopSystem");
 
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Registering stores...");
-
                 services.AddSingleton<AppStateStore>();
                 services.AddSingleton<SecretKeyStore>();
-                
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Configuring HTTP client...");
 
                 services.AddHttpClient<LicenseService>(client =>
                 {
@@ -372,13 +306,7 @@ namespace ECoopSystem
                     return handler;
                 });
 
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Building service provider...");
-
                 var provider = services.BuildServiceProvider();
-
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Configuring Avalonia...");
 
                 var builder = AppBuilder.Configure<App>()
                     .UsePlatformDetect()
@@ -397,26 +325,14 @@ namespace ECoopSystem
                     });
                 }
 
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Setting up Avalonia services...");
-
                 return builder.AfterSetup(_ =>
                     {
-                        if (OperatingSystem.IsLinux())
-                            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] AfterSetup callback...");
-                        
                         App.Services = provider;
                     })
-                    .With(new SkiaOptions { MaxGpuResourceSizeBytes = 0 })
-                    .LogToTrace();
+                    .With(new SkiaOptions { MaxGpuResourceSizeBytes = 0 });
             }
-            catch (Exception ex)
+            catch
             {
-                if (OperatingSystem.IsLinux())
-                {
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] ERROR in BuildAvaloniaApp:");
-                    Console.WriteLine(ex.ToString());
-                }
                 throw;
             }
         }
