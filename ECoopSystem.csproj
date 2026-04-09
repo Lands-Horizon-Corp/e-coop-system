@@ -76,7 +76,6 @@
   <ItemGroup>
     <Compile Remove="Build\BuildConfiguration.template.cs" />
     <None Include="Build\BuildConfiguration.template.cs" />
-    <None Include="README.md" />
   </ItemGroup>
 
   <ItemGroup>

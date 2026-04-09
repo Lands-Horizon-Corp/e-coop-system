@@ -1,84 +1,47 @@
 # Linux Installer Guide for ECoopSystem (Ubuntu .deb)
 
-This guide explains how to build and distribute a `.deb` installer for Ubuntu.
+# Linux Installer (`.deb`)
 
-## Overview
+## Prerequisites
 
-Target format:
-- `.deb` (Ubuntu/Debian package)
+- Ubuntu/Debian/WSL environment
+- `.NET 9 SDK`
+- `dpkg-deb` (`sudo apt install -y dpkg-dev`)
 
-Output file:
-- `output/installer/ecoopsystem_<version>_amd64.deb`
+## Build
 
----
+Basic:
 
-## Quick Start
-
-### Build on Ubuntu / WSL
 ```bash
 bash build-linux-installer.sh 1.0.0
 ```
 
-With custom URLs/config:
+Custom endpoints:
+
 ```bash
-bash build-linux-installer.sh 1.0.0 "https://your-app-url.com" "https://your-api-url.com" Release
+bash build-linux-installer.sh 1.0.0 https://app.example.com https://api.example.com Release
 ```
 
-### Build from PowerShell (WSL guidance)
+PowerShell wrapper:
+
 ```powershell
-.\build-linux-installer.ps1 -Version 1.0.0
+./build-linux-installer.ps1 -Version 1.0.0
 ```
 
----
+## Output
 
-## Prerequisites
+`output/installer/ecoopsystem_<version>_amd64.deb`
 
-Install required tools in Ubuntu/WSL:
-```bash
-sudo apt update
-sudo apt install -y dpkg-dev
-```
+## Install and remove
 
-Also ensure `.NET 9 SDK` is installed.
-
----
-
-## Installation on Ubuntu
-
-Install package:
 ```bash
 sudo apt install ./output/installer/ecoopsystem_1.0.0_amd64.deb
-```
-
-Run app:
-```bash
 ecoopsystem
-```
-
-Uninstall:
-```bash
 sudo apt remove ecoopsystem
 ```
 
----
+## Package layout
 
-## Build Parameters
-
-`build-linux-installer.sh` arguments:
-
-1. `Version` (default: `1.0.0`)
-2. `IFrameUrl` (default: development URL)
-3. `ApiUrl` (default: development URL)
-4. `Configuration` (default: `Release`)
-
-Example:
-```bash
-bash build-linux-installer.sh 1.0.0 "https://prod-app.com" "https://prod-api.com" Release
-```
-
----
-
-## Notes
-
-- This workflow is Ubuntu-focused and does not generate AppImage.
-- Package installs app files under `/opt/ECoopSystem` and launcher at `/usr/bin/ecoopsystem`.
+- App files: `/opt/ECoopSystem`
+- Launcher: `/usr/bin/ecoopsystem`
+- Desktop entry: `/usr/share/applications/ecoopsystem.desktop`

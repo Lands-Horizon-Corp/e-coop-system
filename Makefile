@@ -21,6 +21,7 @@ IFRAME_URL ?= $(if $(DEFAULT_IFRAME_URL),$(DEFAULT_IFRAME_URL),http://localhost:
 API_URL ?= $(if $(DEFAULT_API_URL),$(DEFAULT_API_URL),http://localhost:5000)
 APP_NAME ?= $(if $(DEFAULT_APP_NAME),$(DEFAULT_APP_NAME),ECoopSystem)
 APP_LOGO ?= $(if $(DEFAULT_APP_LOGO),$(DEFAULT_APP_LOGO),Assets/Images/logo.png)
+VERSION ?= 1.0.0
 PLATFORM ?= all
 CONFIG ?= Release
 
@@ -42,7 +43,7 @@ SECURITY_LOCKOUT_MINUTES ?= $(if $(DEFAULT_SECURITY_LOCKOUT_MINUTES),$(DEFAULT_S
 SECURITY_ACTIVATION_LOOKBACK ?= $(if $(DEFAULT_SECURITY_ACTIVATION_LOOKBACK),$(DEFAULT_SECURITY_ACTIVATION_LOOKBACK),1)
 SECURITY_BG_VERIFICATION ?= $(if $(DEFAULT_SECURITY_BG_VERIFICATION),$(DEFAULT_SECURITY_BG_VERIFICATION),1)
 
-.PHONY: all build clean help generate-config prepare-output-dirs
+.PHONY: all build buildinstaller clean help generate-config prepare-output-dirs
 
 # Default target
 all: build
@@ -124,6 +125,55 @@ build: generate-config prepare-output-dirs
 	@echo ""
 	@echo "? Build completed"
 
+# Build installer packages (Windows/Linux). macOS installer is not available yet.
+buildinstaller: prepare-output-dirs
+	@echo "========================================="
+	@echo " Building Installers $(APP_NAME)"
+	@echo "========================================="
+	@echo "IFrame URL: $(IFRAME_URL)"
+	@echo "API URL:    $(API_URL)"
+	@echo "Platform:   $(PLATFORM)"
+	@echo "Config:     $(CONFIG)"
+	@echo "Version:    $(VERSION)"
+	@set -e; \
+	if [ "$(PLATFORM)" = "all" ]; then \
+		platforms="windows linux macos"; \
+	else \
+		platforms="$(PLATFORM)"; \
+	fi; \
+	for platform in $$platforms; do \
+		case "$$platform" in \
+			windows) \
+				echo ""; \
+				echo "Creating Windows installer..."; \
+				if [ -x "./build-windows-installer.sh" ]; then \
+					./build-windows-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)" false false; \
+				elif command -v pwsh >/dev/null 2>&1; then \
+					pwsh -NoProfile -ExecutionPolicy Bypass -File ./build-windows-installer.ps1 -Version "$(VERSION)" -IFrameUrl "$(IFRAME_URL)" -ApiUrl "$(API_URL)" -Configuration "$(CONFIG)"; \
+				else \
+					echo "Error: Windows installer script requires ./build-windows-installer.sh or pwsh."; \
+					exit 1; \
+				fi; \
+				find output/installer -maxdepth 1 -type f -name '*.exe' -exec cp -f {} output/installer/windows/ \; \
+				echo "Windows installers copied to output/installer/windows"; \
+				;; \
+			linux|linux-deb|linux-arm) \
+				echo ""; \
+				echo "Creating Linux installer..."; \
+				./build-linux-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)"; \
+				find output/installer -maxdepth 1 -type f -name '*.deb' -exec cp -f {} output/installer/linux/ \; \
+				echo "Linux installers copied to output/installer/linux"; \
+				;; \
+			macos|mac-intel|mac-arm) \
+				echo ""; \
+				echo "Skipping $$platform installer: macOS installer script is not available yet."; \
+				;; \
+			*) echo "Error: Unknown platform '$$platform'"; exit 1 ;; \
+		esac; \
+	done
+	@echo ""
+	@echo "? Installer build completed"
+
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
@@ -142,6 +192,7 @@ help:
 	@echo "  API_URL     - API Server URL (default: dev Railway URL)"
 	@echo "  APP_NAME    - Application name (default: ECoopSystem)"
 	@echo "  APP_LOGO    - Logo path (default: Assets/Images/logo.png)"
+	@echo "  VERSION     - Installer/package version (default: 1.0.0)"
 	@echo "  PLATFORM    - Target platform (all|windows|linux|macos|linux-deb|linux-arm|mac-intel|mac-arm)"
 	@echo "  CONFIG      - Build configuration (Debug|Release, default: Release)"
 	@echo ""
@@ -149,4 +200,6 @@ help:
 	@echo "  make build"
 	@echo "  make build IFRAME_URL=http://localhost:3000 API_URL=http://localhost:5000"
 	@echo "  make build PLATFORM=windows IFRAME_URL=http://localhost:3000 API_URL=http://localhost:5000"
+	@echo "  make buildinstaller"
+	@echo "  make buildinstaller PLATFORM=linux VERSION=1.0.0"
 	@echo "  make clean"
