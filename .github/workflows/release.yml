@@ -38,6 +38,11 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup --yes --no-progress
+
       - name: Resolve version
         id: version
         shell: pwsh
@@ -49,26 +54,26 @@ jobs:
           }
           "value=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Build Windows publish
-        shell: pwsh
-        run: |
-          ./build.ps1 -Platform windows -Configuration Release -IFrameUrl "$env:IFRAME_URL" -ApiUrl "$env:API_URL"
-
-      - name: Package Windows zip
+      - name: Build Windows installer
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.value }}"
-          New-Item -ItemType Directory -Force -Path "output/build/windows" | Out-Null
-          $zipPath = "output/build/windows/ECoopSystem-windows-$version.zip"
-          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-          Compress-Archive -Path "bin/Release/net9.0/win-x64/publish/*" -DestinationPath $zipPath -Force
+          ./build-windows-installer.ps1 -Version $version -IFrameUrl "$env:IFRAME_URL" -ApiUrl "$env:API_URL" -Configuration Release
+          New-Item -ItemType Directory -Force -Path "output/installer/windows" | Out-Null
+          $exe = Get-ChildItem "output/installer/*.exe" -File | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error "Windows installer (.exe) was not generated."
+            exit 1
+          }
+          $dest = "output/installer/windows/ECoopSystem-windows-$version.exe"
+          Move-Item -Path $exe.FullName -Destination $dest -Force
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
           path: |
-            output/build/windows/*.zip
+            output/installer/windows/*.exe
 
   build-linux:
     runs-on: ubuntu-latest
@@ -87,7 +92,7 @@ jobs:
       - name: Install Linux packaging dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y zip dpkg-dev
+          sudo apt-get install -y dpkg-dev
 
       - name: Resolve version
         id: version
@@ -100,25 +105,11 @@ jobs:
           fi
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Build Linux publish
-        shell: bash
-        run: |
-          chmod +x build.sh build-linux-installer.sh
-          ./build.sh "$IFRAME_URL" "$API_URL" linux Release
-
-      - name: Package Linux zip
-        shell: bash
-        run: |
-          VERSION="${{ steps.version.outputs.value }}"
-          mkdir -p output/build/linux
-          ZIP_PATH="output/build/linux/ECoopSystem-linux-$VERSION.zip"
-          rm -f "$ZIP_PATH"
-          (cd "bin/Release/net9.0/linux-x64/publish" && zip -r "$GITHUB_WORKSPACE/$ZIP_PATH" . >/dev/null)
-
       - name: Build Linux installer
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.value }}"
+          chmod +x build-linux-installer.sh
           ./build-linux-installer.sh "$VERSION" "$IFRAME_URL" "$API_URL" Release
           mkdir -p output/installer/linux
           if ls output/installer/*.deb >/dev/null 2>&1; then
@@ -135,7 +126,6 @@ jobs:
         with:
           name: linux-artifacts
           path: |
-            output/build/linux/*.zip
             output/installer/linux/*.deb
 
   create-release:
@@ -158,7 +148,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release-assets/**/*.zip
+            release-assets/**/*.exe
             release-assets/**/*.deb
           fail_on_unmatched_files: true
           draft: false
