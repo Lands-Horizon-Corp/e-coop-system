@@ -1,4 +1,5 @@
 name: Release
+name: Release
 
 on:
   push:
@@ -115,7 +116,6 @@ jobs:
           (cd "bin/Release/net9.0/linux-x64/publish" && zip -r "$GITHUB_WORKSPACE/$ZIP_PATH" . >/dev/null)
 
       - name: Build Linux installer
-        continue-on-error: true
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.value }}"
@@ -124,6 +124,10 @@ jobs:
           if ls output/installer/*.deb >/dev/null 2>&1; then
             DEB_FILE=$(ls output/installer/*.deb | head -n1)
             mv -f "$DEB_FILE" "output/installer/linux/ECoopSystem-linux-$VERSION.deb"
+          fi
+          if ! ls output/installer/linux/*.deb >/dev/null 2>&1; then
+            echo "::error::Linux installer (.deb) was not generated."
+            exit 1
           fi
 
       - name: Upload Linux artifacts
@@ -156,5 +160,6 @@ jobs:
           files: |
             release-assets/**/*.zip
             release-assets/**/*.deb
+          fail_on_unmatched_files: true
           draft: false
           prerelease: false
