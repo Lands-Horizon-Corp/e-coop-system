@@ -103,22 +103,22 @@ $domain1 = if ($WebViewTrustedDomains.Count -gt 0) { $WebViewTrustedDomains[0] }
 $domain2 = if ($WebViewTrustedDomains.Count -gt 1) { $WebViewTrustedDomains[1] } else { "" }
 $domain3 = if ($WebViewTrustedDomains.Count -gt 2) { $WebViewTrustedDomains[2] } else { "" }
 
-$generatedContent = $generatedContent.Replace("$(IFrameUrl)", $IFrameUrl)
-$generatedContent = $generatedContent.Replace("$(ApiUrl)", $ApiUrl)
-$generatedContent = $generatedContent.Replace("$(AppName)", $AppName)
-$generatedContent = $generatedContent.Replace("$(AppLogo)", $AppLogo)
-$generatedContent = $generatedContent.Replace("$(ApiTimeout)", $ApiTimeout.ToString())
-$generatedContent = $generatedContent.Replace("$(ApiMaxRetries)", $ApiMaxRetries.ToString())
-$generatedContent = $generatedContent.Replace("$(ApiMaxResponseSizeBytes)", $ApiMaxResponseSizeBytes.ToString())
-$generatedContent = $generatedContent.Replace("$(WebViewTrustedDomain1)", $domain1)
-$generatedContent = $generatedContent.Replace("$(WebViewTrustedDomain2)", $domain2)
-$generatedContent = $generatedContent.Replace("$(WebViewTrustedDomain3)", $domain3)
-$generatedContent = $generatedContent.Replace("$(WebViewAllowHttp)", $WebViewAllowHttp.ToString().ToLower())
-$generatedContent = $generatedContent.Replace("$(SecurityGracePeriodDays)", $SecurityGracePeriodDays.ToString())
-$generatedContent = $generatedContent.Replace("$(SecurityMaxActivationAttempts)", $SecurityMaxActivationAttempts.ToString())
-$generatedContent = $generatedContent.Replace("$(SecurityLockoutMinutes)", $SecurityLockoutMinutes.ToString())
-$generatedContent = $generatedContent.Replace("$(SecurityActivationLookbackMinutes)", $SecurityActivationLookbackMinutes.ToString())
-$generatedContent = $generatedContent.Replace("$(SecurityBackgroundVerificationIntervalMinutes)", $SecurityBackgroundVerificationIntervalMinutes.ToString())
+$generatedContent = $generatedContent.Replace('$(IFrameUrl)', $IFrameUrl)
+$generatedContent = $generatedContent.Replace('$(ApiUrl)', $ApiUrl)
+$generatedContent = $generatedContent.Replace('$(AppName)', $AppName)
+$generatedContent = $generatedContent.Replace('$(AppLogo)', $AppLogo)
+$generatedContent = $generatedContent.Replace('$(ApiTimeout)', $ApiTimeout.ToString())
+$generatedContent = $generatedContent.Replace('$(ApiMaxRetries)', $ApiMaxRetries.ToString())
+$generatedContent = $generatedContent.Replace('$(ApiMaxResponseSizeBytes)', $ApiMaxResponseSizeBytes.ToString())
+$generatedContent = $generatedContent.Replace('$(WebViewTrustedDomain1)', $domain1)
+$generatedContent = $generatedContent.Replace('$(WebViewTrustedDomain2)', $domain2)
+$generatedContent = $generatedContent.Replace('$(WebViewTrustedDomain3)', $domain3)
+$generatedContent = $generatedContent.Replace('$(WebViewAllowHttp)', $WebViewAllowHttp.ToString().ToLower())
+$generatedContent = $generatedContent.Replace('$(SecurityGracePeriodDays)', $SecurityGracePeriodDays.ToString())
+$generatedContent = $generatedContent.Replace('$(SecurityMaxActivationAttempts)', $SecurityMaxActivationAttempts.ToString())
+$generatedContent = $generatedContent.Replace('$(SecurityLockoutMinutes)', $SecurityLockoutMinutes.ToString())
+$generatedContent = $generatedContent.Replace('$(SecurityActivationLookbackMinutes)', $SecurityActivationLookbackMinutes.ToString())
+$generatedContent = $generatedContent.Replace('$(SecurityBackgroundVerificationIntervalMinutes)', $SecurityBackgroundVerificationIntervalMinutes.ToString())
 
 $generatedContent | Out-File -FilePath "Build/BuildConfiguration.cs" -Encoding UTF8 -NoNewline
 
