@@ -24,11 +24,6 @@ public class MainViewModel : ViewModelBase
     private bool _isVerified;
     private bool _webViewReadySignaled;
 
-    private static void Log(string message)
-    {
-        Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [MainViewModel] {message}");
-    }
-
     public event EventHandler? WebViewReady;
 
     public string URL { get; } = BuildConfiguration.IFrameUrl;
@@ -63,7 +58,6 @@ public class MainViewModel : ViewModelBase
 
     public async Task VerifyLicenseAsync()
     {
-        Log("VerifyLicenseAsync started.");
         _webViewReadySignaled = false;
         IsLoading = true;
         IsVerified = false;
@@ -74,7 +68,6 @@ public class MainViewModel : ViewModelBase
             var secret = _secretStore.Load();
             if (string.IsNullOrWhiteSpace(secret))
             {
-                Log("No secret found. Navigating to activation.");
                 NavigateToActivation();
                 return;
             }
@@ -84,7 +77,6 @@ public class MainViewModel : ViewModelBase
 
             if (verify.IsOk)
             {
-                Log("License verify result: OK.");
                 _state.LastVerifiedUtc = DateTimeOffset.UtcNow;
                 _state.Counter++;
                 _store.Save(_state);
@@ -93,23 +85,19 @@ public class MainViewModel : ViewModelBase
             }
             else if (verify.IsInvalid)
             {
-                Log("License verify result: INVALID. Deleting secret and navigating to activation.");
                 _secretStore.Delete();
                 NavigateToActivation();
                 return;
             }
             else
             {
-                Log("License verify result: transient failure.");
                 if (IsWithinGrace())
                 {
-                    Log("Within grace period. Continuing to main view.");
                     IsVerified = true;
                     StartBackgroundVerification();
                 }
                 else
                 {
-                    Log("Outside grace period. Navigating to activation.");
                     NavigateToActivation();
                     return;
                 }
@@ -117,16 +105,14 @@ public class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Log($"VerifyLicenseAsync exception: {ex}");
+            Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [MainViewModel] VerifyLicenseAsync exception: {ex}");
             if (IsWithinGrace())
             {
-                Log("Exception tolerated due to grace period.");
                 IsVerified = true;
                 StartBackgroundVerification();
             }
             else
             {
-                Log("Exception outside grace period. Navigating to activation.");
                 NavigateToActivation();
                 return;
             }
@@ -135,11 +121,8 @@ public class MainViewModel : ViewModelBase
         {
             if (IsVerified)
             {
-                Log("VerifyLicenseAsync: verified, signaling WebView ready.");
                 OnWebViewReady();
             }
-
-            Log($"VerifyLicenseAsync finished. IsVerified={IsVerified}, IsLoading={IsLoading}");
         }
     }
 
@@ -157,11 +140,7 @@ public class MainViewModel : ViewModelBase
         // On Linux, add extra delay to ensure CEF subprocess is fully ready
         if (OperatingSystem.IsLinux())
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainViewModel: Adding Linux CEF stabilization delay...");
-            
             await Task.Delay(2000); // Extra 2 seconds for CEF to stabilize on Linux
-            
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainViewModel: CEF stabilization complete, showing WebView...");
         }
     }
 
@@ -294,11 +273,9 @@ public class MainViewModel : ViewModelBase
             return;
 
         _webViewReadySignaled = true;
-        Log("OnWebViewReady invoked.");
         await EnsureMinimumLoadingTime();
 
         IsLoading = false;
-        Log("Loading complete. Raising WebViewReady event.");
         WebViewReady?.Invoke(this, EventArgs.Empty);
     }
 

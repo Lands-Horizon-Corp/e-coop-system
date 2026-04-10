@@ -39,53 +39,6 @@ namespace ECoopSystem
             return raw == "1" || raw.Equals("yes", StringComparison.OrdinalIgnoreCase) || raw.Equals("on", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void ValidateCefRuntimeFiles()
-        {
-            try
-            {
-                var baseDir = AppContext.BaseDirectory;
-                var requiredFiles = new[]
-                {
-                    "libcef.dll",
-                    "chrome_elf.dll",
-                    "icudtl.dat",
-                    "resources.pak",
-                    "snapshot_blob.bin",
-                    "v8_context_snapshot.bin",
-                    "libEGL.dll",
-                    "libGLESv2.dll",
-                    "vk_swiftshader.dll",
-                    "vk_swiftshader_icd.json"
-                };
-
-                foreach (var file in requiredFiles)
-                {
-                    var fullPath = Path.Combine(baseDir, file);
-                    Log($"CEF file check: {file} => {(File.Exists(fullPath) ? "OK" : "MISSING")}");
-                }
-
-                var localesPath = Path.Combine(baseDir, "locales");
-                Log($"CEF folder check: locales => {(Directory.Exists(localesPath) ? "OK" : "MISSING")}");
-
-                var subprocessCandidates = new[]
-                {
-                    Path.Combine(baseDir, "CefGlueBrowserProcess.exe"),
-                    Path.Combine(baseDir, "CefSharp.BrowserSubprocess.exe"),
-                    Path.Combine(baseDir, "WebView.BrowserSubprocess.exe"),
-                    Path.Combine(baseDir, "Xilium.CefGlue.BrowserSubprocess.exe")
-                };
-
-                var found = subprocessCandidates.Where(File.Exists).ToArray();
-                Log(found.Length > 0
-                    ? $"CEF subprocess executable detected: {string.Join(", ", found.Select(Path.GetFileName))}"
-                    : "CEF subprocess executable not found (wrapper may reuse main exe).");
-            }
-            catch (Exception ex)
-            {
-                Log($"CEF runtime file validation failed: {ex}");
-            }
-        }
-
         private static void Log(string message)
         {
             Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [Program] [PID:{Environment.ProcessId}] {message}");
@@ -113,10 +66,8 @@ namespace ECoopSystem
 
             var gpuMitigationSwitches = new List<string>
             {
-                "--disable-gpu",
-                "--disable-gpu-compositing",
-                "--disable-gpu-sandbox",
-                "--no-sandbox"
+                "--no-sandbox",
+                "--disable-gpu-sandbox"
             };
 
             if (forceInProcessGpu)
@@ -146,12 +97,9 @@ namespace ECoopSystem
         {
             try
             {
-                Log("Configuring WebView/CEF command-line switches.");
-
                 var disableGpuMitigation = IsEnabled("ECOOP_DISABLE_GPU_MITIGATION", false);
                 if (disableGpuMitigation)
                 {
-                    Log("Skipping WebView GPU switches due to ECOOP_DISABLE_GPU_MITIGATION.");
                     return;
                 }
 
@@ -173,8 +121,6 @@ namespace ECoopSystem
                             ?.GetValue(null)
                         ?? Activator.CreateInstance(globalSettingsType);
 
-                    Log($"GlobalSettings resolved: instanceFound={settingsInstance != null}");
-
                     var addCommandLineSwitchMethod = globalSettingsType.GetMethod(
                         "AddCommandLineSwitch",
                         BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance,
@@ -190,8 +136,6 @@ namespace ECoopSystem
 
                         var switches = new List<(string Name, string Value)>
                         {
-                            ("disable-gpu", ""),
-                            ("disable-gpu-compositing", ""),
                             ("no-sandbox", ""),
                             ("disable-gpu-sandbox", "")
                         };
@@ -220,23 +164,11 @@ namespace ECoopSystem
                                 addCommandLineSwitchMethod.IsStatic ? null : settingsInstance,
                                 [name, value]);
                         }
-
-                        Log($"Applied {switches.Count} WebView/CEF command-line switches.");
                     }
-                    else
-                    {
-                        Log("GlobalSettings.AddCommandLineSwitch method not found.");
-                    }
-                }
-                else
-                {
-                    Log("WebViewControl.GlobalSettings type not found.");
                 }
 
                 if (IsEnabled("ECOOP_USE_SWIFTSHADER", OperatingSystem.IsLinux()))
                     Environment.SetEnvironmentVariable("ANGLE_DEFAULT_PLATFORM", "swiftshader");
-
-                Log("WebView/CEF switches configured.");
             }
             catch (Exception ex)
             {
@@ -454,13 +386,9 @@ namespace ECoopSystem
         [STAThread]
         public static void Main(string[] args)
         {
-            Log($"Main entry. OS={Environment.OSVersion}; Args={string.Join(' ', args)}");
-
             var isCefSubprocess = IsCefSubprocess(args);
-            Log($"Process role: {(isCefSubprocess ? "CEF subprocess" : "Main app process")}");
 
             args = BuildSafeRuntimeArgs(args);
-            Log($"Runtime args after GPU mitigation: {string.Join(' ', args)}");
 
             AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
             {
@@ -471,40 +399,21 @@ namespace ECoopSystem
             if (!isCefSubprocess)
             {
                 _mutex = new System.Threading.Mutex(true, MutexName, out createdNew);
-                Log($"Mutex acquisition result: createdNew={createdNew}");
 
                 if (!createdNew)
                 {
-                    Log("Another instance appears to be running. Exiting immediately.");
                     return;
                 }
-            }
-            else
-            {
-                Log("Skipping mutex for CEF subprocess.");
             }
 
             try
             {
-                Log("Startup sequence begins.");
-
-                if (!isCefSubprocess)
-                {
-                    ValidateCefRuntimeFiles();
-                }
-
                 // Clean CEF cache on startup to prevent segmentation faults from corrupted cache
                 try
                 {
                     if (!isCefSubprocess)
                     {
-                        Log("Starting CEF cache cleanup.");
                         CleanCefCache();
-                        Log("CEF cache cleanup finished.");
-                    }
-                    else
-                    {
-                        Log("Skipping CEF cache cleanup for subprocess.");
                     }
                 }
                 catch (Exception ex)
@@ -514,15 +423,12 @@ namespace ECoopSystem
 
                 TaskScheduler.UnobservedTaskException += (sender, e) =>
                 {
-                    Log($"Unobserved task exception: {e.Exception}");
                     e.SetObserved();
                 };
 
                 ConfigureWebViewRuntime();
 
-                Log("Building Avalonia app.");
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-                Log("Avalonia app exited normally.");
             }
             catch (Exception ex)
             {
@@ -531,7 +437,6 @@ namespace ECoopSystem
             }
             finally
             {
-                Log("Releasing mutex and finalizing process.");
                 if (!isCefSubprocess)
                     _mutex?.ReleaseMutex();
                 _mutex?.Dispose();
@@ -542,7 +447,6 @@ namespace ECoopSystem
         {
             try
             {
-                Log("BuildAvaloniaApp: loading configuration and services.");
                 var configuration = new ConfigurationBuilder()
                     .SetBasePath(AppContext.BaseDirectory)
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
@@ -581,7 +485,6 @@ namespace ECoopSystem
                 });
 
                 var provider = services.BuildServiceProvider();
-                Log("BuildAvaloniaApp: service provider built.");
 
                 var builder = AppBuilder.Configure<App>()
                     .UsePlatformDetect()
@@ -602,7 +505,6 @@ namespace ECoopSystem
 
                 return builder.AfterSetup(_ =>
                     {
-                        Log("BuildAvaloniaApp: AfterSetup assigning App.Services.");
                         App.Services = provider;
                     })
                     .With(new SkiaOptions { MaxGpuResourceSizeBytes = 0 });
