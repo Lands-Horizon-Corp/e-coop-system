@@ -19,6 +19,7 @@ Cross-platform desktop app built with `Avalonia UI` and `.NET 9`.
 ### Run locally
 
 ```bash
+cp .env.example
 dotnet restore
 dotnet run
 ```
