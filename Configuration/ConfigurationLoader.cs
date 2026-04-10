@@ -12,6 +12,12 @@ public static class ConfigurationLoader
 {
     private static AppConfiguration? _configuration;
     private static readonly object _lock = new();
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        AllowTrailingCommas = true
+    };
 
     /// <summary>
     /// Gets the current application configuration (singleton)
@@ -45,7 +51,7 @@ public static class ConfigurationLoader
             if (File.Exists(baseConfigPath))
             {
                 var baseJson = File.ReadAllText(baseConfigPath);
-                var baseConfig = JsonSerializer.Deserialize<AppConfiguration>(baseJson, GetJsonOptions());
+                var baseConfig = JsonSerializer.Deserialize<AppConfiguration>(baseJson, _jsonOptions);
                 if (baseConfig != null)
                 {
                     config = baseConfig;
@@ -62,7 +68,7 @@ public static class ConfigurationLoader
             if (File.Exists(envConfigPath))
             {
                 var envJson = File.ReadAllText(envConfigPath);
-                var envConfig = JsonSerializer.Deserialize<AppConfiguration>(envJson, GetJsonOptions());
+                var envConfig = JsonSerializer.Deserialize<AppConfiguration>(envJson, _jsonOptions);
                 if (envConfig != null)
                 {
                     MergeConfiguration(config, envConfig);
@@ -107,16 +113,6 @@ public static class ConfigurationLoader
 
         // Return current directory path as default
         return currentDirPath;
-    }
-
-    private static JsonSerializerOptions GetJsonOptions()
-    {
-        return new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            AllowTrailingCommas = true
-        };
     }
 
     private static void MergeConfiguration(AppConfiguration target, AppConfiguration source)

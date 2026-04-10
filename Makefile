@@ -156,9 +156,15 @@ buildinstaller: prepare-output-dirs ensure-script-permissions
 				echo "Creating Windows installer..."; \
 				mkdir -p output/installer/windows output/installer/linux output/installer/macos; \
 				if [ -f "./build-windows-installer.sh" ]; then \
-					bash ./build-windows-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)" false false; \
+					if bash ./build-windows-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)" false false; then :; else \
+						echo "Warning: Windows installer build failed on this environment."; \
+						if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
+					fi; \
 				elif command -v pwsh >/dev/null 2>&1; then \
-					pwsh -NoProfile -ExecutionPolicy Bypass -File ./build-windows-installer.ps1 -Version "$(VERSION)" -IFrameUrl "$(IFRAME_URL)" -ApiUrl "$(API_URL)" -Configuration "$(CONFIG)"; \
+					if pwsh -NoProfile -ExecutionPolicy Bypass -File ./build-windows-installer.ps1 -Version "$(VERSION)" -IFrameUrl "$(IFRAME_URL)" -ApiUrl "$(API_URL)" -Configuration "$(CONFIG)"; then :; else \
+						echo "Warning: Windows installer build failed on this environment."; \
+						if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
+					fi; \
 				else \
 					echo "Error: Windows installer script requires ./build-windows-installer.sh or pwsh."; \
 					if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
