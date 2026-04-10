@@ -13,7 +13,7 @@ public class AppStateStore
     private static readonly string Purpose = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("RUNvb3BTeXN0ZW0uQXBwU3RhdGUudjE="));
     
     private readonly string _filePath;
-    private readonly IDataProtector _protector;
+    private readonly ISecureStorage _secureStorage;
     
     public AppStateStore(IDataProtectionProvider provider)
     {
@@ -24,41 +24,76 @@ public class AppStateStore
         Directory.CreateDirectory(dir);
         _filePath = Path.Combine(dir, FileName);
 
-        _protector = provider.CreateProtector(Purpose);
+        _secureStorage = SecureStorageFactory.Create(provider, Purpose);
     }
 
     public AppState Load()
     {
-        if (!File.Exists(_filePath)) return CreateInitial();
+        try
+        {
+            if (OperatingSystem.IsLinux())
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] AppStateStore: Load() called");
+
+            if (!File.Exists(_filePath))
+            {
+                if (OperatingSystem.IsLinux())
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] AppStateStore: No file exists, creating initial");
+
+                return CreateInitial();
+            }
 
         try
         {
-            var fileData = File.ReadAllText(_filePath);
-            string json;
-
-            if (OperatingSystem.IsWindows())
-            {
-                json = _protector.Unprotect(fileData);
-            }
-            else
-            {
-                json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(fileData));
-            }
-
+            var protectedData = File.ReadAllText(_filePath);
+            var json = _protector.Unprotect(protectedData);
             var state = JsonSerializer.Deserialize<AppState>(json);
+            
+            if (state == null)
+            {
+                Debug.WriteLine("AppState: Deserialization returned null, creating new state");
+                return CreateInitial();
+            }
 
-            if (state == null || string.IsNullOrWhiteSpace(state.InstallationId) || state.InstallationUnixTime <= 0)
+            if (string.IsNullOrWhiteSpace(state.InstallationId) || 
+                state.InstallationUnixTime <= 0)
             {
                 Debug.WriteLine("AppState: Invalid state data detected, creating new state");
                 return CreateInitial();
             }
 
-            return state;
+                if (OperatingSystem.IsLinux())
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] AppStateStore: Load succeeded");
+
+                return state;
+            }
+            catch (Exception ex)
+            {
+                if (OperatingSystem.IsLinux())
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] AppStateStore: Load inner exception: {ex.Message}");
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] AppStateStore: Exception type: {ex.GetType().Name}");
+                }
+
+                Debug.WriteLine($"AppState: Failed to load (possibly tampered): {ex.Message}");
+                try
+                {
+                    File.Delete(_filePath);
+                }
+                catch
+                {
+                    // Ignore
+                }
+                return CreateInitial();
+            }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"AppState: Failed to load (possibly tampered): {ex.Message}");
-            return CreateInitial();
+            if (OperatingSystem.IsLinux())
+            {
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] AppStateStore: Load outer exception: {ex.Message}");
+                Console.WriteLine(ex.ToString());
+            }
+            throw;
         }
     }
 
@@ -66,23 +101,19 @@ public class AppStateStore
     {
         try
         {
-            if (state == null) throw new ArgumentNullException(nameof(state));
-            if (string.IsNullOrWhiteSpace(state.InstallationId)) throw new InvalidOperationException("InstallationId cannot be empty");
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
 
-            var json = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = false });
+            if (string.IsNullOrWhiteSpace(state.InstallationId))
+                throw new InvalidOperationException("InstallationId cannot be empty");
 
-            string dataToSave;
-            if (OperatingSystem.IsWindows())
+            var json = JsonSerializer.Serialize(state, new JsonSerializerOptions
             {
-                dataToSave = _protector.Protect(json);
-            }
-            else
-            {
-                // Temporary Linux/macOS bypass
-                dataToSave = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
-            }
+                WriteIndented = false
+            });
 
-            File.WriteAllText(_filePath, dataToSave);
+            var protectedData = _protector.Protect(json);
+            File.WriteAllText(_filePath, protectedData);
         }
         catch (Exception ex)
         {

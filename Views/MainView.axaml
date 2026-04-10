@@ -1,62 +1,48 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:xWebView="using:WebView"
+             xmlns:wv="clr-namespace:WebViewControl;assembly=WebViewControl.Avalonia"
              xmlns:vm="using:ECoopSystem.ViewModels"
-             xmlns:views="using:ECoopSystem.Views"
              x:DataType="vm:MainViewModel"
              MinWidth="1280" MinHeight="720"
              x:Class="ECoopSystem.Views.MainView">
 
-    <UserControl.Background>
-        <ImageBrush Source="avares://ECoopSystem/Assets/Images/loading-bg.jpg"
-                    Stretch="UniformToFill"/>
-    </UserControl.Background>
+    <Grid RowDefinitions="*" ColumnDefinitions="*">
 
-    <Grid RowDefinitions="*"
-          ColumnDefinitions="*">
+        <!-- WebView container - will be populated dynamically after CEF is ready -->
+        <ContentControl x:Name="webViewContainer" />
 
         <!-- WebView (hidden during loading) -->
-        <xWebView:CrossPlatformWebView x:Name="webView"
-                                       Url="{Binding URL}"
-                                       IsVisible="{Binding IsWebViewVisible}"
-                                       Focusable="True"/>
+        <wv:WebView x:Name="webView"
+                    Focusable="True"
+                    Address="{Binding URL}"
+                    IsVisible="{Binding !IsLoading}"/>
 
         <!-- Loading Overlay -->
         <Border IsVisible="{Binding IsLoading}">
+            <Border.Background>
+                <ImageBrush Source="avares://ECoopSystem/Assets/Images/loading-bg.jpg" Stretch="UniformToFill"/>
+            </Border.Background>
             <Grid>
-                <!-- Loading Logo at Center -->
                 <Image Source="avares://ECoopSystem/Assets/Images/loading-logo.png"
-                       Width="180"
-                       Height="180"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
+                       Width="180" Height="180"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
                        Margin="0,0,0,150"/>
 
-                <!-- Footer at Bottom -->
                 <StackPanel VerticalAlignment="Bottom"
                             HorizontalAlignment="Center"
-                            Spacing="16"
-                            Margin="0,0,0,20">
+                            Spacing="16" Margin="0,0,0,20">
                     <StackPanel Spacing="24">
-						<TextBlock Text="BUILT IN TRUST"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="BUILT IN TRUST"
+                                   FontSize="14" FontWeight="SemiBold"
+                                   Foreground="White" HorizontalAlignment="Center"/>
 
                         <TextBlock Text="POWERED BY LANDS HORIZON CORP 2026."
-                                   FontSize="10"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"/>
+                                   FontSize="10" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
                     
                     <ProgressBar IsIndeterminate="True"
-                                 Width="200"
-                                 Height="4"
-                                 HorizontalAlignment="Center"
-                                 Background="White"
+                                 Width="200" Height="4"
+                                 HorizontalAlignment="Center" Background="White"
                                  Foreground="#50e893"/>
                 </StackPanel>
             </Grid>

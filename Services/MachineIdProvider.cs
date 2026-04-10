@@ -20,23 +20,11 @@ public static class MachineIdProvider
             }
             else if (OperatingSystem.IsLinux())
             {
-                // Try primary location
-                var path = "/etc/machine-id";
-                if (File.Exists(path))
-                {
-                    var value = File.ReadAllText(path).Trim();
-                    if (!string.IsNullOrEmpty(value))
-                        return value;
-                }
-                
-                // Fallback to dbus machine-id
-                path = "/var/lib/dbus/machine-id";
-                if (File.Exists(path))
-                {
-                    var value = File.ReadAllText(path).Trim();
-                    if (!string.IsNullOrEmpty(value))
-                        return value;
-                }
+                if (File.Exists("/etc/machine-id"))
+                    return File.ReadAllText("/etc/machine-id").Trim();
+
+                if (File.Exists("/var/lib/dbus/machine-id"))
+                    return File.ReadAllText("/var/lib/dbus/machine-id").Trim();
             }
             else if (OperatingSystem.IsMacOS())
             {

@@ -19,9 +19,18 @@ namespace ECoopSystem
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow();
+                
+                // Ensure proper cleanup on shutdown
+                desktop.ShutdownRequested += OnShutdownRequested;
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+        {
+            // Give time for proper disposal
+            System.Threading.Thread.Sleep(100);
         }
 
         public override void RegisterServices()

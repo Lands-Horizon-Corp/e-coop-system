@@ -80,6 +80,7 @@ public class LicenseService
         return ActivateResult.ServerError(status, msg);
     }
 
+
     public async Task<VerifyResult> VerifyAsync(string secretKey, string fingerprint, int counter, CancellationToken ct)
     {
         var url = $"{_baseUrl.TrimEnd('/')}{VerifyEndpoint}";

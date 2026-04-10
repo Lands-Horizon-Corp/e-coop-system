@@ -41,6 +41,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
+    <PackageReference Include="WebViewControl-Avalonia" Version="3.120.11" />
+    <!-- Explicitly reference HarfBuzzSharp with version matching Avalonia requirements -->
+    <PackageReference Include="HarfBuzzSharp" Version="8.3.1.1" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,7 +76,6 @@
   <ItemGroup>
     <Compile Remove="Build\BuildConfiguration.template.cs" />
     <None Include="Build\BuildConfiguration.template.cs" />
-    <None Include="README.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -83,10 +86,5 @@
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <!-- Platform-specific WebView packages -->
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2783.1" />
   </ItemGroup>
 </Project>

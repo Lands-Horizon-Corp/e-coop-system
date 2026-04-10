@@ -33,6 +33,29 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Keep output folder structure in source control, ignore generated files only
+!output/
+!output/build/
+!output/build/windows/
+!output/build/linux/
+!output/build/macos/
+!output/installer/
+!output/installer/windows/
+!output/installer/linux/
+!output/installer/macos/
+output/build/windows/*
+output/build/linux/*
+output/build/macos/*
+output/installer/windows/*
+output/installer/linux/*
+output/installer/macos/*
+!output/build/windows/.gitkeep
+!output/build/linux/.gitkeep
+!output/build/macos/.gitkeep
+!output/installer/windows/.gitkeep
+!output/installer/linux/.gitkeep
+!output/installer/macos/.gitkeep
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
@@ -500,3 +523,4 @@ setup-*.exe
 
 # Installer build artifacts
 *.iss.bak
+/build-deb/pkg
