@@ -73,7 +73,7 @@ generate-config:
 	     -e 's|\$$(SecurityActivationLookbackMinutes)|$(SECURITY_ACTIVATION_LOOKBACK)|g' \
 	     -e 's|\$$(SecurityBackgroundVerificationIntervalMinutes)|$(SECURITY_BG_VERIFICATION)|g' \
 	     Build/BuildConfiguration.template.cs > Build/BuildConfiguration.cs
-	@echo "? Configuration generated"
+	@echo "Configuration generated"
 
 # Build the application
 build: generate-config prepare-output-dirs
@@ -108,7 +108,7 @@ build: generate-config prepare-output-dirs
 		if [ "$$platform" = "linux-deb" ] || [ "$$platform" = "linux-arm" ]; then osFolder="linux"; fi; \
 		if [ "$$platform" = "mac-intel" ] || [ "$$platform" = "mac-arm" ]; then osFolder="macos"; fi; \
 		mkdir -p output/build/$$osFolder; \
-		zipPath="output/build/$$osFolder/$(APP_NAME)-$$osFolder-$(CONFIG).zip"; \
+		zipPath="output/build/$$osFolder/$(APP_NAME)-$$osFolder-$(VERSION).zip"; \
 		rm -f "$$zipPath"; \
 		if command -v zip >/dev/null 2>&1; then \
 			( cd "bin/$(CONFIG)/net9.0/$$rid/publish" && zip -r "$(CURDIR)/$$zipPath" . >/dev/null ); \
@@ -123,7 +123,7 @@ build: generate-config prepare-output-dirs
 		echo "Created $$zipPath"; \
 	done
 	@echo ""
-	@echo "? Build completed"
+	@echo "Build completed"
 
 # Build installer packages (Windows/Linux). macOS installer is not available yet.
 buildinstaller: prepare-output-dirs
@@ -136,33 +136,61 @@ buildinstaller: prepare-output-dirs
 	@echo "Config:     $(CONFIG)"
 	@echo "Version:    $(VERSION)"
 	@set -e; \
+	strictMode=0; \
 	if [ "$(PLATFORM)" = "all" ]; then \
 		platforms="windows linux macos"; \
 	else \
 		platforms="$(PLATFORM)"; \
+		strictMode=1; \
 	fi; \
 	for platform in $$platforms; do \
 		case "$$platform" in \
 			windows) \
 				echo ""; \
 				echo "Creating Windows installer..."; \
+				mkdir -p output/installer/windows output/installer/linux output/installer/macos; \
 				if [ -x "./build-windows-installer.sh" ]; then \
 					./build-windows-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)" false false; \
 				elif command -v pwsh >/dev/null 2>&1; then \
 					pwsh -NoProfile -ExecutionPolicy Bypass -File ./build-windows-installer.ps1 -Version "$(VERSION)" -IFrameUrl "$(IFRAME_URL)" -ApiUrl "$(API_URL)" -Configuration "$(CONFIG)"; \
 				else \
 					echo "Error: Windows installer script requires ./build-windows-installer.sh or pwsh."; \
-					exit 1; \
+					if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
 				fi; \
-				find output/installer -maxdepth 1 -type f -name '*.exe' -exec cp -f {} output/installer/windows/ \; \
-				echo "Windows installers copied to output/installer/windows"; \
+				if find output/installer -maxdepth 1 -type f -name '*.exe' | grep -q .; then \
+					srcExe=$$(find output/installer -maxdepth 1 -type f -name '*.exe' | head -n1); \
+					ext=$${srcExe##*.}; \
+					destExe="output/installer/windows/$(APP_NAME)-windows-$(VERSION).$$ext"; \
+					mv -f "$$srcExe" "$$destExe"; \
+					echo "Windows installer moved to $$destExe"; \
+				else \
+					echo "Warning: No Windows installer files were found in output/installer."; \
+					if [ $$strictMode -eq 1 ]; then exit 1; fi; \
+				fi; \
 				;; \
 			linux|linux-deb|linux-arm) \
 				echo ""; \
 				echo "Creating Linux installer..."; \
-				./build-linux-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)"; \
-				find output/installer -maxdepth 1 -type f -name '*.deb' -exec cp -f {} output/installer/linux/ \; \
-				echo "Linux installers copied to output/installer/linux"; \
+				mkdir -p output/installer/windows output/installer/linux output/installer/macos; \
+				if [ -x "./build-linux-installer.sh" ]; then \
+					if ./build-linux-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)"; then :; else \
+						echo "Warning: Linux installer build failed on this environment."; \
+						if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
+					fi; \
+				else \
+					echo "Warning: ./build-linux-installer.sh is not executable or not found."; \
+					if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
+				fi; \
+				if find output/installer -maxdepth 1 -type f -name '*.deb' | grep -q .; then \
+					srcDeb=$$(find output/installer -maxdepth 1 -type f -name '*.deb' | head -n1); \
+					ext=$${srcDeb##*.}; \
+					destDeb="output/installer/linux/$(APP_NAME)-linux-$(VERSION).$$ext"; \
+					mv -f "$$srcDeb" "$$destDeb"; \
+					echo "Linux installer moved to $$destDeb"; \
+				else \
+					echo "Warning: No Linux installer files were found in output/installer."; \
+					if [ $$strictMode -eq 1 ]; then exit 1; fi; \
+				fi; \
 				;; \
 			macos|mac-intel|mac-arm) \
 				echo ""; \
@@ -172,13 +200,13 @@ buildinstaller: prepare-output-dirs
 		esac; \
 	done
 	@echo ""
-	@echo "? Installer build completed"
+	@echo "Installer build completed"
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
 	@rm -rf bin/ obj/ Build/BuildConfiguration.cs
-	@echo "? Clean completed"
+	@echo "Clean completed"
 
 # Show help
 help:
@@ -192,7 +220,7 @@ help:
 	@echo "  API_URL     - API Server URL (default: dev Railway URL)"
 	@echo "  APP_NAME    - Application name (default: ECoopSystem)"
 	@echo "  APP_LOGO    - Logo path (default: Assets/Images/logo.png)"
-	@echo "  VERSION     - Installer/package version (default: 1.0.0)"
+	@echo "  VERSION     - Artifact version used in build zip and installer names (default: 1.0.0)"
 	@echo "  PLATFORM    - Target platform (all|windows|linux|macos|linux-deb|linux-arm|mac-intel|mac-arm)"
 	@echo "  CONFIG      - Build configuration (Debug|Release, default: Release)"
 	@echo ""

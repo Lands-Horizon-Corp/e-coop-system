@@ -1,5 +1,4 @@
 using System;
-using System;
 using Avalonia.Controls;
 using ECoopSystem.ViewModels;
 using WebViewControl;

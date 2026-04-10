@@ -54,9 +54,14 @@ Write-Host "Generating BuildConfiguration.cs..." -ForegroundColor Yellow
 $templateContent = Get-Content "Build/BuildConfiguration.template.cs" -Raw
 $generatedContent = $templateContent
 
-$generatedContent = $generatedContent
-    .Replace('GetEnvOrDefault("IFRAME_URL", "http://localhost:3000/")', "GetEnvOrDefault(""IFRAME_URL"", ""$IFrameUrl"")")
-    .Replace('GetEnvOrDefault("API_URL", "http://localhost:5000")', "GetEnvOrDefault(""API_URL"", ""$ApiUrl"")")
+$generatedContent = $generatedContent.Replace(
+    'GetEnvOrDefault("IFRAME_URL", "http://localhost:3000/")',
+    "GetEnvOrDefault(""IFRAME_URL"", ""$IFrameUrl"")"
+)
+$generatedContent = $generatedContent.Replace(
+    'GetEnvOrDefault("API_URL", "http://localhost:5000")',
+    "GetEnvOrDefault(""API_URL"", ""$ApiUrl"")"
+)
 
 $generatedContent = $generatedContent `
     -replace '\$\(AppName\)', $AppName `

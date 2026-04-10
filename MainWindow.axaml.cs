@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using System;
 using System.ComponentModel;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using ECoopSystem.Build;

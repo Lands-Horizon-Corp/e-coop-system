@@ -55,9 +55,10 @@ if (-not $SkipBuild) {
     if (Test-Path "bin\$Configuration") {
         Remove-Item -Path "bin\$Configuration" -Recurse -Force
     }
-    if (Test-Path "output\installer") {
-        Remove-Item -Path "output\installer" -Recurse -Force
+    if (-not (Test-Path "output\installer")) {
+        New-Item -ItemType Directory -Path "output\installer" | Out-Null
     }
+    Get-ChildItem "output\installer\*.exe" -ErrorAction SilentlyContinue | Remove-Item -Force
 
     # Build using the existing build script
     Write-Host "[2/5] Building application with custom configuration..." -ForegroundColor Cyan
