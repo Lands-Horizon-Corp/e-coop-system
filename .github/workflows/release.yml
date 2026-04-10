@@ -1,0 +1,153 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (example: 1.0.0)'
+        required: true
+        default: '1.0.0'
+      iframe_url:
+        description: 'IFrame URL'
+        required: true
+        default: 'http://localhost:3000/'
+      api_url:
+        description: 'API URL'
+        required: true
+        default: 'http://localhost:5000'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      IFRAME_URL: ${{ github.event.inputs.iframe_url || 'http://localhost:3000/' }}
+      API_URL: ${{ github.event.inputs.api_url || 'http://localhost:5000' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            $version = "${{ github.ref_name }}" -replace '^v', ''
+          } else {
+            $version = "${{ github.event.inputs.version }}"
+          }
+          "value=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build Windows publish
+        shell: pwsh
+        run: |
+          ./build.ps1 -Platform windows -Configuration Release -IFrameUrl "$env:IFRAME_URL" -ApiUrl "$env:API_URL"
+
+      - name: Package Windows zip
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.value }}"
+          New-Item -ItemType Directory -Force -Path "output/build/windows" | Out-Null
+          $zipPath = "output/build/windows/ECoopSystem-windows-$version.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path "bin/Release/net9.0/win-x64/publish/*" -DestinationPath $zipPath -Force
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifacts
+          path: |
+            output/build/windows/*.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    env:
+      IFRAME_URL: ${{ github.event.inputs.iframe_url || 'http://localhost:3000/' }}
+      API_URL: ${{ github.event.inputs.api_url || 'http://localhost:5000' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install Linux packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip dpkg-dev
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build Linux publish
+        shell: bash
+        run: |
+          chmod +x build.sh build-linux-installer.sh
+          ./build.sh "$IFRAME_URL" "$API_URL" linux Release
+
+      - name: Package Linux zip
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          mkdir -p output/build/linux
+          ZIP_PATH="output/build/linux/ECoopSystem-linux-$VERSION.zip"
+          rm -f "$ZIP_PATH"
+          (cd "bin/Release/net9.0/linux-x64/publish" && zip -r "$GITHUB_WORKSPACE/$ZIP_PATH" . >/dev/null)
+
+      - name: Build Linux installer
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          ./build-linux-installer.sh "$VERSION" "$IFRAME_URL" "$API_URL" Release
+          mkdir -p output/installer/linux
+          if ls output/installer/*.deb >/dev/null 2>&1; then
+            DEB_FILE=$(ls output/installer/*.deb | head -n1)
+            mv -f "$DEB_FILE" "output/installer/linux/ECoopSystem-linux-$VERSION.deb"
+          fi
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: |
+            output/build/linux/*.zip
+            output/installer/linux/*.deb
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-linux]
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/*.zip
+            release-assets/*.deb
+          draft: false
+          prerelease: false
