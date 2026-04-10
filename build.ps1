@@ -78,7 +78,7 @@ $generatedContent = $generatedContent `
 
 $generatedContent | Out-File -FilePath "Build/BuildConfiguration.cs" -Encoding UTF8 -NoNewline
 
-Write-Host "? BuildConfiguration.cs generated" -ForegroundColor Green
+Write-Host "BuildConfiguration.cs generated" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "Building application..." -ForegroundColor Yellow
@@ -106,14 +106,14 @@ Write-Host ""
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Green
-    Write-Host "  Build Successful! ?" -ForegroundColor Green
+    Write-Host "  Build Successful!" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "Output: bin/$Configuration/net9.0/$runtimeId/publish/" -ForegroundColor Cyan
 } else {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Red
-    Write-Host "  Build Failed! ?" -ForegroundColor Red
+    Write-Host "  Build Failed!" -ForegroundColor Red
     Write-Host "========================================" -ForegroundColor Red
     exit $LASTEXITCODE
 }

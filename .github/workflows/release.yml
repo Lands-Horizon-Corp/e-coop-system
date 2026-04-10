@@ -115,6 +115,7 @@ jobs:
           (cd "bin/Release/net9.0/linux-x64/publish" && zip -r "$GITHUB_WORKSPACE/$ZIP_PATH" . >/dev/null)
 
       - name: Build Linux installer
+        continue-on-error: true
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.value }}"
@@ -143,11 +144,17 @@ jobs:
           path: release-assets
           merge-multiple: true
 
+      - name: List release assets
+        shell: bash
+        run: |
+          echo "Collected files:"
+          find release-assets -type f | sort
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release-assets/*.zip
-            release-assets/*.deb
+            release-assets/**/*.zip
+            release-assets/**/*.deb
           draft: false
           prerelease: false

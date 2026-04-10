@@ -75,7 +75,7 @@ sed -e "s|GetEnvOrDefault(\"IFRAME_URL\", \"http://localhost:3000/\")|GetEnvOrDe
     -e "s|\$(SecurityBackgroundVerificationIntervalMinutes)|$SECURITY_BG_VERIFICATION|g" \
     Build/BuildConfiguration.template.cs > Build/BuildConfiguration.cs
 
-echo "? Configuration generated"
+echo "Configuration generated"
 echo ""
 
 echo "Building for $RID..."
@@ -94,7 +94,7 @@ if [ $? -eq 0 ]; then
     
     echo ""
     echo "========================================="
-    echo " Build Successful! ?"
+    echo " Build Successful!"
     echo "========================================="
     echo "Output: $OUTPUT_DIR"
     
@@ -105,7 +105,7 @@ if [ $? -eq 0 ]; then
 else
     echo ""
     echo "========================================="
-    echo " Build Failed! ?"
+    echo " Build Failed!"
     echo "========================================="
     exit 1
 fi
