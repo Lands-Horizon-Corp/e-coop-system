@@ -61,6 +61,29 @@ public static class BuildConfiguration
         if (!File.Exists(envPath))
         {
             envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+        }
+
+        if (!File.Exists(envPath))
+        {
+            var current = AppContext.BaseDirectory;
+            while (!string.IsNullOrWhiteSpace(current))
+            {
+                var candidate = Path.Combine(current, ".env");
+                if (File.Exists(candidate))
+                {
+                    envPath = candidate;
+                    break;
+                }
+
+                var parent = Directory.GetParent(current);
+                if (parent is null)
+                {
+                    break;
+                }
+
+                current = parent.FullName;
+            }
+
             if (!File.Exists(envPath))
             {
                 return result;
@@ -101,7 +124,25 @@ public static class BuildConfiguration
     /// <summary>
     /// API Server URL - Set via: -p:ApiUrl="https://api.yoursite.com"
     /// </summary>
-    public static string ApiUrl => GetEnvOrDefault("API_URL", "http://localhost:5000");
+    public static string ApiUrl => NormalizeApiBaseUrl(GetEnvOrDefault("API_URL", "http://localhost:5000"));
+
+    private static string NormalizeApiBaseUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return "http://localhost:5000";
+        }
+
+        var normalized = url.Trim().TrimEnd('/');
+
+        var duplicatedApiPath = "/web/api/v1/license";
+        if (normalized.EndsWith(duplicatedApiPath, StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^duplicatedApiPath.Length];
+        }
+
+        return normalized;
+    }
 
     private static string[] GetWebViewTrustedDomains()
     {

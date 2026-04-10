@@ -43,7 +43,7 @@ SECURITY_LOCKOUT_MINUTES ?= $(if $(DEFAULT_SECURITY_LOCKOUT_MINUTES),$(DEFAULT_S
 SECURITY_ACTIVATION_LOOKBACK ?= $(if $(DEFAULT_SECURITY_ACTIVATION_LOOKBACK),$(DEFAULT_SECURITY_ACTIVATION_LOOKBACK),1)
 SECURITY_BG_VERIFICATION ?= $(if $(DEFAULT_SECURITY_BG_VERIFICATION),$(DEFAULT_SECURITY_BG_VERIFICATION),1)
 
-.PHONY: all build buildinstaller clean help generate-config prepare-output-dirs
+.PHONY: all build buildinstaller clean help generate-config prepare-output-dirs ensure-script-permissions
 
 # Default target
 all: build
@@ -52,6 +52,12 @@ all: build
 prepare-output-dirs:
 	@mkdir -p output/build/windows output/build/linux output/build/macos
 	@mkdir -p output/installer/windows output/installer/linux output/installer/macos
+
+# Ensure shell scripts are executable when present (useful after cloning from Windows)
+ensure-script-permissions:
+	@for script in build-linux-installer.sh build-windows-installer.sh build.sh; do \
+		if [ -f "$$script" ]; then chmod +x "$$script" || true; fi; \
+	done
 
 # Generate BuildConfiguration.cs from template
 generate-config:
@@ -126,7 +132,7 @@ build: generate-config prepare-output-dirs
 	@echo "Build completed"
 
 # Build installer packages (Windows/Linux). macOS installer is not available yet.
-buildinstaller: prepare-output-dirs
+buildinstaller: prepare-output-dirs ensure-script-permissions
 	@echo "========================================="
 	@echo " Building Installers $(APP_NAME)"
 	@echo "========================================="
@@ -149,8 +155,8 @@ buildinstaller: prepare-output-dirs
 				echo ""; \
 				echo "Creating Windows installer..."; \
 				mkdir -p output/installer/windows output/installer/linux output/installer/macos; \
-				if [ -x "./build-windows-installer.sh" ]; then \
-					./build-windows-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)" false false; \
+				if [ -f "./build-windows-installer.sh" ]; then \
+					bash ./build-windows-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)" false false; \
 				elif command -v pwsh >/dev/null 2>&1; then \
 					pwsh -NoProfile -ExecutionPolicy Bypass -File ./build-windows-installer.ps1 -Version "$(VERSION)" -IFrameUrl "$(IFRAME_URL)" -ApiUrl "$(API_URL)" -Configuration "$(CONFIG)"; \
 				else \
@@ -172,13 +178,13 @@ buildinstaller: prepare-output-dirs
 				echo ""; \
 				echo "Creating Linux installer..."; \
 				mkdir -p output/installer/windows output/installer/linux output/installer/macos; \
-				if [ -x "./build-linux-installer.sh" ]; then \
-					if ./build-linux-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)"; then :; else \
+				if [ -f "./build-linux-installer.sh" ]; then \
+					if bash ./build-linux-installer.sh "$(VERSION)" "$(IFRAME_URL)" "$(API_URL)" "$(CONFIG)"; then :; else \
 						echo "Warning: Linux installer build failed on this environment."; \
 						if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
 					fi; \
 				else \
-					echo "Warning: ./build-linux-installer.sh is not executable or not found."; \
+					echo "Warning: ./build-linux-installer.sh not found."; \
 					if [ $$strictMode -eq 1 ]; then exit 1; else continue; fi; \
 				fi; \
 				if find output/installer -maxdepth 1 -type f -name '*.deb' | grep -q .; then \
