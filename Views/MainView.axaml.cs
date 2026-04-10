@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using ECoopSystem.ViewModels;
+using System.Threading.Tasks;
 using WebViewControl;
 
 namespace ECoopSystem.Views;
@@ -11,6 +12,12 @@ public partial class MainView : UserControl, IDisposable
     private EventHandler<Avalonia.AvaloniaPropertyChangedEventArgs>? _webViewPropertyChangedHandler;
     private bool _disposed;
     private WebViewControl.WebView? _webView;
+    private bool _navigationPrimed;
+
+    private static void Log(string message)
+    {
+        Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [MainView] {message}");
+    }
 
     protected override void OnDataContextChanged(EventArgs e)
     {
@@ -22,18 +29,23 @@ public partial class MainView : UserControl, IDisposable
     {
         try
         {
+            Log("InitializeComponent start.");
             InitializeComponent();
+            Log("InitializeComponent done.");
 
             _webView = webView;
             _webViewPropertyChangedHandler = OnWebViewPropertyChanged;
             _webView.PropertyChanged += _webViewPropertyChangedHandler;
+            _webView.BeforeNavigate += e => Log($"BeforeNavigate: {DescribeEvent(e)}");
+            _webView.BeforeResourceLoad += e => Log($"BeforeResourceLoad: {DescribeEvent(e)}");
+            WebViewControl.WebView.GlobalWebViewInitialized += wv => Log($"GlobalWebViewInitialized: {wv.GetType().Name}");
+            Log("WebView instance resolved and property listener attached.");
 
             UpdateWebViewAddressFromViewModel();
         }
         catch (Exception ex)
         {
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: ERROR initializing WebView: {ex.Message}");
+            Log($"Error initializing WebView: {ex}");
         }
     }
 
@@ -60,16 +72,21 @@ public partial class MainView : UserControl, IDisposable
         {
             if (args.Property.Name == nameof(webView.IsVisible) && _webView?.IsVisible == true)
             {
+                Log("WebView became visible.");
+                PrimeNavigation();
                 if (DataContext is MainViewModel vm)
                     vm.OnWebViewReady();
             }
 
             if (args.Property.Name == nameof(webView.Address))
+            {
+                Log($"WebView address changed to: {_webView?.Address}");
                 ValidateWebViewUrl();
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore
+            Log($"Error in webview property handler: {ex}");
         }
     }
 
@@ -82,7 +99,62 @@ public partial class MainView : UserControl, IDisposable
             !string.IsNullOrWhiteSpace(vm.URL) &&
             !string.Equals(_webView.Address, vm.URL, StringComparison.OrdinalIgnoreCase))
         {
+            Log($"Setting WebView address from view model: {vm.URL}");
             _webView.Address = vm.URL;
+            _navigationPrimed = false;
+        }
+    }
+
+    private async void PrimeNavigation()
+    {
+        if (_webView == null || _navigationPrimed)
+            return;
+
+        _navigationPrimed = true;
+
+        try
+        {
+            var url = (DataContext as MainViewModel)?.URL;
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            if (!string.Equals(_webView.Address, url, StringComparison.OrdinalIgnoreCase))
+            {
+                Log($"PrimeNavigation: assigning URL {url}");
+                _webView.Address = url;
+            }
+
+            await Task.Delay(300);
+
+            if (string.Equals(_webView.Address, url, StringComparison.OrdinalIgnoreCase))
+            {
+                Log("PrimeNavigation: forcing reload after visible state.");
+                _webView.Address = "about:blank";
+                await Task.Delay(150);
+                _webView.Address = url;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"PrimeNavigation error: {ex}");
+        }
+    }
+
+    private static string DescribeEvent(object? eventArgs)
+    {
+        if (eventArgs == null)
+            return "(null)";
+
+        try
+        {
+            var type = eventArgs.GetType();
+            var urlProperty = type.GetProperty("Url") ?? type.GetProperty("Address") ?? type.GetProperty("Uri");
+            var value = urlProperty?.GetValue(eventArgs)?.ToString();
+            return string.IsNullOrWhiteSpace(value) ? type.Name : $"{type.Name} url={value}";
+        }
+        catch
+        {
+            return eventArgs.GetType().Name;
         }
     }
 
@@ -103,15 +175,17 @@ public partial class MainView : UserControl, IDisposable
 
             if (!Uri.TryCreate(currentUrl, UriKind.Absolute, out _))
             {
+                Log($"Invalid URL detected in WebView: {currentUrl}");
                 _lastValidatedUrl = currentUrl;
                 return;
             }
 
+            Log($"Validated WebView URL: {currentUrl}");
             _lastValidatedUrl = currentUrl;
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore
+            Log($"URL validation error: {ex}");
         }
     }
 
@@ -121,6 +195,7 @@ public partial class MainView : UserControl, IDisposable
             return;
 
         _disposed = true;
+        Log("Disposing MainView and WebView resources.");
 
         try
         {
@@ -147,9 +222,9 @@ public partial class MainView : UserControl, IDisposable
                 _webView = null;
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore disposal errors
+            Log($"Disposal error: {ex}");
         }
     }
 }

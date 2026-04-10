@@ -23,25 +23,26 @@ public partial class MainWindow : Window
 
     private sealed record RouteResult(ViewModelBase ViewModel, WindowMode Mode);
 
+    private static void Log(string message)
+    {
+        Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [MainWindow] {message}");
+    }
+
     public MainWindow()
     {
         try
         {
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Starting initialization...");
+            Log("Starting initialization.");
 
             InitializeComponent();
 
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: InitializeComponent done");
+            Log("InitializeComponent done.");
 
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Getting AppStateStore...");
+            Log("Resolving AppStateStore.");
 
             _stateStore = App.Services.GetRequiredService<AppStateStore>();
 
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Loading state...");
+            Log("Loading persisted app state.");
 
             try
             {
@@ -50,8 +51,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                if (OperatingSystem.IsLinux())
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: ERROR loading/saving state: {ex.Message}");
+                Log($"Error loading/saving state. Attempting reset. Details: {ex}");
 
                 try
                 {
@@ -73,9 +73,11 @@ public partial class MainWindow : Window
 
             _secretStore = App.Services.GetRequiredService<SecretKeyStore>();
             _licenseService = App.Services.GetRequiredService<LicenseService>();
+            Log("Resolved SecretKeyStore and LicenseService.");
 
             _shell = new ShellViewModel();
             DataContext = _shell;
+            Log("Shell view model created and assigned.");
 
             _shell.PropertyChanged += ShellOnPropertyChanged;
             Closing += OnClosing;
@@ -87,19 +89,24 @@ public partial class MainWindow : Window
                     return;
 
                 _hasOpened = true;
+                Log("Window opened event fired.");
 
                 var route = DecideInitialRoute();
+                Log($"Initial route decided: {route.ViewModel.GetType().Name}, mode={route.Mode}.");
                 _shell.Navigate(route.ViewModel, route.Mode);
                 ApplyWindowMode();
 
                 if (route.ViewModel is MainViewModel mainVm)
+                {
+                    Log("Triggering MainViewModel.VerifyLicenseAsync.");
                     await mainVm.VerifyLicenseAsync();
+                    Log("MainViewModel.VerifyLicenseAsync completed.");
+                }
             };
         }
         catch (Exception ex)
         {
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainWindow: Fatal initialization error: {ex}");
+            Log($"Fatal initialization error: {ex}");
 
             throw;
         }
@@ -113,6 +120,8 @@ public partial class MainWindow : Window
 
     private void ApplyWindowMode()
     {
+        Log($"Applying window mode: {_shell.Mode}.");
+
         if (_shell.Mode == WindowMode.Locked)
         {
             Width = Constants.WindowWidth;
@@ -152,6 +161,7 @@ public partial class MainWindow : Window
 
     private void OnWebViewReady(object? sender, EventArgs e)
     {
+        Log("WebView reported ready. Maximizing window.");
         WindowState = WindowState.Maximized;
     }
 
@@ -195,6 +205,8 @@ public partial class MainWindow : Window
 
     private void OnClosing(object? sender, WindowClosingEventArgs e)
     {
+        Log("Window closing. Disposing current view model.");
+
         // Unsubscribe from events
         _shell.PropertyChanged -= ShellOnPropertyChanged;
         RemoveHandler(KeyDownEvent, OnKeyDown);
@@ -212,11 +224,13 @@ public partial class MainWindow : Window
 
         // Give time for all disposal operations to complete
         System.Threading.Thread.Sleep(100);
+        Log("Window close cleanup finished.");
     }
 
     private RouteResult DecideInitialRoute()
     {
         var secret = _secretStore.Load();
+        Log($"Secret loaded. IsEmpty={string.IsNullOrWhiteSpace(secret)}");
 
         if (string.IsNullOrWhiteSpace(secret))
         {

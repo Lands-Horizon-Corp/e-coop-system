@@ -22,6 +22,12 @@ public class MainViewModel : ViewModelBase
 
     private bool _isLoading = true;
     private bool _isVerified;
+    private bool _webViewReadySignaled;
+
+    private static void Log(string message)
+    {
+        Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [MainViewModel] {message}");
+    }
 
     public event EventHandler? WebViewReady;
 
@@ -57,6 +63,8 @@ public class MainViewModel : ViewModelBase
 
     public async Task VerifyLicenseAsync()
     {
+        Log("VerifyLicenseAsync started.");
+        _webViewReadySignaled = false;
         IsLoading = true;
         IsVerified = false;
         _loadingStopwatch.Restart();
@@ -66,6 +74,7 @@ public class MainViewModel : ViewModelBase
             var secret = _secretStore.Load();
             if (string.IsNullOrWhiteSpace(secret))
             {
+                Log("No secret found. Navigating to activation.");
                 NavigateToActivation();
                 return;
             }
@@ -75,6 +84,7 @@ public class MainViewModel : ViewModelBase
 
             if (verify.IsOk)
             {
+                Log("License verify result: OK.");
                 _state.LastVerifiedUtc = DateTimeOffset.UtcNow;
                 _state.Counter++;
                 _store.Save(_state);
@@ -83,40 +93,53 @@ public class MainViewModel : ViewModelBase
             }
             else if (verify.IsInvalid)
             {
+                Log("License verify result: INVALID. Deleting secret and navigating to activation.");
                 _secretStore.Delete();
                 NavigateToActivation();
                 return;
             }
             else
             {
+                Log("License verify result: transient failure.");
                 if (IsWithinGrace())
                 {
+                    Log("Within grace period. Continuing to main view.");
                     IsVerified = true;
                     StartBackgroundVerification();
                 }
                 else
                 {
+                    Log("Outside grace period. Navigating to activation.");
                     NavigateToActivation();
                     return;
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Log($"VerifyLicenseAsync exception: {ex}");
             if (IsWithinGrace())
             {
+                Log("Exception tolerated due to grace period.");
                 IsVerified = true;
                 StartBackgroundVerification();
             }
             else
             {
+                Log("Exception outside grace period. Navigating to activation.");
                 NavigateToActivation();
                 return;
             }
         }
         finally
         {
-            
+            if (IsVerified)
+            {
+                Log("VerifyLicenseAsync: verified, signaling WebView ready.");
+                OnWebViewReady();
+            }
+
+            Log($"VerifyLicenseAsync finished. IsVerified={IsVerified}, IsLoading={IsLoading}");
         }
     }
 
@@ -267,9 +290,15 @@ public class MainViewModel : ViewModelBase
 
     public async void OnWebViewReady()
     {
+        if (_webViewReadySignaled)
+            return;
+
+        _webViewReadySignaled = true;
+        Log("OnWebViewReady invoked.");
         await EnsureMinimumLoadingTime();
 
         IsLoading = false;
+        Log("Loading complete. Raising WebViewReady event.");
         WebViewReady?.Invoke(this, EventArgs.Empty);
     }
 
