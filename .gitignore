@@ -33,22 +33,22 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# Keep output folder structure in source control, ignore generated files only
+# Keep output folder structure in source control, ignore generated OS artifacts only
 !output/
 !output/build/
+!output/installer/
 !output/build/windows/
 !output/build/linux/
 !output/build/macos/
-!output/installer/
 !output/installer/windows/
 !output/installer/linux/
 !output/installer/macos/
-output/build/windows/*
-output/build/linux/*
-output/build/macos/*
-output/installer/windows/*
-output/installer/linux/*
-output/installer/macos/*
+output/build/windows/**
+output/build/linux/**
+output/build/macos/**
+output/installer/windows/**
+output/installer/linux/**
+output/installer/macos/**
 !output/build/windows/.gitkeep
 !output/build/linux/.gitkeep
 !output/build/macos/.gitkeep
@@ -512,9 +512,7 @@ crash-*.dmp
 *-backup.*
 
 # Installer output
-output/installer/
 *.exe
-!output/installer/.gitkeep
 
 # Inno Setup temporary files
 installer.temp.iss
