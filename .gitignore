@@ -516,7 +516,6 @@ crash-*.dmp
 
 # Inno Setup temporary files
 installer.temp.iss
-Output/
 setup-*.exe
 
 # Installer build artifacts

@@ -5,16 +5,16 @@ BUILD_CONFIGURATION_FILE := Build/BuildConfiguration.cs
 
 DEFAULT_IFRAME_URL := $(shell sed -n 's/.*GetEnvOrDefault("IFRAME_URL", "\([^"]*\)").*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
 DEFAULT_API_URL := $(shell sed -n 's/.*GetEnvOrDefault("API_URL", "\([^"]*\)").*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_APP_NAME := $(shell sed -n 's/.*public const string AppName = "\([^"]*\)";.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_APP_LOGO := $(shell sed -n 's/.*public const string AppLogo = "\([^"]*\)";.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_API_TIMEOUT := $(shell sed -n 's/.*public const int ApiTimeout = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_API_MAX_RETRIES := $(shell sed -n 's/.*public const int ApiMaxRetries = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_API_MAX_RESPONSE_SIZE := $(shell sed -n 's/.*public const int ApiMaxResponseSizeBytes = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_SECURITY_GRACE_PERIOD := $(shell sed -n 's/.*public const int SecurityGracePeriodDays = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_SECURITY_MAX_ACTIVATION_ATTEMPTS := $(shell sed -n 's/.*public const int SecurityMaxActivationAttempts = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_SECURITY_LOCKOUT_MINUTES := $(shell sed -n 's/.*public const int SecurityLockoutMinutes = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_SECURITY_ACTIVATION_LOOKBACK := $(shell sed -n 's/.*public const int SecurityActivationLookbackMinutes = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
-DEFAULT_SECURITY_BG_VERIFICATION := $(shell sed -n 's/.*public const int SecurityBackgroundVerificationIntervalMinutes = \([0-9][0-9]*\);.*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_APP_NAME := $(shell sed -n 's/.*GetEnvOrDefault("APP_NAME", "\([^"]*\)").*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_APP_LOGO := $(shell sed -n 's/.*GetEnvOrDefault("APP_LOGO", "\([^"]*\)").*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_API_TIMEOUT := $(shell sed -n 's/.*GetIntOrDefault("API_TIMEOUT", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_API_MAX_RETRIES := $(shell sed -n 's/.*GetIntOrDefault("API_MAX_RETRIES", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_API_MAX_RESPONSE_SIZE := $(shell sed -n 's/.*GetIntOrDefault("API_MAX_RESPONSE_SIZE_BYTES", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_SECURITY_GRACE_PERIOD := $(shell sed -n 's/.*GetIntOrDefault("SECURITY_GRACE_PERIOD_DAYS", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_SECURITY_MAX_ACTIVATION_ATTEMPTS := $(shell sed -n 's/.*GetIntOrDefault("SECURITY_MAX_ACTIVATION_ATTEMPTS", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_SECURITY_LOCKOUT_MINUTES := $(shell sed -n 's/.*GetIntOrDefault("SECURITY_LOCKOUT_MINUTES", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_SECURITY_ACTIVATION_LOOKBACK := $(shell sed -n 's/.*GetIntOrDefault("SECURITY_ACTIVATION_LOOKBACK_MINUTES", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
+DEFAULT_SECURITY_BG_VERIFICATION := $(shell sed -n 's/.*GetIntOrDefault("SECURITY_BACKGROUND_VERIFICATION_INTERVAL_MINUTES", \([0-9][0-9]*\)).*/\1/p' $(BUILD_CONFIGURATION_FILE) | head -n1)
 
 # Default configuration
 IFRAME_URL ?= $(if $(DEFAULT_IFRAME_URL),$(DEFAULT_IFRAME_URL),http://localhost:3000/)
@@ -31,9 +31,9 @@ API_MAX_RETRIES ?= $(if $(DEFAULT_API_MAX_RETRIES),$(DEFAULT_API_MAX_RETRIES),3)
 API_MAX_RESPONSE_SIZE ?= $(if $(DEFAULT_API_MAX_RESPONSE_SIZE),$(DEFAULT_API_MAX_RESPONSE_SIZE),1048576)
 
 # WebView Settings (secure, compiled into binary)
-WEBVIEW_DOMAIN1 ?= e-coop-client-development.up.railway.app
-WEBVIEW_DOMAIN2 ?= e-coop-server-development.up.railway.app
-WEBVIEW_DOMAIN3 ?= railway.app
+WEBVIEW_DOMAIN1 ?= localhost
+WEBVIEW_DOMAIN2 ?= 127.0.0.1
+WEBVIEW_DOMAIN3 ?=
 WEBVIEW_ALLOW_HTTP ?= false
 
 # Security Settings (secure, compiled into binary)

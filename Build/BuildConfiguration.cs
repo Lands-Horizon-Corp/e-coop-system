@@ -36,6 +36,23 @@ public static class BuildConfiguration
         return defaultValue;
     }
 
+    private static int GetIntOrDefault(string key, int defaultValue)
+    {
+        var value = GetEnvOrDefault(key, defaultValue.ToString());
+        return int.TryParse(value, out var parsed) ? parsed : defaultValue;
+    }
+
+    private static bool GetBoolOrDefault(string key, bool defaultValue)
+    {
+        var value = GetEnvOrDefault(key, defaultValue.ToString().ToLowerInvariant());
+        if (bool.TryParse(value, out var parsed))
+        {
+            return parsed;
+        }
+
+        return defaultValue;
+    }
+
     private static Dictionary<string, string> LoadDotEnv()
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -110,26 +127,26 @@ public static class BuildConfiguration
     /// <summary>
     /// Application Name - Set via: -p:AppName="YourAppName"
     /// </summary>
-    public const string AppName = "ECoopSystem";
+    public static string AppName => GetEnvOrDefault("APP_NAME", "ECoopSystem");
 
     /// <summary>
     /// Application Logo Path - Set via: -p:AppLogo="path/to/logo.png"
     /// </summary>
-    public const string AppLogo = "Assets/Images/logo.png";
+    public static string AppLogo => GetEnvOrDefault("APP_LOGO", "Assets/Images/logo.png");
 
     // API Settings (Build-time only, not user-configurable)
-    public const int ApiTimeout = 12;
-    public const int ApiMaxRetries = 3;
-    public const int ApiMaxResponseSizeBytes = 1048576;
+    public static int ApiTimeout => GetIntOrDefault("API_TIMEOUT", 12);
+    public static int ApiMaxRetries => GetIntOrDefault("API_MAX_RETRIES", 3);
+    public static int ApiMaxResponseSizeBytes => GetIntOrDefault("API_MAX_RESPONSE_SIZE_BYTES", 1048576);
 
     // WebView Trusted Domains (Build-time only)
     public static readonly string[] WebViewTrustedDomains = GetWebViewTrustedDomains();
-    public const bool WebViewAllowHttp = false;
+    public static bool WebViewAllowHttp => GetBoolOrDefault("WEBVIEW_ALLOW_HTTP", false);
 
     // Security Settings (Build-time only, not user-configurable)
-    public const int SecurityGracePeriodDays = 7;
-    public const int SecurityMaxActivationAttempts = 3;
-    public const int SecurityLockoutMinutes = 5;
-    public const int SecurityActivationLookbackMinutes = 1;
-    public const int SecurityBackgroundVerificationIntervalMinutes = 1;
+    public static int SecurityGracePeriodDays => GetIntOrDefault("SECURITY_GRACE_PERIOD_DAYS", 7);
+    public static int SecurityMaxActivationAttempts => GetIntOrDefault("SECURITY_MAX_ACTIVATION_ATTEMPTS", 3);
+    public static int SecurityLockoutMinutes => GetIntOrDefault("SECURITY_LOCKOUT_MINUTES", 5);
+    public static int SecurityActivationLookbackMinutes => GetIntOrDefault("SECURITY_ACTIVATION_LOOKBACK_MINUTES", 1);
+    public static int SecurityBackgroundVerificationIntervalMinutes => GetIntOrDefault("SECURITY_BACKGROUND_VERIFICATION_INTERVAL_MINUTES", 1);
 }

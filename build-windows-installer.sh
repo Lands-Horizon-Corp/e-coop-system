@@ -6,14 +6,14 @@
 # Usage:
 #   ./build-windows-installer.sh
 #   ./build-windows-installer.sh 1.0.0
-#   ./build-windows-installer.sh 1.0.0 "https://app.example.com" "https://api.example.com" Release
-#   ./build-windows-installer.sh 1.0.0 "https://app.example.com" "https://api.example.com" Release true true
+#   ./build-windows-installer.sh 1.0.0 "http://localhost:3000/" "http://localhost:5000" Release
+#   ./build-windows-installer.sh 1.0.0 "http://localhost:3000/" "http://localhost:5000" Release true true
 
 set -e
 
 VERSION="${1:-1.0.0}"
-IFRAME_URL="${2:-https://e-coop-client-development.up.railway.app/}"
-API_URL="${3:-https://e-coop-server-development.up.railway.app/}"
+IFRAME_URL="${2:-http://localhost:3000/}"
+API_URL="${3:-http://localhost:5000}"
 CONFIGURATION="${4:-Release}"
 SKIP_BUILD="${5:-false}"
 OPEN_OUTPUT="${6:-false}"

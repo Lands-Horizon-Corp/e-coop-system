@@ -6,8 +6,8 @@ set -e
 
 # Configuration
 VERSION="${1:-1.0.0}"
-IFRAME_URL="${2:-}"
-API_URL="${3:-}"
+IFRAME_URL="${2:-http://localhost:3000/}"
+API_URL="${3:-http://localhost:5000}"
 CONFIGURATION="${4:-Release}"
 APP_NAME="ECoopSystem"
 PACKAGE_NAME="ecoopsystem"
@@ -54,22 +54,6 @@ print_info() {
 # Main script
 print_header "ECoopSystem - Ubuntu DEB Builder"
 
-# Fallback to BuildConfiguration.cs when URLs are not provided
-if [ -z "$IFRAME_URL" ] || [ -z "$API_URL" ]; then
-    if [ -f "Build/BuildConfiguration.cs" ]; then
-        if [ -z "$IFRAME_URL" ]; then
-            IFRAME_URL=$(grep -E '^\s*public const string IFrameUrl\s*=\s*"' Build/BuildConfiguration.cs | head -n1 | sed -E 's/^\s*public const string IFrameUrl\s*=\s*"([^"]+)".*/\1/')
-        fi
-        if [ -z "$API_URL" ]; then
-            API_URL=$(grep -E '^\s*public const string ApiUrl\s*=\s*"' Build/BuildConfiguration.cs | head -n1 | sed -E 's/^\s*public const string ApiUrl\s*=\s*"([^"]+)".*/\1/')
-        fi
-    fi
-fi
-
-# Final fallback defaults
-IFRAME_URL="${IFRAME_URL:-https://e-coop-client-development.up.railway.app/}"
-API_URL="${API_URL:-https://e-coop-server-development.up.railway.app/}"
-
 echo -e "${YELLOW}Build Configuration:${NC}"
 echo "  IFrame URL:      $IFRAME_URL"
 echo "  API URL:         $API_URL"
@@ -77,11 +61,13 @@ echo "  Configuration:   $CONFIGURATION"
 echo "  Version:         $VERSION"
 echo ""
 
-if [[ "$API_URL" == *"development"* ]] || [[ "$IFRAME_URL" == *"development"* ]]; then
-    echo -e "${YELLOW}WARNING: You are building an installer with DEVELOPMENT URLs!${NC}"
-    echo "The installed application will connect to development servers."
-    echo ""
+if [ -f ".env" ]; then
+    cp ".env" ".env.build.bak"
 fi
+{
+    echo "IFRAME_URL=$IFRAME_URL"
+    echo "API_URL=$API_URL"
+} > ".env"
 
 # Check for required tools
 print_info "Checking for required tools..."
@@ -111,7 +97,7 @@ print_success "Clean complete"
 
 # Build the application
 print_info "Building ECoopSystem for Linux (net9.0, linux-x64)..."
-"$DOTNET_CMD" publish -c "$CONFIGURATION" -r linux-x64 --self-contained true -p:PublishTrimmed=false -p:IncludeNativeLibrariesForSelfExtract=true -p:IFrameUrl="$IFRAME_URL" -p:ApiUrl="$API_URL"
+"$DOTNET_CMD" publish -c "$CONFIGURATION" -r linux-x64 --self-contained true -p:PublishTrimmed=false -p:IncludeNativeLibrariesForSelfExtract=true
 print_success "Build complete"
 
 # Create Debian package structure
@@ -180,6 +166,12 @@ print_info "Building .deb package..."
 DEB_PATH="${OUTPUT_DIR}/${PACKAGE_NAME}_${VERSION}_amd64.deb"
 dpkg-deb --build "${PKGROOT}" "${DEB_PATH}" >/dev/null
 print_success ".deb created: ${DEB_PATH}"
+
+if [ -f ".env.build.bak" ]; then
+    mv -f ".env.build.bak" ".env"
+else
+    rm -f ".env"
+fi
 
 # Summary
 print_header "Build Complete"

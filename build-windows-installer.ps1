@@ -3,8 +3,8 @@
 # This script builds the application with custom configuration and generates the Inno Setup installer
 
 param(
-    [string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
-    [string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
+    [string]$IFrameUrl = "http://localhost:3000/",
+    [string]$ApiUrl = "http://localhost:5000",
     [string]$Configuration = "Release",
     [string]$Version = "1.0.0",
     [switch]$SkipBuild = $false,
@@ -24,15 +24,6 @@ Write-Host "  Configuration:   $Configuration" -ForegroundColor Gray
 Write-Host "  Version:         $Version" -ForegroundColor Gray
 Write-Host "  Skip Build:      $SkipBuild" -ForegroundColor Gray
 Write-Host ""
-
-# Warning if using development URLs
-if ($ApiUrl -like "*development*" -or $IFrameUrl -like "*development*") {
-    Write-Host "WARNING: You are building an installer with DEVELOPMENT URLs!" -ForegroundColor Yellow
-    Write-Host "The installed application will connect to development servers." -ForegroundColor Yellow
-    Write-Host "For production builds, use:" -ForegroundColor Yellow
-    Write-Host "  ./build-windows-installer.ps1 -ApiUrl 'https://api.production.com' -IFrameUrl 'https://app.production.com'" -ForegroundColor Cyan
-    Write-Host ""
-}
 
 # Check if Inno Setup is installed
 $isccPath = Get-Command iscc -ErrorAction SilentlyContinue

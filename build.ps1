@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 param(
-    [string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
-    [string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
+    [string]$IFrameUrl = "http://localhost:3000/",
+    [string]$ApiUrl = "http://localhost:5000",
     [string]$AppName = "ECoopSystem",
     [string]$AppLogo = "Assets/Images/logo.png",
     
@@ -9,7 +9,6 @@ param(
     [int]$ApiMaxRetries = 3,
     [int]$ApiMaxResponseSizeBytes = 1048576,
     
-    [string[]]$WebViewTrustedDomains = @("e-coop-client-development.up.railway.app", "e-coop-server-development.up.railway.app", "railway.app"),
     [bool]$WebViewAllowHttp = $false,
     
     [int]$SecurityGracePeriodDays = 7,
@@ -53,17 +52,18 @@ Write-Host ""
 Write-Host "Generating BuildConfiguration.cs..." -ForegroundColor Yellow
 
 $templateContent = Get-Content "Build/BuildConfiguration.template.cs" -Raw
-$generatedContent = $templateContent `
-    -replace '\$\(IFrameUrl\)', $IFrameUrl `
-    -replace '\$\(ApiUrl\)', $ApiUrl `
+$generatedContent = $templateContent
+
+$generatedContent = $generatedContent
+    .Replace('GetEnvOrDefault("IFRAME_URL", "http://localhost:3000/")', "GetEnvOrDefault(""IFRAME_URL"", ""$IFrameUrl"")")
+    .Replace('GetEnvOrDefault("API_URL", "http://localhost:5000")', "GetEnvOrDefault(""API_URL"", ""$ApiUrl"")")
+
+$generatedContent = $generatedContent `
     -replace '\$\(AppName\)', $AppName `
     -replace '\$\(AppLogo\)', $AppLogo `
     -replace '\$\(ApiTimeout\)', $ApiTimeout `
     -replace '\$\(ApiMaxRetries\)', $ApiMaxRetries `
     -replace '\$\(ApiMaxResponseSizeBytes\)', $ApiMaxResponseSizeBytes `
-    -replace '\$\(WebViewTrustedDomain1\)', $WebViewTrustedDomains[0] `
-    -replace '\$\(WebViewTrustedDomain2\)', $WebViewTrustedDomains[1] `
-    -replace '\$\(WebViewTrustedDomain3\)', $WebViewTrustedDomains[2] `
     -replace '\$\(WebViewAllowHttp\)', $WebViewAllowHttp.ToString().ToLower() `
     -replace '\$\(SecurityGracePeriodDays\)', $SecurityGracePeriodDays `
     -replace '\$\(SecurityMaxActivationAttempts\)', $SecurityMaxActivationAttempts `
@@ -82,8 +82,6 @@ $buildArgs = @(
     "publish"
     "-c", $Configuration
     "-r", $runtimeId
-    "-p:IFrameUrl=`"$IFrameUrl`""
-    "-p:ApiUrl=`"$ApiUrl`""
     "-p:AppName=`"$AppName`""
 )
 

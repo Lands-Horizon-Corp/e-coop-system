@@ -4,8 +4,8 @@
 
 set -e  # Exit on error
 
-IFRAME_URL="${1:-https://e-coop-client-development.up.railway.app/}"
-API_URL="${2:-https://e-coop-server-development.up.railway.app/}"
+IFRAME_URL="${1:-http://localhost:3000/}"
+API_URL="${2:-http://localhost:5000}"
 PLATFORM="${3:-linux}"
 CONFIGURATION="${4:-Release}"
 
@@ -20,10 +20,7 @@ SECURITY_LOCKOUT_MINUTES=5
 SECURITY_ACTIVATION_LOOKBACK=1
 SECURITY_BG_VERIFICATION=1
 
-# WebView Trusted Domains
-WEBVIEW_DOMAIN1="dev-client.example.com"
-WEBVIEW_DOMAIN2="app.example.com"
-WEBVIEW_DOMAIN3="api.example.com"
+# WebView policy (default)
 WEBVIEW_ALLOW_HTTP="false"
 
 echo "========================================="
@@ -63,16 +60,13 @@ case "$PLATFORM" in
 esac
 
 echo "Generating BuildConfiguration.cs..."
-sed -e "s|\$(IFrameUrl)|$IFRAME_URL|g" \
-    -e "s|\$(ApiUrl)|$API_URL|g" \
+sed -e "s|GetEnvOrDefault(\"IFRAME_URL\", \"http://localhost:3000/\")|GetEnvOrDefault(\"IFRAME_URL\", \"$IFRAME_URL\")|g" \
+    -e "s|GetEnvOrDefault(\"API_URL\", \"http://localhost:5000\")|GetEnvOrDefault(\"API_URL\", \"$API_URL\")|g" \
     -e "s|\$(AppName)|ECoopSystem|g" \
     -e "s|\$(AppLogo)|Assets/Images/logo.png|g" \
     -e "s|\$(ApiTimeout)|$API_TIMEOUT|g" \
     -e "s|\$(ApiMaxRetries)|$API_MAX_RETRIES|g" \
     -e "s|\$(ApiMaxResponseSizeBytes)|$API_MAX_RESPONSE_SIZE|g" \
-    -e "s|\$(WebViewTrustedDomain1)|$WEBVIEW_DOMAIN1|g" \
-    -e "s|\$(WebViewTrustedDomain2)|$WEBVIEW_DOMAIN2|g" \
-    -e "s|\$(WebViewTrustedDomain3)|$WEBVIEW_DOMAIN3|g" \
     -e "s|\$(WebViewAllowHttp)|$WEBVIEW_ALLOW_HTTP|g" \
     -e "s|\$(SecurityGracePeriodDays)|$SECURITY_GRACE_PERIOD|g" \
     -e "s|\$(SecurityMaxActivationAttempts)|$SECURITY_MAX_ACTIVATION_ATTEMPTS|g" \

@@ -4,8 +4,8 @@
 
 param(
     [string]$Version = "1.0.0",
-    [string]$IFrameUrl = "https://e-coop-client-development.up.railway.app/",
-    [string]$ApiUrl = "https://e-coop-server-development.up.railway.app/",
+    [string]$IFrameUrl = "http://localhost:3000/",
+    [string]$ApiUrl = "http://localhost:5000",
     [string]$Configuration = "Release",
     [switch]$SkipBuild = $false,
     [switch]$OpenOutput = $false
