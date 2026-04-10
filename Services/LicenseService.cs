@@ -108,23 +108,44 @@ public class LicenseService
 
         req.Headers.TransferEncodingChunked = false;
 
-        using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        HttpResponseMessage resp;
+
+        try
+        {
+            resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException)
+        {
+            return VerifyResult.TransientFailure("License verification timed out.");
+        }
+        catch (HttpRequestException)
+        {
+            return VerifyResult.TransientFailure("Unable to reach license server.");
+        }
+
+        using (resp)
+        {
+            if (resp.StatusCode == HttpStatusCode.OK || resp.StatusCode == HttpStatusCode.NoContent)
+            {
+                return VerifyResult.Ok();
+            }
+ 
+            if (resp.StatusCode == HttpStatusCode.NotFound)
+            {
+                var err = await TryReadErrorAsync(resp, ct).ConfigureAwait(false);
+                return VerifyResult.Invalid(err ?? "License not found or invalid");
+            }
+ 
+            var status = (int)resp.StatusCode;
+            var msg = await TryReadErrorAsync(resp, ct).ConfigureAwait(false);
         
-        if (resp.StatusCode == HttpStatusCode.OK || resp.StatusCode == HttpStatusCode.NoContent)
-        {
-            return VerifyResult.Ok();
+            if (status >= 500)
+            {
+                return VerifyResult.TransientFailure(msg, status);
+            }
+
+            return VerifyResult.ServerError(status, msg);
         }
-
-        if (resp.StatusCode == HttpStatusCode.NotFound)
-        {
-            var err = await TryReadErrorAsync(resp, ct).ConfigureAwait(false);
-            return VerifyResult.Invalid(err ?? "License not found or invalid");
-        }
-
-        var status = (int)resp.StatusCode;
-        var msg = await TryReadErrorAsync(resp, ct).ConfigureAwait(false);
-
-        return VerifyResult.ServerError(status, msg);
     }
 
     private static async Task<string?> TryReadErrorAsync(HttpResponseMessage resp, CancellationToken ct)
@@ -161,9 +182,10 @@ public sealed record ActivateResult(bool IsSuccess, bool IsInvalidKey, string? S
     public static ActivateResult ServerError(int status, string? msg) => new(false, false, null, status, msg);
 }
 
-public sealed record VerifyResult(bool IsOk, bool IsInvalid, int? StatusCode, string? ErrorMessage)
+public sealed record VerifyResult(bool IsOk, bool IsInvalid, bool IsTransientFailure, int? StatusCode, string? ErrorMessage)
 {
-    internal static VerifyResult Ok() => new(true, false, 200, null);
-    internal static VerifyResult Invalid(string msg) => new(false, true, 404, msg);
-    internal static VerifyResult ServerError(int status, string? msg) => new(false, false, status, msg);
+    internal static VerifyResult Ok() => new(true, false, false, 200, null);
+    internal static VerifyResult Invalid(string msg) => new(false, true, false, 404, msg);
+    internal static VerifyResult ServerError(int status, string? msg) => new(false, false, false, status, msg);
+    internal static VerifyResult TransientFailure(string? msg, int? status = null) => new(false, false, true, status, msg);
 }

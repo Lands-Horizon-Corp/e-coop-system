@@ -89,6 +89,11 @@ public class MainViewModel : ViewModelBase
                 NavigateToActivation();
                 return;
             }
+            else if (verify.IsTransientFailure)
+            {
+                NavigateToUnavailable(verify.ErrorMessage);
+                return;
+            }
             else
             {
                 if (IsWithinGrace())
@@ -98,7 +103,7 @@ public class MainViewModel : ViewModelBase
                 }
                 else
                 {
-                    NavigateToActivation();
+                    NavigateToUnavailable(verify.ErrorMessage);
                     return;
                 }
             }
@@ -113,7 +118,7 @@ public class MainViewModel : ViewModelBase
             }
             else
             {
-                NavigateToActivation();
+                NavigateToUnavailable();
                 return;
             }
         }
@@ -163,6 +168,19 @@ public class MainViewModel : ViewModelBase
             _secretStore, 
             _licenseService);
         _shell.Navigate(activationViewModel, WindowMode.Locked);
+    }
+
+    private void NavigateToUnavailable(string? details = null)
+    {
+        var message = string.IsNullOrWhiteSpace(details)
+            ? "No network connection or license server is currently unavailable. Your license key is kept locally and will be validated again when connectivity is restored."
+            : $"No network connection or license server is currently unavailable. Your license key is kept locally and will be validated again when connectivity is restored.\n\nDetails: {details}";
+
+        var blockingViewModel = new BlockingViewModel(
+            "Connection Required",
+            message);
+
+        _shell.Navigate(blockingViewModel, WindowMode.Locked);
     }
 
     private void StartBackgroundVerification()
@@ -238,12 +256,17 @@ public class MainViewModel : ViewModelBase
                 StopBackgroundVerification();
                 Logout();
             }
+            else if (verify.IsTransientFailure)
+            {
+                StopBackgroundVerification();
+                NavigateToUnavailable(verify.ErrorMessage);
+            }
             else
             {
                 if (!IsWithinGrace())
                 {
                     StopBackgroundVerification();
-                    Logout();
+                    NavigateToUnavailable(verify.ErrorMessage);
                 }
             }
         }
@@ -256,7 +279,7 @@ public class MainViewModel : ViewModelBase
             if (!IsWithinGrace())
             {
                 StopBackgroundVerification();
-                Logout();
+                NavigateToUnavailable();
             }
         }
     }
