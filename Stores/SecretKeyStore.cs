@@ -29,7 +29,7 @@ public sealed class SecretKeyStore
 
     public void Save(string secretKey)
     {
-        var protectedValue = _protector.Protect(secretKey);
+        var protectedValue = _secureStorage.Protect(secretKey);
         File.WriteAllText(_filePath, protectedValue);
     }
     
@@ -41,7 +41,7 @@ public sealed class SecretKeyStore
         try
         {
             var protectedValue = File.ReadAllText(_filePath);
-            return _protector.Unprotect(protectedValue);
+            return _secureStorage.Unprotect(protectedValue);
         }
         catch
         {

@@ -5,6 +5,8 @@
     <OutputType Condition="'$(OS)' != 'Windows_NT'">Exe</OutputType>
     
     <TargetFramework>net9.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
     <Nullable>enable</Nullable>
     <ApplicationManifest Condition="'$(OS)' == 'Windows_NT'">app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\Icons\ecoopsuite.ico</ApplicationIcon>

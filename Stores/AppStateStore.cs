@@ -45,7 +45,7 @@ public class AppStateStore
         try
         {
             var protectedData = File.ReadAllText(_filePath);
-            var json = _protector.Unprotect(protectedData);
+            var json = _secureStorage.Unprotect(protectedData);
             var state = JsonSerializer.Deserialize<AppState>(json);
             
             if (state == null)
@@ -112,7 +112,7 @@ public class AppStateStore
                 WriteIndented = false
             });
 
-            var protectedData = _protector.Protect(json);
+            var protectedData = _secureStorage.Protect(json);
             File.WriteAllText(_filePath, protectedData);
         }
         catch (Exception ex)

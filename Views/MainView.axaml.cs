@@ -1,7 +1,6 @@
 using System;
+using System;
 using Avalonia.Controls;
-using Avalonia.Threading;
-using ECoopSystem.Build;
 using ECoopSystem.ViewModels;
 using WebViewControl;
 
@@ -12,8 +11,7 @@ public partial class MainView : UserControl, IDisposable
     private string? _lastValidatedUrl;
     private EventHandler<Avalonia.AvaloniaPropertyChangedEventArgs>? _webViewPropertyChangedHandler;
     private bool _disposed;
-    private WebView? _webView;
-    private bool _webViewCreated;
+    private WebViewControl.WebView? _webView;
 
     protected override void OnDataContextChanged(EventArgs e)
     {
@@ -25,41 +23,31 @@ public partial class MainView : UserControl, IDisposable
     {
         try
         {
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: Constructor called");
-
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: Calling InitializeComponent...");
-
             InitializeComponent();
+
+            _webView = webView;
+            _webViewPropertyChangedHandler = OnWebViewPropertyChanged;
+            _webView.PropertyChanged += _webViewPropertyChangedHandler;
+
+            UpdateWebViewAddressFromViewModel();
+        }
+        catch (Exception ex)
+        {
+            if (OperatingSystem.IsLinux())
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: ERROR initializing WebView: {ex.Message}");
+        }
+    }
+
+    public void ReloadWebView()
+    {
+        if (_webView == null)
+            return;
 
         try
         {
-            webView.PropertyChanged += (sender, args) =>
-            {
-                try
-                {
-                    if (args.Property.Name == nameof(webView.IsVisible))
-                    {
-                        if (webView.IsVisible)
-                        {
-                            if (DataContext is MainViewModel vm)
-                            {
-                                vm.OnWebViewReady();
-                            }
-                        }
-                    }
-                    
-                    if (args.Property.Name == nameof(webView.Address))
-                    {
-                        ValidateWebViewUrl();
-                    }
-                }
-                catch
-                {
-                    // Ignore
-                }
-            };
+            var address = _webView.Address;
+            if (!string.IsNullOrWhiteSpace(address))
+                _webView.Address = address;
         }
         catch
         {
@@ -67,20 +55,22 @@ public partial class MainView : UserControl, IDisposable
         }
     }
 
-            // Add to container
-            webViewContainer.Content = _webView;
-            _webViewCreated = true;
-
-            if (OperatingSystem.IsLinux())
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: CreateWebView - Complete");
-        }
-        catch (Exception ex)
+    private void OnWebViewPropertyChanged(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs args)
+    {
+        try
         {
-            if (OperatingSystem.IsLinux())
+            if (args.Property.Name == nameof(webView.IsVisible) && _webView?.IsVisible == true)
             {
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] MainView: ERROR creating WebView: {ex.Message}");
-                Console.WriteLine(ex.ToString());
+                if (DataContext is MainViewModel vm)
+                    vm.OnWebViewReady();
             }
+
+            if (args.Property.Name == nameof(webView.Address))
+                ValidateWebViewUrl();
+        }
+        catch
+        {
+            // Ignore
         }
     }
 
@@ -104,15 +94,15 @@ public partial class MainView : UserControl, IDisposable
 
         try
         {
-            var currentUrl = webView.Address;
-            
+            var currentUrl = _webView.Address;
+
             if (currentUrl == _lastValidatedUrl)
                 return;
-            
+
             if (string.IsNullOrWhiteSpace(currentUrl))
                 return;
 
-            if (!Uri.TryCreate(currentUrl, UriKind.Absolute, out var uri))
+            if (!Uri.TryCreate(currentUrl, UriKind.Absolute, out _))
             {
                 _lastValidatedUrl = currentUrl;
                 return;
@@ -137,7 +127,6 @@ public partial class MainView : UserControl, IDisposable
         {
             if (_webView != null)
             {
-                // Navigate to blank page first to release resources
                 try
                 {
                     _webView.Address = "about:blank";
@@ -147,26 +136,16 @@ public partial class MainView : UserControl, IDisposable
                     // Ignore
                 }
 
-                // Give WebView time to process the blank navigation
-                System.Threading.Thread.Sleep(50);
-
-                // Unsubscribe from events
                 if (_webViewPropertyChangedHandler != null)
                 {
                     _webView.PropertyChanged -= _webViewPropertyChangedHandler;
                     _webViewPropertyChangedHandler = null;
                 }
 
-                // Dispose WebView if it implements IDisposable
                 if (_webView is IDisposable disposableWebView)
-                {
                     disposableWebView.Dispose();
-                }
 
                 _webView = null;
-
-                // Additional cleanup delay for native resources
-                System.Threading.Thread.Sleep(50);
             }
         }
         catch
