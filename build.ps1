@@ -10,6 +10,7 @@ param(
     [int]$ApiMaxResponseSizeBytes = 1048576,
     
     [bool]$WebViewAllowHttp = $false,
+    [string[]]$WebViewTrustedDomains = @("localhost", "127.0.0.1", ""),
     
     [int]$SecurityGracePeriodDays = 7,
     [int]$SecurityMaxActivationAttempts = 3,
@@ -23,6 +24,50 @@ param(
     [string]$Configuration = "Release",
     [switch]$SelfContained = $true
 )
+
+function Get-DotEnvValue {
+    param(
+        [string]$Key
+    )
+
+    if (-not (Test-Path ".env")) {
+        return $null
+    }
+
+    $line = Get-Content ".env" | Where-Object { $_ -match "^$Key=" } | Select-Object -Last 1
+    if (-not $line) {
+        return $null
+    }
+
+    return ($line -replace "^$Key=", "").Trim().Trim('"')
+}
+
+if (-not $PSBoundParameters.ContainsKey("IFrameUrl")) {
+    $dotEnvIFrame = Get-DotEnvValue -Key "IFRAME_URL"
+    if (-not [string]::IsNullOrWhiteSpace($dotEnvIFrame)) { $IFrameUrl = $dotEnvIFrame }
+}
+
+if (-not $PSBoundParameters.ContainsKey("ApiUrl")) {
+    $dotEnvApi = Get-DotEnvValue -Key "API_URL"
+    if (-not [string]::IsNullOrWhiteSpace($dotEnvApi)) { $ApiUrl = $dotEnvApi }
+}
+
+if (-not $PSBoundParameters.ContainsKey("AppName")) {
+    $dotEnvAppName = Get-DotEnvValue -Key "APP_NAME"
+    if (-not [string]::IsNullOrWhiteSpace($dotEnvAppName)) { $AppName = $dotEnvAppName }
+}
+
+if (-not $PSBoundParameters.ContainsKey("AppLogo")) {
+    $dotEnvAppLogo = Get-DotEnvValue -Key "APP_LOGO"
+    if (-not [string]::IsNullOrWhiteSpace($dotEnvAppLogo)) { $AppLogo = $dotEnvAppLogo }
+}
+
+if (-not $PSBoundParameters.ContainsKey("WebViewTrustedDomains")) {
+    $dotEnvDomains = Get-DotEnvValue -Key "WEBVIEW_TRUSTED_DOMAINS"
+    if (-not [string]::IsNullOrWhiteSpace($dotEnvDomains)) {
+        $WebViewTrustedDomains = $dotEnvDomains.Split(',') | ForEach-Object { $_.Trim() }
+    }
+}
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  ECoopSystem Build Script" -ForegroundColor Cyan
@@ -54,27 +99,26 @@ Write-Host "Generating BuildConfiguration.cs..." -ForegroundColor Yellow
 $templateContent = Get-Content "Build/BuildConfiguration.template.cs" -Raw
 $generatedContent = $templateContent
 
-$generatedContent = $generatedContent.Replace(
-    'GetEnvOrDefault("IFRAME_URL", "http://localhost:3000/")',
-    "GetEnvOrDefault(""IFRAME_URL"", ""$IFrameUrl"")"
-)
-$generatedContent = $generatedContent.Replace(
-    'GetEnvOrDefault("API_URL", "http://localhost:5000")',
-    "GetEnvOrDefault(""API_URL"", ""$ApiUrl"")"
-)
+$domain1 = if ($WebViewTrustedDomains.Count -gt 0) { $WebViewTrustedDomains[0] } else { "" }
+$domain2 = if ($WebViewTrustedDomains.Count -gt 1) { $WebViewTrustedDomains[1] } else { "" }
+$domain3 = if ($WebViewTrustedDomains.Count -gt 2) { $WebViewTrustedDomains[2] } else { "" }
 
-$generatedContent = $generatedContent `
-    -replace '\$\(AppName\)', $AppName `
-    -replace '\$\(AppLogo\)', $AppLogo `
-    -replace '\$\(ApiTimeout\)', $ApiTimeout `
-    -replace '\$\(ApiMaxRetries\)', $ApiMaxRetries `
-    -replace '\$\(ApiMaxResponseSizeBytes\)', $ApiMaxResponseSizeBytes `
-    -replace '\$\(WebViewAllowHttp\)', $WebViewAllowHttp.ToString().ToLower() `
-    -replace '\$\(SecurityGracePeriodDays\)', $SecurityGracePeriodDays `
-    -replace '\$\(SecurityMaxActivationAttempts\)', $SecurityMaxActivationAttempts `
-    -replace '\$\(SecurityLockoutMinutes\)', $SecurityLockoutMinutes `
-    -replace '\$\(SecurityActivationLookbackMinutes\)', $SecurityActivationLookbackMinutes `
-    -replace '\$\(SecurityBackgroundVerificationIntervalMinutes\)', $SecurityBackgroundVerificationIntervalMinutes
+$generatedContent = $generatedContent.Replace("$(IFrameUrl)", $IFrameUrl)
+$generatedContent = $generatedContent.Replace("$(ApiUrl)", $ApiUrl)
+$generatedContent = $generatedContent.Replace("$(AppName)", $AppName)
+$generatedContent = $generatedContent.Replace("$(AppLogo)", $AppLogo)
+$generatedContent = $generatedContent.Replace("$(ApiTimeout)", $ApiTimeout.ToString())
+$generatedContent = $generatedContent.Replace("$(ApiMaxRetries)", $ApiMaxRetries.ToString())
+$generatedContent = $generatedContent.Replace("$(ApiMaxResponseSizeBytes)", $ApiMaxResponseSizeBytes.ToString())
+$generatedContent = $generatedContent.Replace("$(WebViewTrustedDomain1)", $domain1)
+$generatedContent = $generatedContent.Replace("$(WebViewTrustedDomain2)", $domain2)
+$generatedContent = $generatedContent.Replace("$(WebViewTrustedDomain3)", $domain3)
+$generatedContent = $generatedContent.Replace("$(WebViewAllowHttp)", $WebViewAllowHttp.ToString().ToLower())
+$generatedContent = $generatedContent.Replace("$(SecurityGracePeriodDays)", $SecurityGracePeriodDays.ToString())
+$generatedContent = $generatedContent.Replace("$(SecurityMaxActivationAttempts)", $SecurityMaxActivationAttempts.ToString())
+$generatedContent = $generatedContent.Replace("$(SecurityLockoutMinutes)", $SecurityLockoutMinutes.ToString())
+$generatedContent = $generatedContent.Replace("$(SecurityActivationLookbackMinutes)", $SecurityActivationLookbackMinutes.ToString())
+$generatedContent = $generatedContent.Replace("$(SecurityBackgroundVerificationIntervalMinutes)", $SecurityBackgroundVerificationIntervalMinutes.ToString())
 
 $generatedContent | Out-File -FilePath "Build/BuildConfiguration.cs" -Encoding UTF8 -NoNewline
 

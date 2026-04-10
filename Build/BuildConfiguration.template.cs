@@ -5,8 +5,6 @@
 // </auto-generated>
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace ECoopSystem.Build;
@@ -18,113 +16,15 @@ namespace ECoopSystem.Build;
 /// </summary>
 public static class BuildConfiguration
 {
-    private static readonly Dictionary<string, string> DotEnvValues = LoadDotEnv();
-
-    private static string GetEnvOrDefault(string key, string defaultValue)
-    {
-        var value = Environment.GetEnvironmentVariable(key);
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            return value;
-        }
-
-        if (DotEnvValues.TryGetValue(key, out var dotEnvValue) && !string.IsNullOrWhiteSpace(dotEnvValue))
-        {
-            return dotEnvValue;
-        }
-
-        return defaultValue;
-    }
-
-    private static int GetIntOrDefault(string key, int defaultValue)
-    {
-        var value = GetEnvOrDefault(key, defaultValue.ToString());
-        return int.TryParse(value, out var parsed) ? parsed : defaultValue;
-    }
-
-    private static bool GetBoolOrDefault(string key, bool defaultValue)
-    {
-        var value = GetEnvOrDefault(key, defaultValue.ToString().ToLowerInvariant());
-        if (bool.TryParse(value, out var parsed))
-        {
-            return parsed;
-        }
-
-        return defaultValue;
-    }
-
-    private static Dictionary<string, string> LoadDotEnv()
-    {
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
-
-        if (!File.Exists(envPath))
-        {
-            envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-        }
-
-        if (!File.Exists(envPath))
-        {
-            var current = AppContext.BaseDirectory;
-            while (!string.IsNullOrWhiteSpace(current))
-            {
-                var candidate = Path.Combine(current, ".env");
-                if (File.Exists(candidate))
-                {
-                    envPath = candidate;
-                    break;
-                }
-
-                var parent = Directory.GetParent(current);
-                if (parent is null)
-                {
-                    break;
-                }
-
-                current = parent.FullName;
-            }
-
-            if (!File.Exists(envPath))
-            {
-                return result;
-            }
-        }
-
-        foreach (var line in File.ReadAllLines(envPath))
-        {
-            var trimmed = line.Trim();
-            if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith("#"))
-            {
-                continue;
-            }
-
-            var separatorIndex = trimmed.IndexOf('=');
-            if (separatorIndex <= 0)
-            {
-                continue;
-            }
-
-            var key = trimmed[..separatorIndex].Trim();
-            var value = trimmed[(separatorIndex + 1)..].Trim().Trim('"');
-
-            if (!string.IsNullOrWhiteSpace(key))
-            {
-                result[key] = value;
-            }
-        }
-
-        return result;
-    }
-
     /// <summary>
     /// WebView/IFrame URL - Set via: -p:IFrameUrl="https://yoursite.com"
     /// </summary>
-    public static string IFrameUrl => GetEnvOrDefault("IFRAME_URL", "http://localhost:3000/");
+    public const string IFrameUrl = "$(IFrameUrl)";
 
     /// <summary>
     /// API Server URL - Set via: -p:ApiUrl="https://api.yoursite.com"
     /// </summary>
-    public static string ApiUrl => NormalizeApiBaseUrl(GetEnvOrDefault("API_URL", "http://localhost:5000"));
+    public static readonly string ApiUrl = NormalizeApiBaseUrl("$(ApiUrl)");
 
     private static string NormalizeApiBaseUrl(string url)
     {
@@ -146,48 +46,39 @@ public static class BuildConfiguration
 
     private static string[] GetWebViewTrustedDomains()
     {
-        var defaults = new[]
+        return new[]
         {
-            "http://localhost:3000/"
-        };
-
-        var rawValue = GetEnvOrDefault("WEBVIEW_TRUSTED_DOMAINS", string.Empty);
-        if (string.IsNullOrWhiteSpace(rawValue))
-        {
-            return defaults;
+            "$(WebViewTrustedDomain1)",
+            "$(WebViewTrustedDomain2)",
+            "$(WebViewTrustedDomain3)"
         }
-
-        var parsed = rawValue
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Where(domain => !string.IsNullOrWhiteSpace(domain))
             .ToArray();
-
-        return parsed.Length > 0 ? parsed : defaults;
     }
 
     /// <summary>
     /// Application Name - Set via: -p:AppName="YourAppName"
     /// </summary>
-    public static string AppName => GetEnvOrDefault("APP_NAME", "ECoopSystem");
+    public const string AppName = "$(AppName)";
 
     /// <summary>
     /// Application Logo Path - Set via: -p:AppLogo="path/to/logo.png"
     /// </summary>
-    public static string AppLogo => GetEnvOrDefault("APP_LOGO", "Assets/Images/logo.png");
+    public const string AppLogo = "$(AppLogo)";
 
     // API Settings (Build-time only, not user-configurable)
-    public static int ApiTimeout => GetIntOrDefault("API_TIMEOUT", 12);
-    public static int ApiMaxRetries => GetIntOrDefault("API_MAX_RETRIES", 3);
-    public static int ApiMaxResponseSizeBytes => GetIntOrDefault("API_MAX_RESPONSE_SIZE_BYTES", 1048576);
+    public const int ApiTimeout = $(ApiTimeout);
+    public const int ApiMaxRetries = $(ApiMaxRetries);
+    public const int ApiMaxResponseSizeBytes = $(ApiMaxResponseSizeBytes);
 
     // WebView Trusted Domains (Build-time only)
     public static readonly string[] WebViewTrustedDomains = GetWebViewTrustedDomains();
-    public static bool WebViewAllowHttp => GetBoolOrDefault("WEBVIEW_ALLOW_HTTP", false);
+    public const bool WebViewAllowHttp = $(WebViewAllowHttp);
 
     // Security Settings (Build-time only, not user-configurable)
-    public static int SecurityGracePeriodDays => GetIntOrDefault("SECURITY_GRACE_PERIOD_DAYS", 7);
-    public static int SecurityMaxActivationAttempts => GetIntOrDefault("SECURITY_MAX_ACTIVATION_ATTEMPTS", 3);
-    public static int SecurityLockoutMinutes => GetIntOrDefault("SECURITY_LOCKOUT_MINUTES", 5);
-    public static int SecurityActivationLookbackMinutes => GetIntOrDefault("SECURITY_ACTIVATION_LOOKBACK_MINUTES", 1);
-    public static int SecurityBackgroundVerificationIntervalMinutes => GetIntOrDefault("SECURITY_BACKGROUND_VERIFICATION_INTERVAL_MINUTES", 1);
+    public const int SecurityGracePeriodDays = $(SecurityGracePeriodDays);
+    public const int SecurityMaxActivationAttempts = $(SecurityMaxActivationAttempts);
+    public const int SecurityLockoutMinutes = $(SecurityLockoutMinutes);
+    public const int SecurityActivationLookbackMinutes = $(SecurityActivationLookbackMinutes);
+    public const int SecurityBackgroundVerificationIntervalMinutes = $(SecurityBackgroundVerificationIntervalMinutes);
 }

@@ -6,8 +6,19 @@ set -e
 
 # Configuration
 VERSION="${1:-1.0.0}"
-IFRAME_URL="${2:-http://localhost:3000/}"
-API_URL="${3:-http://localhost:5000}"
+get_env_value() {
+    local key="$1"
+    if [ ! -f ".env" ]; then
+        return
+    fi
+    sed -n "s/^${key}=//p" .env | tail -n1
+}
+
+ENV_IFRAME_URL="$(get_env_value IFRAME_URL)"
+ENV_API_URL="$(get_env_value API_URL)"
+
+IFRAME_URL="${2:-${ENV_IFRAME_URL:-http://localhost:3000/}}"
+API_URL="${3:-${ENV_API_URL:-http://localhost:5000}}"
 CONFIGURATION="${4:-Release}"
 APP_NAME="ECoopSystem"
 PACKAGE_NAME="ecoopsystem"
@@ -60,14 +71,6 @@ echo "  API URL:         $API_URL"
 echo "  Configuration:   $CONFIGURATION"
 echo "  Version:         $VERSION"
 echo ""
-
-if [ -f ".env" ]; then
-    cp ".env" ".env.build.bak"
-fi
-{
-    echo "IFRAME_URL=$IFRAME_URL"
-    echo "API_URL=$API_URL"
-} > ".env"
 
 # Check for required tools
 print_info "Checking for required tools..."
@@ -166,12 +169,6 @@ print_info "Building .deb package..."
 DEB_PATH="${OUTPUT_DIR}/${PACKAGE_NAME}_${VERSION}_amd64.deb"
 dpkg-deb --build "${PKGROOT}" "${DEB_PATH}" >/dev/null
 print_success ".deb created: ${DEB_PATH}"
-
-if [ -f ".env.build.bak" ]; then
-    mv -f ".env.build.bak" ".env"
-else
-    rm -f ".env"
-fi
 
 # Summary
 print_header "Build Complete"
