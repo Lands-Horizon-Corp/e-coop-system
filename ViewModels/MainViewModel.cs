@@ -173,8 +173,10 @@ public class MainViewModel : ViewModelBase
     private void NavigateToUnavailable(string? details = null)
     {
         var message = string.IsNullOrWhiteSpace(details)
-            ? "No network connection or license server is currently unavailable. Your license key is kept locally and will be validated again when connectivity is restored."
-            : $"No network connection or license server is currently unavailable. Your license key is kept locally and will be validated again when connectivity is restored.\n\nDetails: {details}";
+            ? "Unable to reach ECoop server."
+            : details.Trim()
+                .Replace("license server", "ECoop server", StringComparison.OrdinalIgnoreCase)
+                .Replace("license", "ECoop", StringComparison.OrdinalIgnoreCase);
 
         var blockingViewModel = new BlockingViewModel(
             "Connection Required",

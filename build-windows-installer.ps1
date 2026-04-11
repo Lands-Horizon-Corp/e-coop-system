@@ -91,8 +91,15 @@ Write-Host ""
 if (-not $SkipBuild) {
     # Clean previous build
     Write-Host "[1/5] Cleaning previous build..." -ForegroundColor Cyan
-    if (Test-Path "bin\$Configuration") {
-        Remove-Item -Path "bin\$Configuration" -Recurse -Force
+    $buildOutputPath = "bin\$Configuration"
+    if (Test-Path $buildOutputPath) {
+        $cleanupErrors = @()
+        Remove-Item -Path $buildOutputPath -Recurse -Force -ErrorAction SilentlyContinue -ErrorVariable +cleanupErrors
+
+        if ($cleanupErrors.Count -gt 0 -and (Test-Path $buildOutputPath)) {
+            Write-Host "[WARN] Could not fully clean '$buildOutputPath' because some files are in use." -ForegroundColor Yellow
+            Write-Host "       Continuing build. If publish fails, close the running app/IDE debug session and retry." -ForegroundColor Yellow
+        }
     }
     if (-not (Test-Path "output\installer")) {
         New-Item -ItemType Directory -Path "output\installer" | Out-Null

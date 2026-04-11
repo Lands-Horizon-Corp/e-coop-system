@@ -120,7 +120,7 @@ public class LicenseService
         }
         catch (HttpRequestException)
         {
-            return VerifyResult.TransientFailure("Unable to reach license server.");
+            return VerifyResult.TransientFailure("Unable to reach ECoop server.");
         }
 
         using (resp)
