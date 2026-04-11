@@ -128,11 +128,10 @@ begin
   }
 end;
 
-// Clean up user data on uninstall (optional)
+// Clean up user data on uninstall
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   AppDataDir: String;
-  ResultCode: Integer;
 begin
   if CurUninstallStep = usPostUninstall then
   begin
@@ -140,13 +139,7 @@ begin
     
     if DirExists(AppDataDir) then
     begin
-      if MsgBox('Do you want to remove all application data and settings?' + #13#10 +
-                'This includes configuration files, data protection keys, and cached data.' + #13#10#13#10 +
-                'Location: ' + AppDataDir,
-                mbConfirmation, MB_YESNO) = IDYES then
-      begin
-        DelTree(AppDataDir, True, True, True);
-      end;
+      DelTree(AppDataDir, True, True, True);
     end;
   end;
 end;
