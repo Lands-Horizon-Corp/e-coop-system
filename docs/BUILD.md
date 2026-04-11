@@ -1,5 +1,3 @@
-# ECoopSystem Build System
-
 # Build Guide
 
 ## Prerequisites
@@ -31,7 +29,7 @@ make build
 make build PLATFORM=linux IFRAME_URL=http://localhost:3000 API_URL=http://localhost:5000
 ```
 
-`Makefile` defaults now come from `Build/BuildConfiguration.cs` when possible:
+`Makefile` defaults are sourced from `.env` when present (or fall back to defaults):
 
 - `IFRAME_URL`
 - `API_URL`
@@ -60,9 +58,9 @@ Primary publish output (dotnet):
 
 Makefile packaged output:
 
-- `output/build/windows/<AppName>-windows-<Config>.zip`
-- `output/build/linux/<AppName>-linux-<Config>.zip`
-- `output/build/macos/<AppName>-macos-<Config>.zip`
+- `output/build/windows/<AppName>-windows-<Version>.zip`
+- `output/build/linux/<AppName>-linux-<Version>.zip`
+- `output/build/macos/<AppName>-macos-<Version>.zip`
 
 Installer output folders are prepared as:
 

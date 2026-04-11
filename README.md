@@ -19,7 +19,7 @@ Cross-platform desktop app built with `Avalonia UI` and `.NET 9`.
 ### Run locally
 
 ```bash
-cp .env.example
+cp .env.example .env
 dotnet restore
 dotnet run
 ```
@@ -37,7 +37,7 @@ make build PLATFORM=windows IFRAME_URL=http://localhost:3000 API_URL=http://loca
 
 - `PLATFORM=all` (builds `windows`, `linux`, `macos`)
 - `CONFIG=Release`
-- Values such as `IFRAME_URL`, `API_URL`, and app/security defaults are sourced from `Build/BuildConfiguration.cs` when available.
+- Values are read from `.env` (or build arguments) and baked into `BuildConfiguration` during build.
 
 Packaged build output (zip):
 
@@ -90,9 +90,9 @@ bash build-linux-installer.sh 1.0.0
 This project uses two configuration layers:
 
 1. `appsettings.json` for user-facing app options (window size, logging, app name/version).
-2. `BuildConfiguration` for secure/runtime configuration.
+2. `BuildConfiguration` for secure build-time-baked configuration.
 
-Important runtime overrides are supported through environment variables or `.env`:
+Important build-time values are provided via `.env` (or build args):
 
 - `IFRAME_URL`
 - `API_URL`

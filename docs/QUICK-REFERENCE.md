@@ -49,6 +49,8 @@ make buildinstaller PLATFORM=linux VERSION=1.0.0
 
 ## Common environment overrides
 
+Use these in `.env` (or pass via build args) before building:
+
 - `IFRAME_URL`
 - `API_URL`
 - `WEBVIEW_TRUSTED_DOMAINS`
@@ -57,6 +59,10 @@ make buildinstaller PLATFORM=linux VERSION=1.0.0
 - `WEBVIEW_ALLOW_HTTP`
 - `SECURITY_GRACE_PERIOD_DAYS`, `SECURITY_MAX_ACTIVATION_ATTEMPTS`
 - `SECURITY_LOCKOUT_MINUTES`, `SECURITY_ACTIVATION_LOOKBACK_MINUTES`, `SECURITY_BACKGROUND_VERIFICATION_INTERVAL_MINUTES`
+
+`API_URL` format:
+
+`https://your-server.com/web/api/v1/license`
 
 ## Useful diagnostics
 

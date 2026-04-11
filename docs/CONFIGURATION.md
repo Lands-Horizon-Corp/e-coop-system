@@ -5,7 +5,7 @@
 The app configuration is split into:
 
 1. `appsettings.json` for user-facing application settings.
-2. `Build/BuildConfiguration.cs` for secure/runtime configuration used by core services.
+2. `Build/BuildConfiguration.cs` for build-time baked configuration used by core services.
 
 `AppConfiguration` is the strongly-typed C# model used to deserialize `appsettings.json` in `ConfigurationLoader`.  
 So `appsettings.json` is the file, and `AppConfiguration` is the in-code schema for it.
@@ -42,9 +42,9 @@ Example:
 }
 ```
 
-## Runtime overrides (`BuildConfiguration`)
+## Build-time overrides (`BuildConfiguration`)
 
-`BuildConfiguration` supports environment and `.env` values for:
+`BuildConfiguration` values are baked during build from `.env`/script arguments:
 
 - `IFRAME_URL`
 - `API_URL`
@@ -61,11 +61,11 @@ Example:
 - `SECURITY_ACTIVATION_LOOKBACK_MINUTES`
 - `SECURITY_BACKGROUND_VERIFICATION_INTERVAL_MINUTES`
 
-Resolution order for each setting:
+Resolution priority during build:
 
-1. OS environment variable
-2. `.env` file value
-3. Built-in default value in `BuildConfiguration`
+1. Explicit build script arguments (`build.ps1`, `build.sh`, `make` variables)
+2. `.env` values
+3. Script defaults
 
 Example `.env`:
 
@@ -88,7 +88,7 @@ SECURITY_BACKGROUND_VERIFICATION_INTERVAL_MINUTES=1
 
 ## Security-related values
 
-Security numeric settings and API limits are exposed from `BuildConfiguration` and can be overridden through environment variables/`.env`.
+Security numeric settings and API limits are exposed from `BuildConfiguration` and are fixed after build.
 
 Key values include:
 
@@ -102,5 +102,22 @@ Key values include:
 ## Recommended practice
 
 - Keep `appsettings.json` for UX/logging settings.
-- Use environment variables or `.env` for deployment endpoint overrides.
+- Use `.env` (or build args) before building installers/releases.
+- Do not include `.env` in final output/installer.
 - Do not commit production endpoint values to source control.
+
+## License API URL format
+
+`API_URL` should be the full license base path now, for example:
+
+`https://your-server.com/web/api/v1/license`
+
+The app appends only:
+
+- `/activate`
+- `/verify`
+
+So final calls are:
+
+- `.../web/api/v1/license/activate`
+- `.../web/api/v1/license/verify`

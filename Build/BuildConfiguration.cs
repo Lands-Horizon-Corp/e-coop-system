@@ -24,7 +24,7 @@ public static class BuildConfiguration
     /// <summary>
     /// API Server URL - Set via: -p:ApiUrl="https://api.yoursite.com"
     /// </summary>
-    public static readonly string ApiUrl = NormalizeApiBaseUrl("https://e-coop-server-production.up.railway.app");
+    public static readonly string ApiUrl = NormalizeApiBaseUrl("https://e-coop-server-production.up.railway.app/web/api/v1/license");
 
     private static string NormalizeApiBaseUrl(string url)
     {
