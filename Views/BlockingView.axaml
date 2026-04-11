@@ -5,15 +5,69 @@
              xmlns:vm="using:ECoopSystem.ViewModels"
              x:DataType="vm:BlockingViewModel"
              x:Class="ECoopSystem.Views.BlockingView"
-             Background="White">
+             MinWidth="1280" MinHeight="720">
 
-  <Border Background="White" Padding="32">
-	  <StackPanel Spacing="12" MaxWidth="520" 
-                  HorizontalAlignment="Center" 
-                  VerticalAlignment="Center">
-          <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold"/>
-          <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Opacity="0.8"/>
-          <TextBlock Text="You can close the app and try again later." Opacity="0.7"/>
+  <Grid>
+    <Border>
+      <Border.Background>
+        <ImageBrush Source="avares://ECoopSystem/Assets/Images/loading-bg.jpg" Stretch="UniformToFill"/>
+      </Border.Background>
+    </Border>
+
+    <Border Background="#B2182430"/>
+
+    <Border MaxWidth="620"
+            Padding="28"
+            Background="#CC0F1722"
+            BorderBrush="#40FFFFFF"
+            BorderThickness="1"
+            CornerRadius="16"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Margin="24">
+      <StackPanel Spacing="14">
+        <Image Source="avares://ECoopSystem/Assets/Images/loading-logo.png"
+               Width="110" Height="110"
+               HorizontalAlignment="Center"
+               Margin="0,0,0,8"/>
+
+        <TextBlock Text="{Binding Title}"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   TextAlignment="Center"/>
+
+        <Grid Width="42" Height="42" HorizontalAlignment="Center">
+          <Ellipse Width="42" Height="42" Stroke="#35FFFFFF" StrokeThickness="4"/>
+          <Path Data="M 21,3 A 18,18 0 0 1 39,21"
+                Stroke="#50E893"
+                StrokeThickness="4"/>
+        </Grid>
+
+        <TextBlock Text="{Binding Message}"
+                   TextWrapping="Wrap"
+                   FontSize="14"
+                   LineHeight="22"
+                   Foreground="#E5E7EB"
+                   TextAlignment="Center"
+                   HorizontalAlignment="Stretch"/>
+
+        <Border Background="#1A50E893" BorderBrush="#6050E893" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,8,0,0">
+          <TextBlock Text="Unable to verify your license right now. Please check your connection and try again."
+                     TextWrapping="Wrap"
+                     FontSize="12"
+                     Foreground="#D1FAE5"
+                     TextAlignment="Center"/>
+        </Border>
+
+        <TextBlock Text="You can close the app and try again later."
+                   FontSize="12"
+                   Opacity="0.9"
+                   Foreground="#D1D5DB"
+                   HorizontalAlignment="Center"
+                   Margin="0,6,0,0"/>
       </StackPanel>
-  </Border>
+    </Border>
+  </Grid>
 </UserControl>

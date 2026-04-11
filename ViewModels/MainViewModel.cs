@@ -180,7 +180,7 @@ public class MainViewModel : ViewModelBase
             "Connection Required",
             message);
 
-        _shell.Navigate(blockingViewModel, WindowMode.Locked);
+        _shell.Navigate(blockingViewModel, WindowMode.Normal);
     }
 
     private void StartBackgroundVerification()

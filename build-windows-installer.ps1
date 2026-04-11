@@ -3,13 +3,52 @@
 # This script builds the application with custom configuration and generates the Inno Setup installer
 
 param(
-    [string]$IFrameUrl = "http://localhost:3000/",
-    [string]$ApiUrl = "http://localhost:5000",
+    [string]$IFrameUrl = "",
+    [string]$ApiUrl = "",
     [string]$Configuration = "Release",
     [string]$Version = "1.0.0",
     [switch]$SkipBuild = $false,
     [switch]$OpenOutput = $false
 )
+
+function Get-DotEnvValue {
+    param(
+        [string]$Key
+    )
+
+    if (-not (Test-Path ".env")) {
+        return $null
+    }
+
+    $line = Get-Content ".env" | Where-Object { $_ -match "^$Key=" } | Select-Object -Last 1
+    if (-not $line) {
+        return $null
+    }
+
+    return ($line -replace "^$Key=", "").Trim().Trim('"')
+}
+
+if (-not $PSBoundParameters.ContainsKey("IFrameUrl")) {
+    $dotEnvIFrame = Get-DotEnvValue -Key "IFRAME_URL"
+    if (-not [string]::IsNullOrWhiteSpace($dotEnvIFrame)) {
+        $IFrameUrl = $dotEnvIFrame
+    }
+}
+
+if (-not $PSBoundParameters.ContainsKey("ApiUrl")) {
+    $dotEnvApi = Get-DotEnvValue -Key "API_URL"
+    if (-not [string]::IsNullOrWhiteSpace($dotEnvApi)) {
+        $ApiUrl = $dotEnvApi
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($IFrameUrl)) {
+    $IFrameUrl = "http://localhost:3000/"
+}
+
+if ([string]::IsNullOrWhiteSpace($ApiUrl)) {
+    $ApiUrl = "http://localhost:5000"
+}
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "ECoopSystem - Build and Create Installer" -ForegroundColor Cyan

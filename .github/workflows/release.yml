@@ -26,8 +26,8 @@ jobs:
   build-windows:
     runs-on: windows-latest
     env:
-      IFRAME_URL: ${{ github.event.inputs.iframe_url || 'http://localhost:3000/' }}
-      API_URL: ${{ github.event.inputs.api_url || 'http://localhost:5000' }}
+      IFRAME_URL: ${{ github.event.inputs.iframe_url }}
+      API_URL: ${{ github.event.inputs.api_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,7 +57,13 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.value }}"
-          ./build-windows-installer.ps1 -Version $version -IFrameUrl "$env:IFRAME_URL" -ApiUrl "$env:API_URL" -Configuration Release
+          $args = @{
+            Version = $version
+            Configuration = "Release"
+          }
+          if (-not [string]::IsNullOrWhiteSpace($env:IFRAME_URL)) { $args.IFrameUrl = $env:IFRAME_URL }
+          if (-not [string]::IsNullOrWhiteSpace($env:API_URL)) { $args.ApiUrl = $env:API_URL }
+          ./build-windows-installer.ps1 @args
           New-Item -ItemType Directory -Force -Path "output/installer/windows" | Out-Null
           $exe = Get-ChildItem "output/installer/*.exe" -File | Select-Object -First 1
           if (-not $exe) {
@@ -77,8 +83,8 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     env:
-      IFRAME_URL: ${{ github.event.inputs.iframe_url || 'http://localhost:3000/' }}
-      API_URL: ${{ github.event.inputs.api_url || 'http://localhost:5000' }}
+      IFRAME_URL: ${{ github.event.inputs.iframe_url }}
+      API_URL: ${{ github.event.inputs.api_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -109,7 +115,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.value }}"
           chmod +x build-linux-installer.sh
-          ./build-linux-installer.sh "$VERSION" "$IFRAME_URL" "$API_URL" Release
+          ./build-linux-installer.sh "$VERSION" "${IFRAME_URL:-}" "${API_URL:-}" Release
           mkdir -p output/installer/linux
           if ls output/installer/*.deb >/dev/null 2>&1; then
             DEB_FILE=$(ls output/installer/*.deb | head -n1)
