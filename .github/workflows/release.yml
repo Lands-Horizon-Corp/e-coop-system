@@ -11,13 +11,13 @@ on:
         required: true
         default: '1.0.0'
       iframe_url:
-        description: 'IFrame URL'
-        required: true
-        default: 'http://localhost:3000/'
+        description: 'IFrame URL (optional override)'
+        required: false
+        default: ''
       api_url:
-        description: 'API URL'
-        required: true
-        default: 'http://localhost:5000'
+        description: 'API URL (optional override)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -26,8 +26,8 @@ jobs:
   build-windows:
     runs-on: windows-latest
     env:
-      IFRAME_URL: ${{ github.event.inputs.iframe_url }}
-      API_URL: ${{ github.event.inputs.api_url }}
+      IFRAME_URL: ${{ github.event.inputs.iframe_url || vars.IFRAME_URL }}
+      API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,6 +57,8 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.value }}"
+          Write-Host "Using IFRAME_URL: $env:IFRAME_URL"
+          Write-Host "Using API_URL: $env:API_URL"
           $args = @{
             Version = $version
             Configuration = "Release"
@@ -83,8 +85,8 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     env:
-      IFRAME_URL: ${{ github.event.inputs.iframe_url }}
-      API_URL: ${{ github.event.inputs.api_url }}
+      IFRAME_URL: ${{ github.event.inputs.iframe_url || vars.IFRAME_URL }}
+      API_URL: ${{ github.event.inputs.api_url || vars.API_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -114,6 +116,8 @@ jobs:
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.value }}"
+          echo "Using IFRAME_URL: $IFRAME_URL"
+          echo "Using API_URL: $API_URL"
           chmod +x build-linux-installer.sh
           ./build-linux-installer.sh "$VERSION" "${IFRAME_URL:-}" "${API_URL:-}" Release
           mkdir -p output/installer/linux

@@ -33,15 +33,7 @@ public static class BuildConfiguration
             return "http://localhost:5000";
         }
 
-        var normalized = url.Trim().TrimEnd('/');
-
-        var duplicatedApiPath = "/web/api/v1/license";
-        if (normalized.EndsWith(duplicatedApiPath, StringComparison.OrdinalIgnoreCase))
-        {
-            normalized = normalized[..^duplicatedApiPath.Length];
-        }
-
-        return normalized;
+        return url.Trim().TrimEnd('/');
     }
 
     private static string[] GetWebViewTrustedDomains()

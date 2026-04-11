@@ -16,8 +16,8 @@ public class LicenseService
     private readonly HttpClient _http;
     private readonly IConfiguration _config;
     private readonly string _baseUrl;
-    private static readonly string ActivateEndpoint = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("L3dlYi9hcGkvdjEvbGljZW5zZS9hY3RpdmF0ZQ=="));
-    private static readonly string VerifyEndpoint = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("L3dlYi9hcGkvdjEvbGljZW5zZS92ZXJpZnk="));
+    private static readonly string ActivateEndpoint = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("L2FjdGl2YXRl"));
+    private static readonly string VerifyEndpoint = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("L3ZlcmlmeQ=="));
 
     public LicenseService(HttpClient http, IConfiguration config)
     {
