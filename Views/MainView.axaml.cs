@@ -114,13 +114,6 @@ public partial class MainView : UserControl, IDisposable
             }
 
             await Task.Delay(300);
-
-            if (string.Equals(_webView.Address, url, StringComparison.OrdinalIgnoreCase))
-            {
-                _webView.Address = "about:blank";
-                await Task.Delay(150);
-                _webView.Address = url;
-            }
         }
         catch (Exception ex)
         {
